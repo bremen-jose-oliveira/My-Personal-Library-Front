@@ -1,17 +1,17 @@
-import AddBookForm from '@/components/AddBookForm';
-import DisplayBooks from '@/components/DisplayBooks';
-import React from 'react';
-import { View, Text, ScrollView } from 'react-native';
+// app/index.tsx
+import { Link } from 'expo-router';
+import { View, Text, Button } from 'react-native';
 
-
-export default function App() {
+export default function HomeScreen() {
   return (
-    <ScrollView className="flex-1 p-4 bg-gray-100">
-      <View className="container mx-auto py-8">
-        <Text className="text-3xl font-bold mb-6 text-center">Library App</Text>
-        <AddBookForm />
-        <DisplayBooks />
-      </View>
-    </ScrollView>
+    <View >
+      <Text >Welcome to the Library App</Text>
+      <Link href="/AddBookForm">
+        <Button title="Add a New Book" color="#1E40AF" />
+      </Link>
+      <Link href="/DisplayBooks">
+        <Button title="View Book List" color="#1E40AF"  />
+      </Link>
+    </View>
   );
 }

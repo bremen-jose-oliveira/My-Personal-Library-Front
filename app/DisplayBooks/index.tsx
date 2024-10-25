@@ -21,55 +21,61 @@ export default function DisplayBooks() {
     fetchBooks();
   }, []);
 
-  const fetchBooks = async () => {
-    try {
-      const response = await fetch('http://localhost:8080/api/books');
-      const data: Book[] = await response.json();
-
-      const booksWithCovers = await Promise.all(
-        data.map(async (book) => {
-          if (!book.cover) {
-            const coverUrl = await fetchCoverImage(book.title, book.author);
-            return { ...book, cover: coverUrl };
-          }
-          return book;
-        })
-      );
-
-      setBooks(booksWithCovers);
-    } catch (error) {
-      console.error('Failed to fetch books:', error);
-    } finally {
-      setLoading(false);
+const fetchBooks = async () => {
+  try {
+    const response = await fetch('http://192.168.2.41:8080/api/books');
+    if (!response.ok) {
+      throw new Error('Failed to fetch books');
     }
-  };
+    const data: Book[] = await response.json();
+
+    const booksWithCovers = await Promise.all(
+      data.map(async (book) => {
+        if (!book.cover) {
+          const coverUrl = await fetchCoverImage(book.title, book.author);
+          return { ...book, cover: coverUrl };
+        }
+        return book;
+      })
+    );
+
+    setBooks(booksWithCovers);
+  } catch (error) {
+    console.error('Failed to fetch books:', error);
+    Alert.alert('Error', 'Failed to fetch books. Please check your network connection.');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleBookSelect = (bookData) => {
     setSelectedBook(bookData);
   };
-  const handleDeleteBook = async (id) => {
-    try {
-      const response = await fetch(`http://localhost:8080/api/books/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-  
-      if (response.ok) {
-        Alert.alert('Success', 'Book deleted successfully!');
-        console.log("Deleted book with id:", id);
-        setSelectedBook(null); // Optionally clear selected book if needed
-      } else {
-        console.log("Failed to delete book with id:", id);
-        throw new Error(`Failed to delete book: ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error('Error deleting book:', error);
-      Alert.alert('Error', 'Failed to delete book. Please try again.');
+
+
+const handleDeleteBook = async (id) => {
+  try {
+    const response = await fetch(`http://192.168.2.41:8080/api/books/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (response.ok) {
+      Alert.alert('Success', 'Book deleted successfully!');
+      setBooks(books.filter(book => book.id !== id));  // Update the books state after delete
+    } else {
+      console.log('Failed to delete book with id:', id);
+      throw new Error(`Failed to delete book: ${response.statusText}`);
     }
-  };
-  
+  } catch (error) {
+    console.error('Error deleting book:', error);
+    Alert.alert('Error', 'Failed to delete book. Please try again.');
+  }
+};
+
 
 
   const fetchCoverImage = async (title: string, author: string): Promise<string | null> => {

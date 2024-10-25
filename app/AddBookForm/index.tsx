@@ -41,7 +41,7 @@ const AddBookForm = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:8080/api/books', {
+      const response = await fetch('http://192.168.2.41:8080/api/books', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
