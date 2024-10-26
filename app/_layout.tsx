@@ -1,12 +1,23 @@
-import { Stack } from "expo-router";
+// app/_layout.tsx
 
+import React from 'react';
+import { Tabs } from 'expo-router';
 
-export default function RootLayout() {
+export default function Layout() {
   return (
-    <Stack>
-   <Stack.Screen name="index" options={{ title: 'Home' }} />
-   <Stack.Screen name="/AddBookForm" options={{ title: 'AddBookForm' }} />
-   <Stack.Screen name="/DisplayBooks" options={{ title: 'DisplayBooks' }} />
-  </Stack>
+    <Tabs>
+      <Tabs.Screen 
+        name="index" 
+        options={{ title: 'Home' }} 
+      />
+      <Tabs.Screen 
+        name="AddBookForm/index"  
+        options={{ title: 'Add Book' }} 
+      />
+      <Tabs.Screen 
+        name="DisplayBooks/index" 
+        options={{ title: 'Books' }} 
+      />
+    </Tabs>
   );
 }

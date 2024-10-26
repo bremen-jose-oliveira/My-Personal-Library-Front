@@ -6,12 +6,11 @@ const AddBookForm = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
 
-  // Fetch books from Google Books API
   const fetchBooks = async () => {
     if (!searchQuery) return;
-
-    const googleBooksApiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchQuery)}`;
-
+  
+    const googleBooksApiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchQuery)}&maxResults=40`;
+  
     try {
       const response = await fetch(googleBooksApiUrl);
       const data = await response.json();
@@ -36,6 +35,7 @@ const AddBookForm = () => {
       author: selectedBook.volumeInfo.authors.join(', '),
       year: selectedBook.volumeInfo.publishedDate ? selectedBook.volumeInfo.publishedDate.substring(0, 4) : '',
       publisher: selectedBook.volumeInfo.publisher || '',
+      cover: selectedBook.volumeInfo.imageLinks.thumbnail || ''
     
       
     };
