@@ -1,12 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TextInput, Button, FlatList, Text, TouchableOpacity, Image, Alert, Modal } from 'react-native';
-import BarcodeScanner from '../BarcodeScanner'; // Adjust the import path as needed
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import BarcodeScanner from '@/components/BarcodeScanner';
 
 const AddBookForm = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const [scannerVisible, setScannerVisible] = useState(false);
+  const navigation = useNavigation();
+
+  // Clear the search query when navigating away
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        setSearchQuery(''); // Clear search query on focus out
+        setSearchResults([]); // Clear search results on focus out
+        setSelectedBook(null); // Clear selected book on focus out
+      };
+    }, [])
+  );
 
   // Function to fetch books based on the search query
   const fetchBooks = async () => {
@@ -17,7 +30,7 @@ const AddBookForm = () => {
     try {
       const response = await fetch(googleBooksApiUrl);
       const data = await response.json();
-      setSearchResults(data.items || []); 
+      setSearchResults(data.items || []);
     } catch (error) {
       console.error('Error fetching books:', error);
       Alert.alert('Error', 'Failed to fetch book data. Please try again.');
@@ -77,6 +90,13 @@ const AddBookForm = () => {
     fetchBooks(); // Trigger fetchBooks when the search button is clicked
   };
 
+  // Function to clear the search input
+  const clearSearchInput = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setSelectedBook(null);
+  };
+
   return (
     <View style={{ padding: 20 }}>
       <TextInput
@@ -85,8 +105,8 @@ const AddBookForm = () => {
         onChangeText={setSearchQuery}
         style={{ borderColor: 'gray', borderWidth: 1, padding: 10, marginBottom: 20 }}
       />
-
       <Button title="Search" onPress={handleManualSearch} />
+      <Button title="Clear" onPress={clearSearchInput} />
 
       {searchResults.length > 0 && (
         <FlatList
