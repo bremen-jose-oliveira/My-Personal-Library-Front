@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, FlatList, Text, TouchableOpacity, Image, Alert, Modal } from 'react-native';
-import BarcodeScanner from '../BarcodeScanner'; // Ensure this path is correct
+import BarcodeScanner from '../BarcodeScanner'; // Adjust the import path as needed
 
 const AddBookForm = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -8,6 +8,7 @@ const AddBookForm = () => {
   const [selectedBook, setSelectedBook] = useState(null);
   const [scannerVisible, setScannerVisible] = useState(false);
 
+  // Function to fetch books based on the search query
   const fetchBooks = async () => {
     if (!searchQuery) return;
 
@@ -16,28 +17,30 @@ const AddBookForm = () => {
     try {
       const response = await fetch(googleBooksApiUrl);
       const data = await response.json();
-      setSearchResults(data.items || []);
+      setSearchResults(data.items || []); 
     } catch (error) {
       console.error('Error fetching books:', error);
       Alert.alert('Error', 'Failed to fetch book data. Please try again.');
     }
   };
 
+  // Function to handle book selection from search results
   const handleBookSelect = (bookData) => {
     setSelectedBook(bookData);
-    setSearchQuery('');
-    setSearchResults([]);
+    setSearchQuery(''); // Clear the search input
+    setSearchResults([]); // Clear search results
   };
 
+  // Function to add the selected book to the collection
   const handleAddBook = async () => {
     if (!selectedBook) return;
 
     const bookData = {
-      title: selectedBook.volumeInfo.title || 'No Title',
-      author: selectedBook.volumeInfo.authors ? selectedBook.volumeInfo.authors.join(', ') : 'Unknown Author',
+      title: selectedBook.volumeInfo.title,
+      author: selectedBook.volumeInfo.authors.join(', '),
       year: selectedBook.volumeInfo.publishedDate ? selectedBook.volumeInfo.publishedDate.substring(0, 4) : '',
       publisher: selectedBook.volumeInfo.publisher || '',
-      cover: selectedBook.volumeInfo.imageLinks?.thumbnail || ''
+      cover: selectedBook.volumeInfo.imageLinks.thumbnail || ''
     };
 
     try {
@@ -61,11 +64,17 @@ const AddBookForm = () => {
     }
   };
 
+  // Function to handle the scanned ISBN
   const handleISBNScanned = (isbn) => {
     console.log(`ISBN scanned: ${isbn}`);
     setScannerVisible(false);
-    setSearchQuery(isbn);
-    fetchBooks();
+    setSearchQuery(isbn); // Update search query with scanned ISBN
+    fetchBooks(); // Automatically trigger the book fetch after setting the ISBN
+  };
+
+  // Function to handle manual search button click
+  const handleManualSearch = () => {
+    fetchBooks(); // Trigger fetchBooks when the search button is clicked
   };
 
   return (
@@ -74,10 +83,10 @@ const AddBookForm = () => {
         placeholder="Search for a book..."
         value={searchQuery}
         onChangeText={setSearchQuery}
-        onSubmitEditing={fetchBooks}
         style={{ borderColor: 'gray', borderWidth: 1, padding: 10, marginBottom: 20 }}
       />
-      <Button title="Scan ISBN" onPress={() => setScannerVisible(true)} />
+
+      <Button title="Search" onPress={handleManualSearch} />
 
       {searchResults.length > 0 && (
         <FlatList
@@ -95,7 +104,7 @@ const AddBookForm = () => {
                     />
                   ) : null}
                   <View>
-                    <Text style={{ fontWeight: 'bold' }}>{book.title || 'No Title'}</Text>
+                    <Text style={{ fontWeight: 'bold' }}>{book.title}</Text>
                     <Text>{book.authors ? book.authors.join(', ') : 'Unknown Author'}</Text>
                   </View>
                 </View>
@@ -108,13 +117,14 @@ const AddBookForm = () => {
       {selectedBook && (
         <View style={{ marginTop: 20 }}>
           <Text style={{ fontWeight: 'bold' }}>Selected Book:</Text>
-          <Text>Title: {selectedBook.volumeInfo.title || 'No Title'}</Text>
-          <Text>Author: {selectedBook.volumeInfo.authors ? selectedBook.volumeInfo.authors.join(', ') : 'Unknown Author'}</Text>
+          <Text>Title: {selectedBook.volumeInfo.title}</Text>
+          <Text>Author: {selectedBook.volumeInfo.authors.join(', ')}</Text>
           <Button title="Add Book" onPress={handleAddBook} />
         </View>
       )}
 
-      {/* Modal for Barcode Scanner */}
+      <Button title="Open Barcode Scanner" onPress={() => setScannerVisible(true)} />
+
       <Modal visible={scannerVisible} animationType="slide">
         <View style={{ flex: 1 }}>
           <BarcodeScanner onISBNScanned={handleISBNScanned} />
