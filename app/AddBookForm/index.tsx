@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, FlatList, Text, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, TextInput, Button, FlatList, Text, TouchableOpacity, Image, Alert, Modal } from 'react-native';
+import BarcodeScanner from '../BarcodeScanner'; // Ensure this path is correct
 
 const AddBookForm = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
+  const [scannerVisible, setScannerVisible] = useState(false);
 
   const fetchBooks = async () => {
     if (!searchQuery) return;
-  
+
     const googleBooksApiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchQuery)}&maxResults=40`;
-  
+
     try {
       const response = await fetch(googleBooksApiUrl);
       const data = await response.json();
@@ -23,21 +25,19 @@ const AddBookForm = () => {
 
   const handleBookSelect = (bookData) => {
     setSelectedBook(bookData);
-    setSearchQuery(''); // Clear the search input
-    setSearchResults([]); // Clear search results
+    setSearchQuery('');
+    setSearchResults([]);
   };
 
   const handleAddBook = async () => {
     if (!selectedBook) return;
 
     const bookData = {
-      title: selectedBook.volumeInfo.title,
-      author: selectedBook.volumeInfo.authors.join(', '),
+      title: selectedBook.volumeInfo.title || 'No Title',
+      author: selectedBook.volumeInfo.authors ? selectedBook.volumeInfo.authors.join(', ') : 'Unknown Author',
       year: selectedBook.volumeInfo.publishedDate ? selectedBook.volumeInfo.publishedDate.substring(0, 4) : '',
       publisher: selectedBook.volumeInfo.publisher || '',
-      cover: selectedBook.volumeInfo.imageLinks.thumbnail || ''
-    
-      
+      cover: selectedBook.volumeInfo.imageLinks?.thumbnail || ''
     };
 
     try {
@@ -61,6 +61,13 @@ const AddBookForm = () => {
     }
   };
 
+  const handleISBNScanned = (isbn) => {
+    console.log(`ISBN scanned: ${isbn}`);
+    setScannerVisible(false);
+    setSearchQuery(isbn);
+    fetchBooks();
+  };
+
   return (
     <View style={{ padding: 20 }}>
       <TextInput
@@ -70,6 +77,7 @@ const AddBookForm = () => {
         onSubmitEditing={fetchBooks}
         style={{ borderColor: 'gray', borderWidth: 1, padding: 10, marginBottom: 20 }}
       />
+      <Button title="Scan ISBN" onPress={() => setScannerVisible(true)} />
 
       {searchResults.length > 0 && (
         <FlatList
@@ -87,7 +95,7 @@ const AddBookForm = () => {
                     />
                   ) : null}
                   <View>
-                    <Text style={{ fontWeight: 'bold' }}>{book.title}</Text>
+                    <Text style={{ fontWeight: 'bold' }}>{book.title || 'No Title'}</Text>
                     <Text>{book.authors ? book.authors.join(', ') : 'Unknown Author'}</Text>
                   </View>
                 </View>
@@ -100,14 +108,21 @@ const AddBookForm = () => {
       {selectedBook && (
         <View style={{ marginTop: 20 }}>
           <Text style={{ fontWeight: 'bold' }}>Selected Book:</Text>
-          <Text>Title: {selectedBook.volumeInfo.title}</Text>
-          <Text>Author: {selectedBook.volumeInfo.authors.join(', ')}</Text>
+          <Text>Title: {selectedBook.volumeInfo.title || 'No Title'}</Text>
+          <Text>Author: {selectedBook.volumeInfo.authors ? selectedBook.volumeInfo.authors.join(', ') : 'Unknown Author'}</Text>
           <Button title="Add Book" onPress={handleAddBook} />
         </View>
       )}
+
+      {/* Modal for Barcode Scanner */}
+      <Modal visible={scannerVisible} animationType="slide">
+        <View style={{ flex: 1 }}>
+          <BarcodeScanner onISBNScanned={handleISBNScanned} />
+          <Button title="Close Scanner" onPress={() => setScannerVisible(false)} />
+        </View>
+      </Modal>
     </View>
   );
 };
 
 export default AddBookForm;
-  

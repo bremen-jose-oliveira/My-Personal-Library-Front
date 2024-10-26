@@ -2,7 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Button, Alert } from 'react-native';
 import { Camera, CameraView } from 'expo-camera';
 
-const BarcodeScanner = () => {
+interface BarcodeScannerProps {
+  onISBNScanned?: (isbn: string) => void; // Make the prop optional
+}
+
+const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
 
@@ -26,16 +30,12 @@ const BarcodeScanner = () => {
     };
 
     if (isISBN(data)) {
-      Alert.alert(`ISBN Scanned!`, `Type: ${type}, ISBN: ${data}`, [
-        { text: 'OK', onPress: () => setScanned(false) }, // Reset scanned state
-        {
-          text: 'Search Book',
-          onPress: () => {
-            console.log(`Searching for book with ISBN: ${data}`);
-            // Implement API call to fetch book details here
-          },
-        },
-      ]);
+      console.log(`Valid ISBN: ${data}`);
+      if (onISBNScanned) {  // Check if the function is defined
+        onISBNScanned(data); // Call the function if it's defined
+      } else {
+        Alert.alert('ISBN Scanned', `ISBN: ${data}`); // Fallback action
+      }
     } else {
       Alert.alert('Unrecognized Barcode', `Type: ${type}, Data: ${data}`, [
         { text: 'OK', onPress: () => setScanned(false) },
