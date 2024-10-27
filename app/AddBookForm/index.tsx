@@ -1,31 +1,29 @@
-import React, { useState, useEffect } from 'react';
+// app/AddBookForm/index.tsx
+import React, { useState } from 'react';
 import { View, TextInput, Button, FlatList, Text, TouchableOpacity, Image, Alert, Modal } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import BarcodeScanner from '@/components/BarcodeScanner';
 
-const AddBookForm = () => {
+import BarcodeScanner from '../../components/BarcodeScanner';
+import {  useBookContext } from '../Context/BookContext';
+
+interface Book {
+  id: number;
+  cover: string | null;
+  title: string;
+  author: string;
+  year: number;
+  publisher: string;
+  rating: number;
+}
+export default function AddBookForm() {
+  const { addBook } = useBookContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const [scannerVisible, setScannerVisible] = useState(false);
-  const navigation = useNavigation();
 
-  // Clear the search query when navigating away
-  useFocusEffect(
-    React.useCallback(() => {
-      return () => {
-        setSearchQuery(''); // Clear search query on focus out
-        setSearchResults([]); // Clear search results on focus out
-        setSelectedBook(null); // Clear selected book on focus out
-      };
-    }, [])
-  );
-
-  // Function to fetch books based on the search query
-  const fetchBooks = async () => {
-    if (!searchQuery) return;
-
-    const googleBooksApiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchQuery)}&maxResults=40`;
+  // Fetch book data based on ISBN or search query
+  const fetchBooks = async (query: string) => {
+    const googleBooksApiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=10`;
 
     try {
       const response = await fetch(googleBooksApiUrl);
@@ -37,64 +35,36 @@ const AddBookForm = () => {
     }
   };
 
-  // Function to handle book selection from search results
-  const handleBookSelect = (bookData) => {
+  // Handle ISBN scanned from the barcode scanner
+  const handleISBNScanned = (isbn: string) => {
+    setScannerVisible(false);
+    fetchBooks(isbn); // Fetch book data using the scanned ISBN
+  };
+
+  // Select book from search results
+  const handleBookSelect = (bookData: any) => {
     setSelectedBook(bookData);
     setSearchQuery(''); // Clear the search input
     setSearchResults([]); // Clear search results
   };
 
-  // Function to add the selected book to the collection
-  const handleAddBook = async () => {
+  // Add selected book to the global state
+  const handleAddBook = () => {
     if (!selectedBook) return;
 
-    const bookData = {
+    const bookData:Book= {
       title: selectedBook.volumeInfo.title,
       author: selectedBook.volumeInfo.authors.join(', '),
       year: selectedBook.volumeInfo.publishedDate ? selectedBook.volumeInfo.publishedDate.substring(0, 4) : '',
       publisher: selectedBook.volumeInfo.publisher || '',
-      cover: selectedBook.volumeInfo.imageLinks.thumbnail || ''
+      cover: selectedBook.volumeInfo.imageLinks?.thumbnail || '',
+      id: 0,
+      rating: 0
     };
 
-    try {
-      const response = await fetch('http://192.168.2.41:8080/api/books', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookData),
-      });
-
-      if (response.ok) {
-        Alert.alert('Success', 'Book added successfully!');
-        setSelectedBook(null); // Reset selected book
-      } else {
-        throw new Error(`Failed to add book: ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error('Error adding book:', error);
-      Alert.alert('Error', 'Failed to add book. Please try again.');
-    }
-  };
-
-  // Function to handle the scanned ISBN
-  const handleISBNScanned = (isbn) => {
-    console.log(`ISBN scanned: ${isbn}`);
-    setScannerVisible(false);
-    setSearchQuery(isbn); // Update search query with scanned ISBN
-    fetchBooks(); // Automatically trigger the book fetch after setting the ISBN
-  };
-
-  // Function to handle manual search button click
-  const handleManualSearch = () => {
-    fetchBooks(); // Trigger fetchBooks when the search button is clicked
-  };
-
-  // Function to clear the search input
-  const clearSearchInput = () => {
-    setSearchQuery('');
-    setSearchResults([]);
+    addBook(bookData);
     setSelectedBook(null);
+    Alert.alert('Success', 'Book added successfully!');
   };
 
   return (
@@ -105,32 +75,26 @@ const AddBookForm = () => {
         onChangeText={setSearchQuery}
         style={{ borderColor: 'gray', borderWidth: 1, padding: 10, marginBottom: 20 }}
       />
-      <Button title="Search" onPress={handleManualSearch} />
-      <Button title="Clear" onPress={clearSearchInput} />
+      <Button title="Search" onPress={() => fetchBooks(searchQuery)} />
+      <Button title="Open Barcode Scanner" onPress={() => setScannerVisible(true)} />
 
       {searchResults.length > 0 && (
         <FlatList
           data={searchResults}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => {
-            const book = item.volumeInfo;
-            return (
-              <TouchableOpacity onPress={() => handleBookSelect(item)}>
-                <View style={{ flexDirection: 'row', padding: 10, alignItems: 'center' }}>
-                  {book.imageLinks ? (
-                    <Image
-                      source={{ uri: book.imageLinks.thumbnail }}
-                      style={{ width: 50, height: 75, marginRight: 10 }}
-                    />
-                  ) : null}
-                  <View>
-                    <Text style={{ fontWeight: 'bold' }}>{book.title}</Text>
-                    <Text>{book.authors ? book.authors.join(', ') : 'Unknown Author'}</Text>
-                  </View>
+          renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => handleBookSelect(item)}>
+              <View style={{ flexDirection: 'row', padding: 10, alignItems: 'center' }}>
+                {item.volumeInfo.imageLinks?.thumbnail ? (
+                  <Image source={{ uri: item.volumeInfo.imageLinks.thumbnail }} style={{ width: 50, height: 75, marginRight: 10 }} />
+                ) : null}
+                <View>
+                  <Text style={{ fontWeight: 'bold' }}>{item.volumeInfo.title}</Text>
+                  <Text>{item.volumeInfo.authors?.join(', ') || 'Unknown Author'}</Text>
                 </View>
-              </TouchableOpacity>
-            );
-          }}
+              </View>
+            </TouchableOpacity>
+          )}
         />
       )}
 
@@ -143,8 +107,6 @@ const AddBookForm = () => {
         </View>
       )}
 
-      <Button title="Open Barcode Scanner" onPress={() => setScannerVisible(true)} />
-
       <Modal visible={scannerVisible} animationType="slide">
         <View style={{ flex: 1 }}>
           <BarcodeScanner onISBNScanned={handleISBNScanned} />
@@ -153,6 +115,4 @@ const AddBookForm = () => {
       </Modal>
     </View>
   );
-};
-
-export default AddBookForm;
+}
