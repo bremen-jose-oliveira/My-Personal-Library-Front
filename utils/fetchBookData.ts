@@ -29,3 +29,18 @@ export async function addBookToServer(bookData: any) {
     return { success: false };
   }
 }
+
+export const fetchCoverImage = async (title: string, author: string): Promise<string | null> => {
+  const query = `${title} ${author}`.replace(/\s+/g, '+');
+  const url = `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=1`;
+  const fallbackCover = `https://cdn-icons-png.flaticon.com/512/7340/7340665.png`;
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    return data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail || fallbackCover;
+  } catch (error) {
+    console.error('Failed to fetch cover image:', error);
+    return fallbackCover;
+  }
+};
