@@ -1,7 +1,8 @@
 // app/DisplayBooks/index.tsx
+import { useBookContext } from '@/utils/Context/BookContext';
 import React from 'react';
 import { View, Text, Image, FlatList, ActivityIndicator, Button } from 'react-native';
-import { useBookContext } from '../Context/BookContext';
+
 
 
 export default function DisplayBooks() {
@@ -15,9 +16,10 @@ export default function DisplayBooks() {
   return (
     <FlatList
       data={books}
-      keyExtractor={(book) => book.id.toString()}
+     keyExtractor={(book) => (book.id ? book.id.toString() : Math.random().toString())} // Use random key as fallback
+
       renderItem={({ item: book }) => (
-        <View className="flex-row bg-white mb-4 p-4 rounded-lg shadow-lg">
+        <View className="flex-row bg-white mb-4 p-4 rounded-lg boxShadow-lg">
           {book.cover ? (
             <Image
               className="w-24 h-36 mr-4 rounded-lg bg-gray-200"

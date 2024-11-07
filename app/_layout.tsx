@@ -1,7 +1,8 @@
 // app/_layout.tsx
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { BookProvider } from './Context/BookContext';
+import { BookProvider } from '@/utils/Context/BookContext';
+
 
 
 export default function Layout() {

@@ -32,7 +32,7 @@ export async function addBookToServer(bookData: any) {
 
 export const fetchCoverImage = async (title: string, author: string): Promise<string | null> => {
   const query = `${title} ${author}`.replace(/\s+/g, '+');
-  const url = `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=1`;
+  const url = `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=40`;
   const fallbackCover = `https://cdn-icons-png.flaticon.com/512/7340/7340665.png`;
 
   try {
