@@ -14,7 +14,7 @@ export async function fetchBooksFromGoogle(query: string) {
 
 export async function addBookToServer(bookData: any) {
   try {
-    const response = await fetch('hhttp://192.168.2.41:8080/api/books', {
+    const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/books`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

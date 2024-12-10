@@ -1,9 +1,10 @@
 import { AuthContext } from '@/utils/Context/AuthContext';
+import { router } from 'expo-router';
 import React, { useState, useContext } from 'react';
 import { Text, View, TouchableOpacity, TextInput, Alert } from 'react-native';
 
 
-export function Register() {
+export default function Register() {
   const { createUser } = useContext(AuthContext);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -16,6 +17,7 @@ export function Register() {
     }
     try {
       await createUser(username, email, password);
+      router.push("/")
     } catch (error) {
       Alert.alert('Error', 'Failed to register');
     }

@@ -1,18 +1,23 @@
 // app/_layout.tsx
+
 import React from 'react';
-import { Tabs } from 'expo-router';
+import { Stack } from 'expo-router';
+import { AuthProvider } from '@/utils/Context/AuthContext';
 import { BookProvider } from '@/utils/Context/BookContext';
+import "../global.css";
 
 
 
 export default function Layout() {
   return (
-    <BookProvider>
-      <Tabs>
-        <Tabs.Screen name="index" options={{ title: 'Home' }} />
-        <Tabs.Screen name="AddBookForm/index" options={{ title: 'Add Book' }} />
-        <Tabs.Screen name="DisplayBooks/index" options={{ title: 'Books' }} />
-      </Tabs>
-    </BookProvider>
+    <AuthProvider>
+      <BookProvider>
+        <Stack>
+       <Stack.Screen name='(tabs)' options={{headerShown:false}} />
+
+
+        </Stack>
+      </BookProvider>
+    </AuthProvider>
   );
 }

@@ -16,7 +16,8 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to your camera to scan barcodes."
-      }
+      },
+      "bundleIdentifier": "app.netlify.p-lib"
     },
     "android": {
       "permissions": [
@@ -43,6 +44,7 @@
         "projectId": "bb066308-1f75-49d3-afaa-b0e7d10de5b3"
       }
     },
-    "owner": "jose_oliv"
+    "owner": "jose_oliv",
+    "newArchEnabled": true
   }
 }

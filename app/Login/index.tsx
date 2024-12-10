@@ -3,17 +3,18 @@ import { StatusBar } from "expo-status-bar";
 import { Text, View, TouchableOpacity, TextInput, Alert } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Make sure this import is correct
 import React from 'react';
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
+import "../../global.css";
 import { AuthContext } from '@/utils/Context/AuthContext';
 
 
 
 
-export function Login({ navigation }: any) {
+export default function Login({ navigation }: any) {
   const { login } = useContext(AuthContext);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const router = useRouter(); // Initialize router
+  const router = useRouter(); 
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -22,6 +23,8 @@ export function Login({ navigation }: any) {
     }
     try {
       await login(username, password);
+       router.push("/")
+
     } catch (error) {
       Alert.alert('Error', 'Failed to log in');
     }
@@ -58,19 +61,20 @@ export function Login({ navigation }: any) {
           <Text className='text-center text-base text-white'>Login</Text>
         </TouchableOpacity>
 
-        <Text className='text-center font-normal text-gray-500 text-base mt-3'>
-          OR
-        </Text>
+    
         <View className='mt-4'>
           <TouchableOpacity className='flex flex-row items-center justify-center p-2 bg-blue-300'>
             <Text className='text-white mx-2 text-sm'>Sign In With Google</Text>
           </TouchableOpacity>
         </View>
         <View className='mt-6 flex-row justify-center'>
-          <Text className=''>New to the Library</Text>
-          <TouchableOpacity>
-            <Text className='text-blue-500'>Create an Account</Text>
-          </TouchableOpacity>
+          <Text className=''>New to the Library ? </Text>
+          
+            
+
+          <Link href="/Register">
+          <Text className='text-blue-500' >Create an Account</Text>
+          </Link>
         </View>
       </View>
       </View>

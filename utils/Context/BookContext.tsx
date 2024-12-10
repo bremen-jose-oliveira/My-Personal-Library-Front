@@ -29,7 +29,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchCurrentUserBooks = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
-      const response = await fetch('http://192.168.2.41:8080/api/books/my', {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/books/my`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',  
@@ -61,7 +61,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchBooks = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
-      const response = await fetch('http://192.168.2.41:8080/api/books', {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/books`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',  
@@ -92,7 +92,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addBook = async (book: Omit<Book, 'id'>) => {
     try {
       const token = await AsyncStorage.getItem('token');
-      const response = await fetch('http://192.168.2.41:8080/api/books', {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/books`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json', 
@@ -113,7 +113,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const deleteBook = async (id: number) => {
     try {
       const token = await AsyncStorage.getItem('token');
-      const response = await fetch(`http://192.168.2.41:8080/api/books/${id}`, {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/books/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json', 

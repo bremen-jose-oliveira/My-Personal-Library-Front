@@ -1,11 +1,8 @@
 // app/AddBookForm/index.tsx
+import BarcodeScanner from '@/components/BarcodeScanner';
+import { useBookContext } from '@/utils/Context/BookContext';
 import React, { useState } from 'react';
 import { View, TextInput, Button, FlatList, Text, TouchableOpacity, Image, Alert, Modal } from 'react-native';
-
-import BarcodeScanner from '../../components/BarcodeScanner';
-import { useBookContext } from '@/utils/Context/BookContext';
-
-
 interface Book {
   id: number;
   cover: string | null;
