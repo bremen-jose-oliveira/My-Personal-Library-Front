@@ -28,7 +28,7 @@ export default function _Layout() {
       ]
    
     );
-    router.push("/");
+    router.push("/Login");
   };
 
   return (

@@ -20,8 +20,10 @@ export default function Home() {
 
   useEffect(() => {
     // Perform redirect only if the component has mounted and user is logged in
+
     if (hasMounted && isLoggedIn) {
-      router.replace('/(tabs)/DisplayBooks');
+      router.push('/(tabs)/DisplayBooks');
+      
       
     }
   }, [hasMounted, isLoggedIn]);

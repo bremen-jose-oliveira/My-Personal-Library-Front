@@ -23,7 +23,7 @@ export default function Login({ navigation }: any) {
     }
     try {
       await login(username, password);
-       router.push("/")
+       router.push("/DisplayBooks")
 
     } catch (error) {
       Alert.alert('Error', 'Failed to log in');
@@ -62,11 +62,7 @@ export default function Login({ navigation }: any) {
         </TouchableOpacity>
 
     
-        <View className='mt-4'>
-          <TouchableOpacity className='flex flex-row items-center justify-center p-2 bg-blue-300'>
-            <Text className='text-white mx-2 text-sm'>Sign In With Google</Text>
-          </TouchableOpacity>
-        </View>
+
         <View className='mt-6 flex-row justify-center'>
           <Text className=''>New to the Library ? </Text>
           
