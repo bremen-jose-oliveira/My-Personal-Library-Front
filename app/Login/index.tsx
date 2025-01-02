@@ -23,7 +23,7 @@ export default function Login({ navigation }: any) {
     }
     try {
       await login(username, password);
-       router.push("/DisplayBooks")
+       router.push("/(tabs)")
 
     } catch (error) {
       Alert.alert('Error', 'Failed to log in');

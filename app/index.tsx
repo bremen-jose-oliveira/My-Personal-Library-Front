@@ -1,12 +1,14 @@
 // app/index.tsx
 import { AuthContext } from "@/utils/Context/AuthContext";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useContext, useState, useEffect } from "react";
 import "../global.css";
 import Login from "./Login";
+import { TouchableOpacity, View, Text } from "react-native";
+import { StatusBar } from 'expo-status-bar';
 
 
-
+/*
 
 export default function Home() {
   const { isLoggedIn } = useContext(AuthContext);
@@ -37,20 +39,28 @@ export default function Home() {
   return null;
 }
 
+*/
 
 
-/*
 
-export default function Home() {
-  const { isLoggedIn } = useContext(AuthContext);
+export default function WelcomeScreen() {
+  //const { isLoggedIn } = useContext(AuthContext);
 
   return (
     
     <View style={{ flex: 2, justifyContent: 'center', alignItems: 'center', backgroundColor: "white" }}>
       <StatusBar style="auto" />
-  
-     
+      <Text> Welcome Screeen </Text>
+    <TouchableOpacity>
+      <Link href={"/Login"}>
+        <Text> Go to Login </Text>
+      </Link>
+    </TouchableOpacity>
+    <TouchableOpacity>
+      <Link href={"/Register"}>
+        <Text> Go to Register </Text>
+      </Link>
+    </TouchableOpacity>
     </View>
   );
 }
-*/
