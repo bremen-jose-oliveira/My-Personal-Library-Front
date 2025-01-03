@@ -2,20 +2,23 @@
 
 import React from 'react';
 import { Stack } from 'expo-router';
-import "../global.css";
+import { AuthProvider } from '@/utils/Context/AuthContext';
+import { BookProvider } from '@/utils/Context/BookContext';
 
 
-export default function RootLayout() {
+export default function Layout() {
 
 
   return (
-
+ <AuthProvider>
+      <BookProvider>
           <Stack>
             <Stack.Screen name='(tabs)' options={{headerShown:false}} />
-            <Stack.Screen name="Login" options={{presentation:'modal'}} />
-            <Stack.Screen name="Register" options={{presentation:'modal'}} />
+            <Stack.Screen name="Login/index" options={{presentation:'modal'}} />
+            <Stack.Screen name="Register/index" options={{presentation:'modal'}} />
           </Stack>
      
-
+ </BookProvider>
+    </AuthProvider>
   );
 }

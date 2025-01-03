@@ -1,7 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { Alert } from 'react-native';
-
+import { Alert, ActivityIndicator } from 'react-native';
+import { storeToken, getToken, removeToken } from './storageUtils'; 
 
 interface AuthContextProps {
   isLoggedIn: boolean;
@@ -11,7 +10,7 @@ interface AuthContextProps {
 }
 
 export const AuthContext = createContext<AuthContextProps>({
-  isLoggedIn: false, 
+  isLoggedIn: false,
   login: async () => {},
   logout: () => {},
   createUser: async () => {},
@@ -19,51 +18,53 @@ export const AuthContext = createContext<AuthContextProps>({
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loading, setLoading] = useState(true); // Track loading state
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        const token = await AsyncStorage.getItem('token');
-        setIsLoggedIn(!!token); // Set based on token presence
+        const token = await getToken();
+        setIsLoggedIn(!!token);
       } catch (error) {
-        console.error("Error checking login status:", error);
+        console.error('Error checking login status:', error);
       } finally {
-        setLoading(false); // Done checking
+        setLoading(false);
       }
     };
     checkLoginStatus();
   }, []);
 
   const login = async (username: string, password: string) => {
-
-
-    
     try {
       const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/users/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
-        credentials: 'include',
       });
-
-      if (!response.ok) throw new Error('Login failed');
-
+  
+      if (!response.ok) throw new Error('Invalid credentials');
+  
       const data = await response.json();
-      await AsyncStorage.setItem('token', data.token);
+  
+  
+      await storeToken(data.token);
+      const storedToken = await getToken();
+
+  
       setIsLoggedIn(true);
-    } catch (error) {
-      console.error("Login error:", error);
-      Alert.alert('Error', error.message);
+    } catch (error: any) {
+      console.error('Login error:', error);
+      Alert.alert('Login Failed', error.message || 'An error occurred');
     }
   };
+  
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem('token');
+      await removeToken();
       setIsLoggedIn(false);
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error('Logout error:', error);
     }
   };
 
@@ -78,13 +79,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!response.ok) throw new Error('Registration failed');
 
       Alert.alert('Registration Successful', 'Welcome!');
-      await login(username, password); // Login after registration
-    } catch (error) {
-      console.error("Registration error:", error);
-      Alert.alert('Error', error.message);
+      await login(username, password);
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      Alert.alert('Error', error.message || 'An error occurred');
     }
   };
 
+  if (loading) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
 
   return (
     <AuthContext.Provider value={{ isLoggedIn, login, logout, createUser }}>

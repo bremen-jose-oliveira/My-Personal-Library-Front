@@ -1,23 +1,32 @@
 // app/DisplayBooks/index.tsx
 import { useBookContext } from '@/utils/Context/BookContext';
-import React from 'react';
-import { View, Text, Image, FlatList, ActivityIndicator, Button } from 'react-native';
-
-
+import React, { useState } from 'react';
+import { View, Text, Image, FlatList, ActivityIndicator, Button, RefreshControl } from 'react-native';
 
 export default function DisplayBooks() {
-  const { books, deleteBook, fetchBooks } = useBookContext();
+  const { books, deleteBook, fetchCurrentUserBooks } = useBookContext();
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Function to handle refresh
+  const onRefresh = () => {
+    setRefreshing(true);
+    try {
+       fetchCurrentUserBooks(); 
+    } catch (error) {
+      console.error('Failed to refresh books', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const handleDeleteBook = (id: number) => {
     deleteBook(id);
   };
 
-
   return (
     <FlatList
       data={books}
-     keyExtractor={(book) => (book.id ? book.id.toString() : Math.random().toString())} // Use random key as fallback
-
+      keyExtractor={(book) => (book.id ? book.id.toString() : Math.random().toString())} // Use random key as fallback
       renderItem={({ item: book }) => (
         <View className="flex-row bg-white mb-4 p-4 rounded-lg boxShadow-lg">
           {book.cover ? (
@@ -39,6 +48,7 @@ export default function DisplayBooks() {
           </View>
         </View>
       )}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     />
   );
 }

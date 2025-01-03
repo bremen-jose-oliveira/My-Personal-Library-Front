@@ -16,7 +16,7 @@ interface Book {
 
 interface BookContextProps {
   books: Book[];
-  fetchBooks: () => void;
+  fetchCurrentUserBooks: () => void;
   addBook: (book: Omit<Book, 'id'>) => Promise<void>;
   deleteBook: (id: number) => Promise<void>;
 }
@@ -101,7 +101,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify(book),
       });
       if (response.ok) {
-        fetchBooks();
+        fetchCurrentUserBooks();
       } else {
         console.error('Failed to add book');
       }
@@ -131,11 +131,11 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    fetchBooks();
+    fetchCurrentUserBooks();
   }, []);
 
   return (
-    <BookContext.Provider value={{ books, fetchBooks, addBook, deleteBook }}>
+    <BookContext.Provider value={{ books ,fetchCurrentUserBooks, addBook, deleteBook }}>
       {children}
     </BookContext.Provider>
   );
