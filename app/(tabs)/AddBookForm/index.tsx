@@ -2,7 +2,7 @@
 import BarcodeScanner from '@/components/BarcodeScanner';
 import { useBookContext } from '@/utils/Context/BookContext';
 import React, { useState } from 'react';
-import { View, TextInput, Button, FlatList, Text, TouchableOpacity, Image, Alert, Modal } from 'react-native';
+import { View, TextInput, Button, FlatList, Text, TouchableOpacity, Image, Alert, Modal, Platform } from 'react-native';
 interface Book {
   id: number;
   cover: string | null;
@@ -74,8 +74,13 @@ export default function AddBookForm() {
         style={{ borderColor: 'gray', borderWidth: 1, padding: 10, marginBottom: 20 }}
       />
       <Button title="Search" onPress={() => fetchBooks(searchQuery)} />
-      <Button title="Open Barcode Scanner" onPress={() => setScannerVisible(true)} />
 
+              {/* Render "Open Barcode Scanner" only if not on iOS Web */}
+      {Platform.OS !== 'web' && (
+        <Button title="Open Barcode Scanner" onPress={() => setScannerVisible(true)} />
+      )}
+
+    
       {searchResults.length > 0 && (
         <FlatList
           data={searchResults}
