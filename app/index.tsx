@@ -64,7 +64,7 @@ export default function WelcomeScreen() {
 
             <SocialLoginButtons emailHref="/Register" />
 
-            <Text style={{ marginTop: 20, fontSize: 14, color: "black", textAlign: "center" }}>
+            <Text style={{ marginTop: 5 ,marginBottom:35, fontSize: 14, color: "black", textAlign: "center" }}>
               Have an Account?{" "}
               <Link href="/Login" asChild>
                 <TouchableOpacity>

@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Href, Link } from "expo-router";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import GoogleLogo from "../assets/images/google-icon.svg";
+import "../global.css";
 
 type Props = {
   emailHref: Href;
@@ -13,27 +14,92 @@ const SocialLoginButtons = (props: Props) => {
   const { emailHref } = props;
 
   return (
-    <View className="self-stretch">
-      <Animated.View className="self-stretch" entering={FadeInDown.delay(300).duration(500)}>
+    <View style={{
+      alignSelf: 'stretch',
+    }}>
+      <Animated.View
+        style={{
+          alignSelf: "stretch",
+        }}
+        entering={FadeInDown.delay(300).duration(500)}
+      >
         <Link href={emailHref} asChild>
-          <TouchableOpacity className="flex-row items-center justify-center border border-gray-400 p-2 rounded-full gap-2 mb-4">
+          <TouchableOpacity
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              borderWidth: 1, // equivalent to StyleSheet.hairlineWidth
+              borderColor: "#666",
+              padding: 10,
+              borderRadius: 25,
+              gap: 5,
+              marginBottom: 15,
+            }}
+          >
             <Ionicons name="mail-outline" size={20} color="black" />
-            <Text className="text-sm font-semibold text-black">Continue with Email</Text>
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: "600",
+                color: "#333",
+              }}
+            >
+              Continue with Email
+            </Text>
           </TouchableOpacity>
         </Link>
       </Animated.View>
 
-      <Animated.View className="self-stretch" entering={FadeInDown.delay(700).duration(500)}>
-        <TouchableOpacity className="flex-row items-center justify-center border border-gray-400 p-2 rounded-full gap-2 mb-4">
+      <Animated.View
+        style={{
+          alignSelf: "stretch",
+        }}
+        entering={FadeInDown.delay(700).duration(500)}
+      >
+        <TouchableOpacity
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            borderWidth: 1,
+            borderColor: "#666",
+            padding: 10,
+            borderRadius: 25,
+            gap: 5,
+            marginBottom: 15,
+          }}
+        >
           <GoogleLogo width={20} height={20} />
-          <Text className="text-sm font-semibold text-black">Continue with Google</Text>
+          <Text style={{ fontSize: 14, fontWeight: "600", color: "#333" }}>
+            Continue with Google
+          </Text>
         </TouchableOpacity>
       </Animated.View>
 
-      <Animated.View className="self-stretch" entering={FadeInDown.delay(1100).duration(500)}>
-        <TouchableOpacity className="flex-row items-center justify-center border border-gray-400 p-2 rounded-full gap-2 mb-4">
+      <Animated.View
+        style={{
+          alignSelf: "stretch",
+        }}
+        entering={FadeInDown.delay(1100).duration(500)}
+      >
+        <TouchableOpacity
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            borderWidth: 1,
+            borderColor: "#666",
+            padding: 10,
+            gap: 5,
+            borderRadius: 25,
+            marginBottom: 15,
+          }}
+        >
           <Ionicons name="logo-apple" size={20} color="black" />
-          <Text className="text-sm font-semibold text-black">Continue with Apple</Text>
+          <Text style={{ fontSize: 14, fontWeight: "600", color: "#333" }}>
+            Continue with Apple
+          </Text>
         </TouchableOpacity>
       </Animated.View>
     </View>

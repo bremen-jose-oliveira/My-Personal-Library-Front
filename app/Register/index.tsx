@@ -8,6 +8,7 @@ import Ioicons from "react-native-vector-icons/Ionicons";
 
 export default function Register() {
   const { createUser } = useContext(AuthContext);
+  const [secureText, setSecureText] = useState(true);
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -70,7 +71,7 @@ export default function Register() {
         />
 
         <InputField
-          secureTextEntry
+          secureTextEntry={secureText}
           value={password}
           onChangeText={setPassword}
           placeholder="Enter Password..."
@@ -78,19 +79,32 @@ export default function Register() {
         />
 
         <InputField
-          secureTextEntry
+          secureTextEntry={secureText}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           placeholder="Confirm Password..."
           placeholderTextColor="gray"
         />
+        <TouchableOpacity onPress={() => setSecureText(!secureText)}>
+          <Text
+            style={{
+              color: "#bf471b",
+              fontWeight: "600",
+              marginBottom: 20,
+            }}
+          >
+            {secureText ? "Show Password" : "Hide Password"}
+          </Text>
+          
+        </TouchableOpacity>
 
         {passwordError && (
           <Text className="text-red-500 mt-1 mb-2">{passwordError}</Text>
         )}
 
         <TouchableOpacity
-          className="bg-blue-500 px-4 py-3 w-full items-center rounded mb-8"
+         style={{  backgroundColor: "#bf471b", alignItems:"center", borderRadius: 5, alignSelf: "stretch",   paddingVertical: 14,paddingHorizontal: 18,  marginBottom: 30,}}
+       
           onPress={handleRegister}
         >
           <Text className="text-white text-lg font-semibold">Register</Text>
@@ -100,7 +114,7 @@ export default function Register() {
           Have an Account?{" "}
           <Link href="/Login" asChild>
             <TouchableOpacity>
-              <Text className="text-blue-500 font-semibold">Sign In</Text>
+              <Text  style={{  color: "#bf471b"}}>Sign In</Text>
             </TouchableOpacity>
           </Link>
         </Text>

@@ -9,9 +9,11 @@ import React from "react";
 
 export default function Login() {
   const { login } = useContext(AuthContext);
+    const [secureText, setSecureText] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
+  
 
   const handleLogin = async () => {
     if (!username || !password) {
@@ -55,16 +57,27 @@ export default function Login() {
         />
 
         <InputField
-          secureTextEntry
+           secureTextEntry={secureText}
           value={password}
           onChangeText={setPassword}
           placeholder="Enter Password..."
           placeholderTextColor="gray"
         />
-
+   <TouchableOpacity onPress={() => setSecureText(!secureText)}>
+          <Text
+            style={{
+              color: "#bf471b",
+              fontWeight: "600",
+              marginBottom: 20,
+            }}
+          >
+            {secureText ? "Show Password" : "Hide Password"}
+          </Text>
+          
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={handleLogin}
-          className="bg-blue-500 px-4 py-3 w-full items-center rounded mb-8"
+          style={{  backgroundColor: "#bf471b", alignItems:"center", borderRadius: 5, alignSelf: "stretch",   paddingVertical: 14,paddingHorizontal: 18,  marginBottom: 30,}}
         >
           <Text className="text-white text-lg font-semibold">Sign In</Text>
         </TouchableOpacity>
@@ -73,7 +86,7 @@ export default function Login() {
           Don't have an Account?{" "}
           <Link href="/Register" asChild>
             <TouchableOpacity>
-              <Text className="text-blue-500 font-semibold">Sign Up</Text>
+               <Text  style={{  color: "#bf471b"}}>Sign Up</Text>
             </TouchableOpacity>
           </Link>
         </Text>
