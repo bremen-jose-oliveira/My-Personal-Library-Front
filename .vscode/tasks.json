@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "npm install react-native-svg-transformer@latest",
+			"command": "npm",
+			"args": [
+				"install",
+				"react-native-svg-transformer@latest"
+			],
+			"presentation": {
+				"reveal": "silent"
+			}
+		}
+	]
+}
