@@ -11,8 +11,12 @@ import { Ionicons } from "@expo/vector-icons";
 import GoogleLogo from '@/assets/images/google-icon.svg';
 import SocialLoginButtons from "@/components/SocialLoginButtons";
 
+
+
+
 export default function WelcomeScreen() {
   return (
+    
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <ImageBackground

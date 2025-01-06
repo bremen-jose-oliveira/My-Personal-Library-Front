@@ -31,6 +31,7 @@
     "expo-status-bar": "~2.0.0",
     "expo-system-ui": "~4.0.5",
     "expo-web-browser": "~14.0.1",
+    "identity-obj-proxy": "^3.0.0",
     "metro": "^0.81.0",
     "metro-core": "^0.81.0",
     "nativewind": "^4.1.21",

@@ -9,8 +9,10 @@ import { Tabs, router } from 'expo-router';
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
+
 function AppTabs() {
   const { logout } = useContext(AuthContext); // Use context here after it's properly initialized
+
 
   const handleLogout = () => {
     if (Platform.OS === 'web') {
