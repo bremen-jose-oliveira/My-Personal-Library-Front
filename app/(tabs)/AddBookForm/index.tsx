@@ -73,7 +73,7 @@ export default function AddBookForm() {
         onChangeText={setSearchQuery}
         style={{ borderColor: 'gray', borderWidth: 1, padding: 10, marginBottom: 20 }}
       />
-      <Button title="Search" onPress={() => fetchBooks(searchQuery)} />
+      <Button title="Search" onPress={() => fetchBooks(searchQuery)} color='#bf471b'/>
 
               {/* Render "Open Barcode Scanner" only if not on iOS Web */}
       {Platform.OS !== 'web' && (
@@ -106,14 +106,14 @@ export default function AddBookForm() {
           <Text style={{ fontWeight: 'bold' }}>Selected Book:</Text>
           <Text>Title: {selectedBook.volumeInfo.title}</Text>
           <Text>Author: {selectedBook.volumeInfo.authors.join(', ')}</Text>
-          <Button title="Add Book" onPress={handleAddBook} />
+          <Button title="Add Book" onPress={handleAddBook} color='#bf471b' />
         </View>
       )}
 
       <Modal visible={scannerVisible} animationType="slide">
         <View style={{ flex: 1 }}>
           <BarcodeScanner onISBNScanned={handleISBNScanned} />
-          <Button title="Close Scanner" onPress={() => setScannerVisible(false)} />
+          <Button title="Close Scanner" onPress={() => setScannerVisible(false)} color='#bf471b'/>
         </View>
       </Modal>
     </View>

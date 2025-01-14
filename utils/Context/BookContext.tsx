@@ -29,18 +29,23 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchCurrentUserBooks = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        throw new Error('Token is missing or expired');
+      }
+  
       const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/books/my`, {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',  
-          'Authorization': `Bearer ${token}`,  
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
       });
+  
       if (!response.ok) {
-        throw new Error('Failed to fetch books');
+        throw new Error(`Failed to fetch books: ${response.statusText}`);
       }
+  
       const data: Book[] = await response.json();
-
       const booksWithCovers = await Promise.all(
         data.map(async (book) => {
           if (!book.cover) {
@@ -50,13 +55,13 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return book;
         })
       );
-
+  
       setBooks(booksWithCovers);
     } catch (error) {
       console.error('Error fetching books:', error);
     }
   };
-
+  
 
   const fetchBooks = async () => {
     try {

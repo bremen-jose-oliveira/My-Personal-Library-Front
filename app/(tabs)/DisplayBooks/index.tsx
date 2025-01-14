@@ -8,19 +8,20 @@ export default function DisplayBooks() {
   const [refreshing, setRefreshing] = useState(false);
 
   // Function to handle refresh
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
     try {
-       fetchCurrentUserBooks(); 
+      await fetchCurrentUserBooks();
     } catch (error) {
-      console.error('Failed to refresh books', error);
-    } finally {
-      setRefreshing(false);
+      console.error('Error refreshing books:', error);
     }
+    setRefreshing(false); // Ensure this happens last
   };
+  
 
   const handleDeleteBook = (id: number) => {
     deleteBook(id);
+   
   };
 
   return (
@@ -44,7 +45,7 @@ export default function DisplayBooks() {
             <Text className="text-base text-gray-700 mb-1">Author: {book.author}</Text>
             <Text className="text-sm text-gray-600">Year: {book.year}</Text>
             <Text className="text-sm text-gray-600">Publisher: {book.publisher}</Text>   
-            <Button title="Delete Book" onPress={() => handleDeleteBook(book.id)} />
+            <Button title="Delete Book" onPress={() => handleDeleteBook(book.id)}  color='#bf471b' />
           </View>
         </View>
       )}

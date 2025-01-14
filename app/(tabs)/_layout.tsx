@@ -40,13 +40,15 @@ function AppTabs() {
   };
 
   return (
-    <Tabs>
+    <Tabs >
       <Tabs.Screen
         name="index"
         options={{
           headerTitle: "Home",
           tabBarLabel: "Home",
-          headerRight: () => <Button title="Logout" onPress={handleLogout} />,
+          tabBarActiveTintColor: '#bf471b',
+          headerRight: () => <Button title="Logout" onPress={handleLogout} color='#bf471b'/>,
+          tabBarIcon: () => <MaterialCommunityIcons name="home" size={24} color="black" />,
         }}
       />
       <Tabs.Screen
@@ -54,14 +56,17 @@ function AppTabs() {
         options={{
           headerTitle: "My books",
           tabBarLabel: "My Books",
+          tabBarActiveTintColor: '#bf471b',
           tabBarIcon: () => <MaterialCommunityIcons name="bookshelf" size={24} color="black" />,
         }}
       />
       <Tabs.Screen
         name="AddBookForm/index"
+        
         options={{
           headerTitle: "Add a book",
           tabBarLabel: "Add a Book",
+          tabBarActiveTintColor: '#bf471b',
           tabBarIcon: () => <Entypo name="add-to-list" size={24} color="black" />,
         }}
       />
