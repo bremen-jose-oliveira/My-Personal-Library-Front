@@ -1,7 +1,7 @@
 // app/DisplayBooks/index.tsx
 import { useBookContext } from '@/utils/Context/BookContext';
 import React, { useState } from 'react';
-import { View, Text, Image, FlatList, ActivityIndicator, Button, RefreshControl } from 'react-native';
+import { View, Text, Image, FlatList, ActivityIndicator, Button, RefreshControl, Alert } from 'react-native';
 
 export default function DisplayBooks() {
   const { books, deleteBook, fetchCurrentUserBooks } = useBookContext();
@@ -20,14 +20,21 @@ export default function DisplayBooks() {
   
 
   const handleDeleteBook = (id: number) => {
-    deleteBook(id);
-   
+    Alert.alert(
+      'Delete Book',
+      'Are you sure you want to delete this book?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', onPress: () => deleteBook(id), style: 'destructive' },
+      ]
+    );
   };
+  
 
   return (
     <FlatList
       data={books}
-      keyExtractor={(book) => (book.id ? book.id.toString() : Math.random().toString())} // Use random key as fallback
+      keyExtractor={(book) => (book.id ? book.id.toString() : Math.random().toString())} 
       renderItem={({ item: book }) => (
         <View className="flex-row bg-white mb-4 p-4 rounded-lg boxShadow-lg">
           {book.cover ? (
@@ -50,6 +57,7 @@ export default function DisplayBooks() {
         </View>
       )}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+       keyboardShouldPersistTaps="handled"
     />
   );
 }
