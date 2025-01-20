@@ -4,19 +4,28 @@
     "slug": "my-personal-library-front",
     "version": "1.0.0",
     "orientation": "portrait",
-    
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
-      "infoPlist": {
-        "NSCameraUsageDescription": "This app needs access to your camera to scan barcodes."
-      },
+
+
+       "infoPlist": {
+        "NSCameraUsageDescription": "This app needs access to your camera to scan barcodes.",
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.958080376950-ov7dgq16sggjncpa7u5p4edesradrr0g"
+            ]
+          }
+        ]
+      }
+    },
+
       "bundleIdentifier": "app.netlify.p-lib"
     },
     "android": {
@@ -24,17 +33,16 @@
         "CAMERA"
       ],
       "adaptiveIcon": {
-      
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
       "bundler": "metro",
       "output": "static"
- 
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
@@ -42,9 +50,15 @@
     "extra": {
       "eas": {
         "projectId": "bb066308-1f75-49d3-afaa-b0e7d10de5b3"
+      },
+
+      "google": {
+        "iosClientId": "958080376950-ov7dgq16sggjncpa7u5p4edesradrr0g.apps.googleusercontent.com",
+        "googleClientId": "958080376950-ii8vapnkoq7r9s7ji8ps55fh09ie47m7.apps.googleusercontent.com",
+        "googleRedirectUri": "https://auth.expo.io/@jose_oliv/my-personal-library-front"
       }
     },
     "owner": "jose_oliv",
     "newArchEnabled": true
   }
-}
+

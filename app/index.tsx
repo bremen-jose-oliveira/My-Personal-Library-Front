@@ -1,12 +1,18 @@
+// app//index.tsx
+
 import { Link, Stack } from "expo-router";
 import "../global.css";
 import { TouchableOpacity, View, Text, ImageBackground } from "react-native";
 import Animated, { FadeInRight } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import React, { useContext } from "react";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
+import { useEffect } from 'react';
+import * as Linking from 'expo-linking';
+import { AuthContext } from "@/utils/Context/AuthContext";
 
 export default function WelcomeScreen() {
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />

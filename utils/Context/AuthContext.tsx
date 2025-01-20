@@ -7,6 +7,7 @@ interface AuthContextProps {
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   createUser: (username: string, email: string, password: string) => Promise<void>;
+  handleGoogleLogin: () => void;
 }
 
 export const AuthContext = createContext<AuthContextProps>({
@@ -14,6 +15,7 @@ export const AuthContext = createContext<AuthContextProps>({
   login: async () => {},
   logout: () => {},
   createUser: async () => {},
+  handleGoogleLogin: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -34,6 +36,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     checkLoginStatus();
   }, []);
 
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+  
+    if (token) {
+      storeToken(token)
+        .then(() => {
+          console.log('Token stored successfully');
+          setIsLoggedIn(true);
+        })
+        .catch(err => console.error('Failed to store token:', err));
+    }
+  }, []);
+
   const login = async (username: string, password: string) => {
     try {
       const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/users/login`, {
@@ -45,19 +61,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!response.ok) throw new Error('Invalid credentials');
   
       const data = await response.json();
-  
-  
       await storeToken(data.token);
-      const storedToken = await getToken();
-
-  
       setIsLoggedIn(true);
     } catch (error: any) {
       console.error('Login error:', error);
       Alert.alert('Login Failed', error.message || 'An error occurred');
     }
   };
-  
+
+  const handleGoogleLogin = () => {
+
+    window.location.href = `${process.env.EXPO_PUBLIC_API_URL}/oauth2/authorization/google`;
+  };
 
   const logout = async () => {
     try {
@@ -91,7 +106,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, login, logout, createUser }}>
+    <AuthContext.Provider value={{ isLoggedIn, handleGoogleLogin, login, logout, createUser }}>
       {children}
     </AuthContext.Provider>
   );
