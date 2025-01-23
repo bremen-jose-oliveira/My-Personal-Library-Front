@@ -135,9 +135,6 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  useEffect(() => {
-    fetchCurrentUserBooks();
-  }, []);
 
   return (
     <BookContext.Provider value={{ books ,fetchCurrentUserBooks, addBook, deleteBook }}>
