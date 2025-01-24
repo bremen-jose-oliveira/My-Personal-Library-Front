@@ -46,6 +46,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     checkLoginStatus();
   }, []);
 
+
+  const appleLogin = async () => {
+    if(Platform.OS === 'web') {
+      window.location.href = `${process.env.EXPO_PUBLIC_API_URL}/oauth2/authorization/apple`;
+      return;
+    }
+    try {
+      await promptAsync({
+        windowFeatures: { width: 500, height: 600 },
+      });
+    } catch (error) {
+      console.error('Google Login Error:', error);
+      Alert.alert('Google Login Failed', 'An error occurred during Google login.');
+    }
+  };
+
+
+/*
   const appleLogin = async () => {
     try {
 
@@ -84,7 +102,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         Alert.alert('Apple Sign In Error', e.message || 'An error occurred during Apple login.');
       }
     }
-  };
+  };*/
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: Platform.select({ 
