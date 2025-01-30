@@ -68,6 +68,7 @@ const SocialLoginButtons = (props: Props) => {
         }}
         entering={FadeInDown.delay(700).duration(500)}
       >
+       
         <TouchableOpacity
           style={{
             flexDirection: "row",
@@ -81,10 +82,6 @@ const SocialLoginButtons = (props: Props) => {
             marginBottom: 15,
           }}
           onPress={handleGoogleLogin}
-
-          //onPress={AppleLogin}
-          //  disabled={!request}
-          // onPress={() => {promptAsync();}}
         >
           <GoogleLogo width={20} height={20} />
           <Text style={{ fontSize: 14, fontWeight: "600", color: "#333" }}>
@@ -99,6 +96,8 @@ const SocialLoginButtons = (props: Props) => {
         }}
         entering={FadeInDown.delay(1100).duration(500)}
       >
+
+         {/*
        <TouchableOpacity
           style={{
             flexDirection: "row",
@@ -119,6 +118,10 @@ const SocialLoginButtons = (props: Props) => {
             Continue with Apple
           </Text>
         </TouchableOpacity>
+
+        */}
+
+
       </Animated.View>
     </View>
   );

@@ -97,6 +97,9 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addBook = async (book: Omit<Book, 'id'>) => {
     try {
       const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        throw new Error('Token is missing or expired');
+      }
       const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/books`, {
         method: 'POST',
         headers: {
@@ -115,25 +118,47 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const deleteBook = async (id: number) => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/books/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json', 
-          'Authorization': `Bearer ${token}`,   
-        },
-      });
-      if (response.ok) {
-        setBooks((prevBooks) => prevBooks.filter((book) => book.id !== id));
-      } else {
-        console.error('Failed to delete book');
+const deleteBook = async (id: number) => {
+  try {
+    console.log(`Attempting to delete book with ID: ${id}`);
+
+    const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        throw new Error('Token is missing or expired');
       }
-    } catch (error) {
-      console.error('Error deleting book:', error);
+    if (!token) {
+      console.error('Token is missing or expired');
+      return;
     }
-  };
+    console.log(`Token: ${token}`);
+
+    const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/books/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const responseText = await response.text();
+    console.log(`Response status: ${response.status}`);
+    console.log(`Response text: ${responseText}`);
+
+    if (response.ok) {
+      console.log(`Book deleted successfully!`);
+      setBooks((prevBooks) => prevBooks.filter((book) => book.id !== id));
+    } else {
+      console.error(`Failed to delete book: ${responseText}`);
+    }
+  } catch (error) {
+    console.error('Error deleting book:', error);
+  }
+};
+
+  
+  useEffect(() => {
+    fetchCurrentUserBooks();
+  }, []);
 
 
   return (

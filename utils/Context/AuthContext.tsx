@@ -49,7 +49,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const appleLogin = async () => {
     if(Platform.OS === 'web') {
+      //window.location.href = `${process.env.EXPO_PUBLIC_API_URL}/api/users/oauth2/login`;
       window.location.href = `${process.env.EXPO_PUBLIC_API_URL}/oauth2/authorization/apple`;
+      
       return;
     }
     try {

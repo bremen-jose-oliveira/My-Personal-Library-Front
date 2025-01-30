@@ -1,7 +1,7 @@
 // app/DisplayBooks/index.tsx
 import { useBookContext } from '@/utils/Context/BookContext';
 import React, { useState } from 'react';
-import { View, Text, Image, FlatList, ActivityIndicator, Button, RefreshControl, Alert } from 'react-native';
+import { View, Text, Image, FlatList, ActivityIndicator, Button, RefreshControl, Alert, Platform } from 'react-native';
 
 export default function DisplayBooks() {
   const { books, deleteBook, fetchCurrentUserBooks } = useBookContext();
@@ -18,18 +18,24 @@ export default function DisplayBooks() {
     setRefreshing(false); // Ensure this happens last
   };
   
-
   const handleDeleteBook = (id: number) => {
-    Alert.alert(
-      'Delete Book',
-      'Are you sure you want to delete this book?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', onPress: () => deleteBook(id), style: 'destructive' },
-      ]
-    );
+    if (Platform.OS === 'web') {
+      // Web-specific alert
+      if (window.confirm('Are you sure you want to delete this book?')) {
+        deleteBook(id);
+      }
+    } else {
+      // Mobile-specific alert
+      Alert.alert(
+        'Delete Book',
+        'Are you sure you want to delete this book?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Delete', onPress: () => deleteBook(id), style: 'destructive' },
+        ]
+      );
+    }
   };
-  
 
   return (
     <FlatList
