@@ -145,12 +145,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('Error fetching user info:', error);
     }
   };
-
+  if(Platform.OS !== 'web') {
   useEffect(() => {
     if (response?.type === 'success') {
       fetchGoogleUser(response.authentication?.accessToken || '');
     }
   }, [response]);
+
+  }
 
   const handleGoogleLogin = async () => {
     if(Platform.OS === 'web') {
@@ -185,7 +187,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       Alert.alert('Login Failed', error.message || 'An error occurred');
     }
   };
-  
   
   /*
   const handleGoogleLogin = () => {
