@@ -2,7 +2,7 @@
 import { fetchCoverImage } from '@/utils/fetchBookData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 
 interface Book {
   id: number;
@@ -120,17 +120,12 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 const deleteBook = async (id: number) => {
   try {
-    console.log(`Attempting to delete book with ID: ${id}`);
+    
 
     const token = await AsyncStorage.getItem('token');
-      if (!token) {
-        throw new Error('Token is missing or expired');
-      }
     if (!token) {
-      console.error('Token is missing or expired');
-      return;
+      throw new Error('Token is missing or expired');
     }
-    console.log(`Token: ${token}`);
 
     const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/books/${id}`, {
       method: 'DELETE',
@@ -145,7 +140,7 @@ const deleteBook = async (id: number) => {
     console.log(`Response text: ${responseText}`);
 
     if (response.ok) {
-      console.log(`Book deleted successfully!`);
+  
       setBooks((prevBooks) => prevBooks.filter((book) => book.id !== id));
     } else {
       console.error(`Failed to delete book: ${responseText}`);
@@ -155,11 +150,11 @@ const deleteBook = async (id: number) => {
   }
 };
 
-  
+if (Platform.OS === 'web') {
   useEffect(() => {
     fetchCurrentUserBooks();
   }, []);
-
+}
 
   return (
     <BookContext.Provider value={{ books ,fetchCurrentUserBooks, addBook, deleteBook }}>

@@ -1,8 +1,10 @@
 // app/AddBookForm/index.tsx
 import BarcodeScanner from '@/components/BarcodeScanner';
 import { useBookContext } from '@/utils/Context/BookContext';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
-import { View, TextInput, Button, FlatList, Text, TouchableOpacity, Image, Alert, Modal, Platform } from 'react-native';
+import { ScrollView } from 'react-native';
+import { View, TextInput, Button, FlatList, Text, TouchableOpacity, Image, Alert, Modal, Platform, ImageBackground } from 'react-native';
 interface Book {
   id: number;
   cover: string | null;
@@ -16,20 +18,39 @@ export default function AddBookForm() {
   const { addBook } = useBookContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [selectedBook, setSelectedBook] = useState(null);
+  const [selectedBook, setSelectedBook] = useState<any>(null);
   const [scannerVisible, setScannerVisible] = useState(false);
+  const [startIndex, setStartIndex] = useState(0);
+const [loading, setLoading] = useState(false);
+
 
   // Fetch book data based on ISBN or search query
-  const fetchBooks = async (query: string) => {
-    const googleBooksApiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=10`;
-
+  const fetchBooks = async (query: string, reset: boolean = false) => {
+    if (loading) return;
+    setLoading(true);
+  
+    const googleBooksApiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=40&startIndex=${reset ? 0 : startIndex}`;
+  
     try {
       const response = await fetch(googleBooksApiUrl);
       const data = await response.json();
-      setSearchResults(data.items || []);
+      
+      setSearchResults(prevResults => {
+        const newResults = data.items || [];
+        const uniqueResults = [...prevResults, ...newResults].reduce((acc, book) => {
+          if (!acc.some((existingBook: { id: any; }) => existingBook.id === book.id)) {
+            acc.push(book);
+          }
+          return acc;
+        }, []);
+        return reset ? newResults : uniqueResults;
+      });
+      setStartIndex(prevIndex => reset ? 40 : prevIndex + 40);
     } catch (error) {
       console.error('Error fetching books:', error);
       Alert.alert('Error', 'Failed to fetch book data. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -52,11 +73,11 @@ export default function AddBookForm() {
   
     const bookData:Book= {
       title: selectedBook.volumeInfo.title,
-      author: selectedBook.volumeInfo.authors.join(', '),
+      author: selectedBook.volumeInfo.authors?.join(", ") || "Unknown Author",
       year: selectedBook.volumeInfo.publishedDate ? selectedBook.volumeInfo.publishedDate.substring(0, 4) : '',
       publisher: selectedBook.volumeInfo.publisher || '',
       cover: selectedBook.volumeInfo.imageLinks?.thumbnail || '',
-      id: 0,
+      id: selectedBook.identifier,
       rating: 0
     };
 
@@ -66,48 +87,89 @@ export default function AddBookForm() {
   };
 
   return (
-    <View style={{ padding: 20 }}>
+      <ImageBackground
+          source={require("@/assets/images/Background.jpg")}
+          style={{
+            flex: 1, // Take full screen
+            width: "100%", // Make sure it spans full width
+            height: "100%", // Make sure it spans full height
+            justifyContent: "center", // Center content vertically
+            alignItems: "center", // Center content horizontally
+          }}
+          resizeMode="cover" // Ensures the image covers the screen
+        >
+          <LinearGradient
+            colors={["transparent", "rgba(255,255,255,0.9)"]}
+            style={{
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: 0,
+              justifyContent: "flex-start",
+            }}
+          >
+    <View style={{flex:1, padding: 20 }}>
       <TextInput
         placeholder="Search for a book..."
         value={searchQuery}
         onChangeText={setSearchQuery}
-        style={{ borderColor: 'gray', borderWidth: 1, padding: 10, marginBottom: 20 }}
+        style={{ borderColor: 'gray',  backgroundColor: "rgba(0,0,0,0.4)", padding: 10, marginBottom: 20 ,fontSize: 15 ,borderRadius: 8, color: "#f0dcc7"}}
       />
-      <Button title="Search" onPress={() => fetchBooks(searchQuery)} color='#bf471b'/>
-
+    <Button title="Search" onPress={() => {
+  setStartIndex(0);
+  fetchBooks(searchQuery, true);
+}} color='#bf471b'/>
               {/* Render "Open Barcode Scanner" only if not on iOS Web */}
       {Platform.OS !== 'web' && (
         <Button title="Open Barcode Scanner" onPress={() => setScannerVisible(true)} />
       )}
 
     
-      {searchResults.length > 0 && (
-        <FlatList
-          data={searchResults}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => handleBookSelect(item)}>
-              <View style={{ flexDirection: 'row', padding: 10, alignItems: 'center' }}>
-                {item.volumeInfo.imageLinks?.thumbnail ? (
-                  <Image source={{ uri: item.volumeInfo.imageLinks.thumbnail }} style={{ width: 50, height: 75, marginRight: 10 }} />
-                ) : null}
-                <View>
-                  <Text style={{ fontWeight: 'bold' }}>{item.volumeInfo.title}</Text>
-                  <Text>{item.volumeInfo.authors?.join(', ') || 'Unknown Author'}</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          )}
-        />
-      )}
-
+{searchResults.length > 0 && (
+  <FlatList 
+    data={searchResults}
+    keyExtractor={(item: any, index: number) => 
+      `${item.id || item.volumeInfo?.industryIdentifiers?.[0]?.identifier || index}`
+    }
+    
+    renderItem={({ item }) => (
+      <TouchableOpacity onPress={() => handleBookSelect(item)}>
+        <View style={{ flexDirection: 'row', padding: 10, alignItems: 'center' }}>
+          {item.volumeInfo.imageLinks?.thumbnail ? (
+            <Image source={{ uri: item.volumeInfo.imageLinks.thumbnail }} style={{ width: 50, height: 75, marginRight: 10 }} />
+          ) : null}
+          <View style={{ flex: 1, padding: 17, borderRadius: 2, borderBlockColor: "#f0dcc7", backgroundColor: "rgba(0,0,0,0.4)" }}>
+            <Text style={{ fontWeight: 'bold', color: "#f0dcc7" }}>{item.volumeInfo.title}</Text>
+            <Text style={{ color: "#f0dcc7" }}>{item.volumeInfo.authors?.join(', ') || 'Unknown Author'}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    )}
+    contentContainerStyle={{ paddingBottom: 100 }} // Extra space for scrolling
+    style={{ height: 800 }} // 👈 Ensure it has height
+    keyboardShouldPersistTaps="handled"
+  />
+)}
+        
       {selectedBook && (
-        <View style={{ marginTop: 20 }}>
-          <Text style={{ fontWeight: 'bold' }}>Selected Book:</Text>
-          <Text>Title: {selectedBook.volumeInfo.title}</Text>
-          <Text>Author: {selectedBook.volumeInfo.authors.join(', ')}</Text>
+        
+        <View style={{  marginTop: 20, backgroundColor: "rgba(0,0,0,0.4)", padding: 8, borderRadius: 8 ,alignItems: 'center'}}>
+          {selectedBook.volumeInfo.imageLinks?.thumbnail ? (
+            <Image source={{ uri: selectedBook.volumeInfo.imageLinks.thumbnail }} style={{ width: 65, height: 90, marginRight: 10 }} />
+          ) : null}
+          <Text style={{ fontWeight: 'bold',color: "#f0dcc7",marginBottom:5}} >Title: {selectedBook.volumeInfo.title|| ''}</Text>
+          <Text style={{ fontWeight: 'bold', color: "#f0dcc7", marginBottom: 5 }}>
+  Author: {selectedBook.volumeInfo.authors?.join(', ') || 'Unknown Author'}
+</Text>
+          <Text style={{ fontWeight: 'bold',color: "#f0dcc7",marginBottom:5}} >Publisher: {selectedBook.volumeInfo.publisher|| ''}</Text>
+          <Text style={{ fontWeight: 'bold',color: "#f0dcc7",marginBottom:5}} >publishedDate: {selectedBook.volumeInfo.publishedDate|| ''}</Text>
+          <Text style={{ fontWeight: 'bold',color: "#f0dcc7",marginBottom:5}} >Categories: {selectedBook.volumeInfo.categories|| ''}</Text>
+          <Text style={{ fontWeight: 'bold',color: "#f0dcc7",marginBottom:5}} >Description: {selectedBook.volumeInfo.description|| ''}</Text>
+          
           <Button title="Add Book" onPress={handleAddBook} color='#bf471b' />
         </View>
+        
       )}
 
       <Modal visible={scannerVisible} animationType="slide">
@@ -117,5 +179,7 @@ export default function AddBookForm() {
         </View>
       </Modal>
     </View>
+       </LinearGradient>
+        </ImageBackground>
   );
 }

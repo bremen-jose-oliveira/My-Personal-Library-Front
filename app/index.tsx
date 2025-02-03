@@ -17,7 +17,7 @@ export default function WelcomeScreen() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <ImageBackground
-        source={require("@/assets/images/Background.jpg")}
+        source={require("@/assets/images/livraria-lello3.jpg")}
         style={{
           flex: 1, // Take full screen
           width: "100%", // Make sure it spans full width
@@ -28,7 +28,7 @@ export default function WelcomeScreen() {
         resizeMode="cover" // Ensures the image covers the screen
       >
         <LinearGradient
-          colors={["transparent", "rgba(255,255,255,0.5)", "rgba(255,255,255,1)"]}
+          colors={["transparent", "rgba(255,255,255,0.1)", "rgba(255,255,255,0.8)"]}
           style={{
             position: "absolute",
             top: 0,
