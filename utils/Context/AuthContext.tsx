@@ -12,7 +12,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 interface AuthContextProps {
   isLoggedIn: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   createUser: (username: string, email: string, password: string) => Promise<void>;
   handleGoogleLogin: () => void;
@@ -145,6 +145,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('Error fetching user info:', error);
     }
   };
+
   if(Platform.OS !== 'web') {
   useEffect(() => {
     if (response?.type === 'success') {
@@ -169,12 +170,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const login = async (username: string, password: string) => {
+  const login = async (email: string, password: string) => {
     try {
       const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/users/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }),
       });
 
       if (!response.ok) throw new Error('Invalid credentials');
@@ -193,6 +194,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     window.location.href = `${process.env.EXPO_PUBLIC_API_URL}/oauth2/authorization/google`;
   }*/
+
+    
   
 if(Platform.OS === 'web') {
   useEffect(() => {
@@ -210,6 +213,7 @@ if(Platform.OS === 'web') {
   }, []);
 
 }
+
   const logout = async () => {
     try {
       await removeToken();
@@ -229,9 +233,12 @@ if(Platform.OS === 'web') {
 
       if (!response.ok) throw new Error('Registration failed');
 
+
       Alert.alert('Registration Successful', 'Welcome!');
-      await login(username, password);
+      await login(email, password);
+      
     } catch (error: any) {
+      console.log("email", email);
       console.error('Registration error:', error);
       Alert.alert('Error', error.message || 'An error occurred');
     }

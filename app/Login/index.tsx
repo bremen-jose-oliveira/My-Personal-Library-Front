@@ -10,19 +10,19 @@ import React from "react";
 export default function Login() {
   const { login } = useContext(AuthContext);
     const [secureText, setSecureText] = useState(true);
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
   
 
   const handleLogin = async () => {
-    if (!username || !password) {
-      Alert.alert("Error", "Please enter both username and password.");
+    if (!email || !password) {
+      Alert.alert("Error", "Please enter both email and password.");
       return;
     }
 
     try {
-      await login(username, password);
+      await login(email, password);
       router.dismissAll();
       router.push("/(tabs)");
     } catch (error: any) {
@@ -49,9 +49,9 @@ export default function Login() {
         </Text>
 
         <InputField
-          value={username}
-          onChangeText={setUsername}
-          placeholder="Enter a Username"
+          value={email}
+          onChangeText={setEmail}
+          placeholder="Enter Email..."
           placeholderTextColor="gray"
           autoCapitalize="none"
         />

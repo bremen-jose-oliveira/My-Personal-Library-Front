@@ -17,7 +17,7 @@ export default function Register() {
   const [passwordError, setPasswordError] = useState(""); // for confirming passwords
 
   const handleRegister = async () => {
-    if (!username || !email || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword) {
       Alert.alert("Error", "Please fill out all fields.");
       return;
     }
@@ -30,7 +30,7 @@ export default function Register() {
     try {
       await createUser(username, email, password);
       router.dismissAll();
-      router.push("/");
+      router.push("/(tabs)");
     } catch (error) {
       Alert.alert("Error", "Failed to register");
     }
