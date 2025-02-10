@@ -12,6 +12,7 @@ interface Book {
   year: number;
   publisher: string;
   rating: number;
+  status: string;
 }
 
 interface BookContextProps {

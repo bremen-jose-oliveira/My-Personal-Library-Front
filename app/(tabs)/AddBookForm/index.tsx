@@ -17,6 +17,7 @@ import {
   Platform,
   ImageBackground,
 } from "react-native";
+
 interface Book {
   id: number;
   cover: string | null;
@@ -25,6 +26,7 @@ interface Book {
   year: number;
   publisher: string;
   rating: number;
+  status: string;
 }
 export default function AddBookForm() {
   const { addBook } = useBookContext();
@@ -101,6 +103,7 @@ export default function AddBookForm() {
       cover: selectedBook.volumeInfo.imageLinks?.thumbnail || "",
       id: selectedBook.identifier,
       rating: 0,
+      status: "unread",
     };
 
     addBook(bookData);

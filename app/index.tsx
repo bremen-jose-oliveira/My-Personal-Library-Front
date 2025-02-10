@@ -78,6 +78,15 @@ export default function WelcomeScreen() {
                 </TouchableOpacity>
               </Link>
             </Text>
+            
+            <Text style={{ marginTop: 5 ,marginBottom:35, fontSize: 14, color: "black", textAlign: "center" }}>
+              Forgot Passord?{" "}
+              <Link href="/ForgotPassword" asChild>
+                <TouchableOpacity>
+                  <Text style={{ color: "#FF6347", fontWeight: "600" }}>ResetPassword</Text>
+                </TouchableOpacity>
+              </Link>
+            </Text>
           </View>
         </LinearGradient>
       </ImageBackground>

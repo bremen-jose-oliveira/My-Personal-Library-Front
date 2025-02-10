@@ -45,6 +45,13 @@ export default function DisplayBooks() {
     }
   };
 
+  const statusMap: { [key: string]: string } = {
+    NOT_READ: "Not read",
+    READING: "Reading",
+    READ: "Finished",
+    // Add other statuses as needed
+  };
+
   return (
     <ImageBackground
       source={require("@/assets/images/Background.jpg")}
@@ -128,6 +135,10 @@ export default function DisplayBooks() {
                 <Text style={{ fontSize: 15, color: "#f0dcc7" }}>
                   Publisher: {book.publisher}
                 </Text>
+                <Text style={{ fontSize: 15, color: "#f0dcc7" }}>
+                  Status: {statusMap[book.status] || book.status}
+                </Text>
+
                 <Button
                   title="Delete Book"
                   onPress={() => handleDeleteBook(book.id)}

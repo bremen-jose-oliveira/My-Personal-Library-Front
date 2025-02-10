@@ -8,7 +8,7 @@ import { BookProvider } from "@/utils/Context/BookContext";
 import { Tabs, router } from "expo-router";
 import Entypo from "@expo/vector-icons/Entypo";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { AntDesign, FontAwesome } from "@expo/vector-icons";
+import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
 
 function AppTabs() {
   const { logout } = useContext(AuthContext); // Use context here after it's properly initialized
@@ -74,13 +74,13 @@ function AppTabs() {
         }}
       />
           <Tabs.Screen
-        name="UserProfile/index"
+        name="AccountSettings/index"
         options={{
-          headerTitle: "Profile",
-          tabBarLabel: "Profile",
+          headerTitle: "Account Settings",
+          tabBarLabel: "",
           tabBarActiveTintColor: "#bf471b",
           tabBarIcon: () => (
-            <FontAwesome name="user" size={24} color="black" />
+            <Ionicons name="settings-sharp" size={24} color="black" />
           ),
         }}
       />

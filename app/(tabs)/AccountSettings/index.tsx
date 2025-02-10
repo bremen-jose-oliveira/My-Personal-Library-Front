@@ -8,7 +8,7 @@ import { Alert, TouchableOpacity, View, Text } from "react-native";
 import Ioicons from "react-native-vector-icons/Ionicons";
 import { getToken } from "@/utils/Context/storageUtils";
 
-const UserProfile = () => {
+const AccountSettings = () => {
 
 
   const [secureText, setSecureText] = useState(true);
@@ -67,7 +67,6 @@ const UserProfile = () => {
 
 
 
-
 const handleUpdatePassword = async () => {
     if (password !== confirmPassword) {
         setPasswordError("Passwords do not match");
@@ -108,7 +107,7 @@ const handleUpdatePassword = async () => {
         <>
           <Stack.Screen
             options={{
-             headerTitle: "Profile",
+             headerTitle: "AccountSettings",
             }}
           />
     
@@ -129,7 +128,7 @@ const handleUpdatePassword = async () => {
            
             onPress={handleUpdateUsername}
             >
-              <Text className="text-white text-lg font-semibold">Safe</Text>
+              <Text className="text-white text-lg font-semibold">Update Username</Text>
             </TouchableOpacity>
          
      <Text className="text-2xl font-semibold tracking-wide text-black mb-12">
@@ -188,4 +187,4 @@ const handleUpdatePassword = async () => {
       );
 };
 
-export default UserProfile;
+export default AccountSettings;
