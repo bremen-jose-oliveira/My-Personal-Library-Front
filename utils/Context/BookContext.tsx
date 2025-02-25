@@ -1,19 +1,11 @@
 // context/BookContext.tsx
+import { Book } from '@/app/Interfaces/book';
 import { fetchCoverImage } from '@/utils/fetchBookData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { Alert, Platform } from 'react-native';
+import { Platform } from 'react-native';
 
-interface Book {
-  id: number;
-  cover: string | null;
-  title: string;
-  author: string;
-  year: number;
-  publisher: string;
-  rating: number;
-  status: string;
-}
+
 
 interface BookContextProps {
   books: Book[];
@@ -64,36 +56,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
   
 
-  const fetchBooks = async () => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/books`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',  
-          'Authorization': `Bearer ${token}`,  
-        },
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch books');
-      }
-      const data: Book[] = await response.json();
 
-      const booksWithCovers = await Promise.all(
-        data.map(async (book) => {
-          if (!book.cover) {
-            const coverUrl = await fetchCoverImage(book.title, book.author);
-            return { ...book, cover: coverUrl };
-          }
-          return book;
-        })
-      );
-
-      setBooks(booksWithCovers);
-    } catch (error) {
-      console.error('Error fetching books:', error);
-    }
-  };
 
   const addBook = async (book: Omit<Book, 'id'>) => {
     try {

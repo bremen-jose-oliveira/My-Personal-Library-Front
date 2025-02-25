@@ -6,6 +6,7 @@ import { AuthProvider } from '@/utils/Context/AuthContext';
 import { BookProvider } from '@/utils/Context/BookContext';
 import "../global.css";
 import * as Linking from "expo-linking";
+import { FriendProvider } from '@/utils/Context/FriendContext';
 
 
 
@@ -43,6 +44,7 @@ export default function Layout() {
 
   return (
  <AuthProvider>
+      <FriendProvider>
       <BookProvider>
           <Stack>
             <Stack.Screen name='(tabs)' options={{headerShown:false}} />
@@ -51,8 +53,8 @@ export default function Layout() {
             <Stack.Screen name="ForgotPassword" options={{presentation:'modal'}} />
             <Stack.Screen name="ResetPassword" options={{presentation:'modal'}} />
           </Stack>
-     
- </BookProvider>
+          </BookProvider>
+ </FriendProvider>
     </AuthProvider>
   );
 }

@@ -1,4 +1,5 @@
 // app/AddBookForm/index.tsx
+import { Book } from "@/app/Interfaces/book";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import { useBookContext } from "@/utils/Context/BookContext";
 import { LinearGradient } from "expo-linear-gradient";
@@ -18,16 +19,7 @@ import {
   ImageBackground,
 } from "react-native";
 
-interface Book {
-  id: number;
-  cover: string | null;
-  title: string;
-  author: string;
-  year: number;
-  publisher: string;
-  rating: number;
-  status: string;
-}
+
 export default function AddBookForm() {
   const { addBook } = useBookContext();
   const [searchQuery, setSearchQuery] = useState("");
@@ -102,8 +94,11 @@ export default function AddBookForm() {
       publisher: selectedBook.volumeInfo.publisher || "",
       cover: selectedBook.volumeInfo.imageLinks?.thumbnail || "",
       id: selectedBook.identifier,
+      isbn: selectedBook.volumeInfo.industryIdentifiers?.[0]?.identifier || "N/A",
+
+
       rating: 0,
-      status: "unread",
+      status: undefined
     };
 
     addBook(bookData);
@@ -263,6 +258,10 @@ export default function AddBookForm() {
           <Text style={{ fontWeight: "bold", color: "#f0dcc7", marginBottom: 5 }}>
             Description: {selectedBook.volumeInfo.description || ""}
           </Text>
+          <Text style={{ fontWeight: "bold", color: "#f0dcc7", marginBottom: 5 }}>
+            isbn: {selectedBook.volumeInfo.industryIdentifiers?.[0]?.identifier || "N/A"
+            }
+          </Text>
           <Button title="Add Book" onPress={handleAddBook} color="#bf471b" />
         </View>
       </ScrollView>
@@ -283,3 +282,4 @@ export default function AddBookForm() {
     </ImageBackground>
   );
 }
+ 

@@ -11,7 +11,7 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
 
 function AppTabs() {
-  const { logout } = useContext(AuthContext); // Use context here after it's properly initialized
+  const { logout } = useContext(AuthContext);
 
   const handleLogout = () => {
     if (Platform.OS === "web") {
@@ -62,6 +62,17 @@ function AppTabs() {
           ),
         }}
       />
+          <Tabs.Screen
+        name="Friends/index"
+        options={{
+          headerTitle: "Friends",
+          tabBarLabel: "Friends",
+          tabBarActiveTintColor: "#bf471b",
+          tabBarIcon: () => (
+            <MaterialCommunityIcons name="face-man-profile" size={24} color="black" />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="AddBookForm/index"
         options={{
@@ -69,11 +80,15 @@ function AppTabs() {
           tabBarLabel: "Add a Book",
           tabBarActiveTintColor: "#bf471b",
           tabBarIcon: () => (
-            <MaterialCommunityIcons name="book-plus-multiple" size={24} color="black" />
+            <MaterialCommunityIcons
+              name="book-plus-multiple"
+              size={24}
+              color="black"
+            />
           ),
         }}
       />
-          <Tabs.Screen
+      <Tabs.Screen
         name="AccountSettings/index"
         options={{
           headerTitle: "Account Settings",
@@ -85,7 +100,6 @@ function AppTabs() {
         }}
       />
     </Tabs>
-    
   );
 }
 

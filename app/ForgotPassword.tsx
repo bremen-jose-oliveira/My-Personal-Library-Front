@@ -18,7 +18,7 @@ export default function ForgotPassword() {
             body: JSON.stringify({ email }),
         });
 
-        const data = await response.json();
+        const data = await response.json();  
         Alert.alert("Check your email", data.message);
     } catch (error) {
       
