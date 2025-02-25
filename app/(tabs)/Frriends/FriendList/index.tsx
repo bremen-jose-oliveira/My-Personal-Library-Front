@@ -15,7 +15,7 @@ import {
   ImageBackground,
 } from "react-native";
 
-export default function Friends() {
+export default function FriendList() {
   const { friends, removeFriend, fetchCurrentUserFriends } = useFriendContext();
   const [refreshing, setRefreshing] = useState(false);
 

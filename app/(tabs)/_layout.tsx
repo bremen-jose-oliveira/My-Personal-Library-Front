@@ -51,43 +51,8 @@ function AppTabs() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="DisplayBooks/index"
-        options={{
-          headerTitle: "My books",
-          tabBarLabel: "My Books",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons name="bookshelf" size={24} color="black" />
-          ),
-        }}
-      />
-          <Tabs.Screen
-        name="Friends/index"
-        options={{
-          headerTitle: "Friends",
-          tabBarLabel: "Friends",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons name="face-man-profile" size={24} color="black" />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="AddBookForm/index"
-        options={{
-          headerTitle: "Add a book",
-          tabBarLabel: "Add a Book",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons
-              name="book-plus-multiple"
-              size={24}
-              color="black"
-            />
-          ),
-        }}
-      />
+   
+
       <Tabs.Screen
         name="AccountSettings/index"
         options={{
