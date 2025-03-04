@@ -46,14 +46,38 @@ function AppTabs() {
           headerRight: () => (
             <Button title="Logout" onPress={handleLogout} color="#bf471b" />
           ),
+      
+          
           tabBarIcon: () => (
             <MaterialCommunityIcons name="home" size={24} color="black" />
           ),
         }}
       />
-   
-
-      <Tabs.Screen
+           <Tabs.Screen
+        name="Library"
+        options={{
+          headerTitle: "Library", 
+          tabBarLabel: "Library", 
+          tabBarActiveTintColor: "#bf471b",
+          tabBarIcon: () => (
+            <MaterialCommunityIcons name="bank-outline" size={24} color="black" />
+          ),
+        }}
+      />
+  
+            <Tabs.Screen
+        name="Friends"
+        options={{
+          headerTitle: "Friends",
+          tabBarLabel: "Friends",
+          tabBarActiveTintColor: "#bf471b",
+          tabBarIcon: () => (
+            <MaterialCommunityIcons name="account-group" size={24} color="black" />
+          ),
+        }}
+      />
+ 
+          <Tabs.Screen
         name="AccountSettings/index"
         options={{
           headerTitle: "Account Settings",

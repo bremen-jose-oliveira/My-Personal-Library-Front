@@ -1,5 +1,5 @@
-// context/BookContext.tsx
-import { Book } from '@/app/Interfaces/book';
+
+import Book from '@/Interfaces/book';
 import { fetchCoverImage } from '@/utils/fetchBookData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useState, useEffect, useContext } from 'react';

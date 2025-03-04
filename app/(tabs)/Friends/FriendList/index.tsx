@@ -45,12 +45,6 @@ export default function FriendList() {
     }
   };
 
-  const statusMap: { [key: string]: string } = {
-    NOT_READ: "Not read",
-    READING: "Reading",
-    READ: "Finished",
-    // Add other statuses as needed
-  };
 
   return (
     <ImageBackground

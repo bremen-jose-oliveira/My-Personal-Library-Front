@@ -14,12 +14,14 @@
       "bundleIdentifier": "com.jose-oliv.mypersonallibraryfront",
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "This app needs access to your camera to scan barcodes."
+        "NSCameraUsageDescription": "This app needs access to your camera to scan barcodes.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "permissions": [
-        "CAMERA"
+        "CAMERA",
+        "android.permission.CAMERA"
       ],
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
