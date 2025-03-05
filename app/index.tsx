@@ -10,6 +10,8 @@ import SocialLoginButtons from "@/components/SocialLoginButtons";
 import { useEffect } from 'react';
 import * as Linking from 'expo-linking';
 import { AuthContext } from "@/utils/Context/AuthContext";
+import 'react-native-reanimated';
+
 
 export default function WelcomeScreen() {
 
