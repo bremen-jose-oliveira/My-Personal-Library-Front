@@ -46,7 +46,11 @@
           "iosUrlScheme": "com.googleusercontent.apps.958080376950-ov7dgq16sggjncpa7u5p4edesradrr0g"
         }
       ],
-      "expo-barcode-scanner"
+    [  "expo-camera",
+    {
+      "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera."
+    }]
+      
     ],
     "experiments": {
       "typedRoutes": true
