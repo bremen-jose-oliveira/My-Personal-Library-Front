@@ -43,11 +43,7 @@ function AppTabs() {
           headerTitle: "Home",
           tabBarLabel: "Home",
           tabBarActiveTintColor: "#bf471b",
-          headerRight: () => (
-            <Button title="Logout" onPress={handleLogout} color="#bf471b" />
-          ),
-      
-          
+
           tabBarIcon: () => (
             <MaterialCommunityIcons name="home" size={24} color="black" />
           ),
@@ -80,6 +76,11 @@ function AppTabs() {
           <Tabs.Screen
         name="AccountSettings/index"
         options={{
+          headerRight: () => (
+            <Button title="Logout" onPress={handleLogout} color="#bf471b" />
+          ),
+      
+          
           headerTitle: "Account Settings",
           tabBarLabel: "",
           tabBarActiveTintColor: "#bf471b",

@@ -20,7 +20,7 @@ const HomeScreen = () => {
     } catch (error) {
       console.error("Error refreshing books:", error);
     }
-    setRefreshing(false); // Ensure this happens last
+    setRefreshing(false); 
   };
 
   return (
