@@ -169,7 +169,8 @@ export default function AddBookForm() {
           {/* Render "Open Barcode Scanner" only if not on iOS Web */}
         
             <Button
-              title="Open Barcode Scanner"
+               color="#bf471b"
+              title="Open Scanner"
               onPress={() => setScannerVisible(true)}
             />
        

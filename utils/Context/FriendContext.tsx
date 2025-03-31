@@ -14,7 +14,7 @@ interface FriendContextProps {
   fetchFriendRequests: () => void;
   approveFriendRequest: (friendEmail: string) => Promise<void>;
   rejectFriendRequest: (friendEmail: string) => Promise<void>;
-  addFriend: (friend: Omit<Friend, 'id'>) => Promise<void>;
+  addFriend: (friendEmail: string) => Promise<void>;
   removeFriend: (id: number) => Promise<void>;
 }
 
@@ -46,7 +46,7 @@ export const FriendProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const data = await response.json();
       const formattedData: Friend[] = data.map((friendship:any) => ({
         id: friendship.id,
-        name: friendship.friendEmail, // Using friendEmail since name is missing
+        name: friendship.username,
         email: friendship.friendEmail,
         profilePicture: '', 
         friendshipStatus: friendship.friendshipStatus,
@@ -58,7 +58,8 @@ export const FriendProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
-  const addFriend = async ( friendEmail:any ) => {
+  const addFriend = async (friendEmail: string) => {
+  
     const token = await AsyncStorage.getItem('token');
     if (!token) {
       throw new Error('Token is missing or expired');
@@ -70,14 +71,13 @@ export const FriendProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ friendEmail }) // Make sure the key matches what the backend expects
+      body: JSON.stringify({ friendEmail }) 
     });
-  
+
     if (!response.ok) {
       const errorMessage = await response.text();
       throw new Error(`Failed to add friend: ${errorMessage}`);
     }
-  
   
     fetchCurrentUserFriends();
   };

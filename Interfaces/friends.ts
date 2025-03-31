@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 export default interface Friend {
     [x: string]: ReactNode;
     userEmail: ReactNode;
