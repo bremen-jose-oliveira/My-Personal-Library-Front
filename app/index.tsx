@@ -26,13 +26,13 @@ export default function WelcomeScreen() {
       <ImageBackground
         source={require("@/assets/images/livraria-lello3.jpg")}
         style={{
-          flex: 1, // Take full screen
-          width: "100%", // Make sure it spans full width
-          height: "100%", // Make sure it spans full height
-          justifyContent: "center", // Center content vertically
-          alignItems: "center", // Center content horizontally
+          flex: 1, 
+          width: "100%", 
+          height: "100%", 
+          justifyContent: "center", 
+          alignItems: "center",
         }}
-        resizeMode="cover" // Ensures the image covers the screen
+        resizeMode="cover"
       >
         <LinearGradient
           colors={["transparent", "rgba(255,255,255,0.1)", "rgba(255,255,255,0.8)"]}
@@ -42,9 +42,9 @@ export default function WelcomeScreen() {
             bottom: 0,
             left: 0,
             right: 0,
-            justifyContent: "flex-end", // Align items to the bottom of the screen
-            alignItems: "center", // Center horizontally
-            paddingBottom: 12, // Additional bottom padding
+            justifyContent: "flex-end", 
+            alignItems: "center",
+            paddingBottom: 12,
           }}
         >
           <View style={{ alignItems: "center", paddingHorizontal: 20 }}>
@@ -53,7 +53,7 @@ export default function WelcomeScreen() {
                 fontSize: 24,
                 fontWeight: "bold",
                 letterSpacing: 2.4,
-                color: "#FF6347", // Adjust color as per your theme
+                color: "#FF6347", 
                 marginBottom: 5,
               }}
               entering={FadeInRight.delay(300).duration(300).springify()}
