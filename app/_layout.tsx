@@ -1,14 +1,12 @@
 // app/_layout.tsx
 
-import React, { useEffect, useState } from 'react';
-import { Stack, useRouter } from 'expo-router';
-import { AuthProvider } from '@/utils/Context/AuthContext';
-import { BookProvider } from '@/utils/Context/BookContext';
+import React, { useEffect, useState } from "react";
+import { Stack, useRouter } from "expo-router";
+import { AuthProvider } from "@/utils/Context/AuthContext";
+import { BookProvider } from "@/utils/Context/BookContext";
 import "../global.css";
 import * as Linking from "expo-linking";
-import { FriendProvider } from '@/utils/Context/FriendContext';
-
-
+import { FriendProvider } from "@/utils/Context/FriendContext";
 
 export default function Layout() {
   const router = useRouter();
@@ -38,23 +36,39 @@ export default function Layout() {
       }
     });
 
-    return () => subscription.remove(); 
-  }, [isMounted]); 
-
+    return () => subscription.remove();
+  }, [isMounted]);
 
   return (
- <AuthProvider>
+    <AuthProvider>
       <FriendProvider>
-      <BookProvider>
+        <BookProvider>
           <Stack>
-            <Stack.Screen name='(tabs)' options={{headerShown:false}} />
-            <Stack.Screen name="Login/index" options={{presentation:'modal'}} />
-            <Stack.Screen name="Register/index" options={{presentation:'modal'}} />
-            <Stack.Screen name="ForgotPassword" options={{presentation:'modal'}} />
-            <Stack.Screen name="ResetPassword" options={{presentation:'modal'}} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false ,headerTitle: `` }} />
+            <Stack.Screen
+              name="Login/index"
+              options={{ presentation: "modal" }}
+            />
+            <Stack.Screen
+              name="Register/index"
+              options={{ presentation: "modal" }}
+            />
+            <Stack.Screen
+              name="ForgotPassword"
+              options={{ presentation: "modal" }}
+            />
+            <Stack.Screen
+              name="ResetPassword"
+              options={{ presentation: "modal" }}
+            />
+            <Stack.Screen
+              name="BookDetails/[id]"
+              options={{ headerTitle: "Book Details" }}
+     
+            />
           </Stack>
-          </BookProvider>
- </FriendProvider>
+        </BookProvider>
+      </FriendProvider>
     </AuthProvider>
   );
 }

@@ -1,4 +1,6 @@
 // app//index.tsx
+import 'react-native-gesture-handler';  // Must be imported first
+import 'react-native-reanimated';        // Then Reanimated
 
 import { Link, Stack } from "expo-router";
 import "../global.css";
@@ -11,6 +13,9 @@ import { useEffect } from 'react';
 import * as Linking from 'expo-linking';
 import { AuthContext } from "@/utils/Context/AuthContext";
 import 'react-native-reanimated';
+import 'expo-dev-client';
+import { NavigationContainer } from '@react-navigation/native';
+
 
 
 export default function WelcomeScreen() {

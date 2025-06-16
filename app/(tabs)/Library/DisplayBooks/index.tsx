@@ -13,7 +13,9 @@ import {
   Alert,
   Platform,
   ImageBackground,
+  TouchableOpacity,
 } from "react-native";
+import { Link } from "expo-router";
 
 export default function DisplayBooks() {
   const { books, deleteBook, fetchCurrentUserBooks } = useBookContext();
@@ -72,86 +74,72 @@ export default function DisplayBooks() {
           bottom: 0,
           left: 0,
           right: 0,
-          justifyContent: "flex-start",
         }}
       >
-        <FlatList
-          data={books}
-          keyExtractor={(book) =>
-            book.id ? book.id.toString() : Math.random().toString()
-          }
-          renderItem={({ item: book }) => (
-            <View
+       <FlatList
+  contentContainerStyle={{
+    flex: 1,
+    width: "100%", // Make sure it spans full width
+    height: "100%", // Make sure it spans full height
+  }}
+  data={books}
+  numColumns={Platform.OS === "web" ? 8 : 4}
+  keyExtractor={(book: { id?: number }) =>
+    book.id ? book.id.toString() : Math.random().toString()
+  }
+  renderItem={({ item: book }) => (
+    <Link href={`/BookDetails/${book.id}`} asChild>
+      <TouchableOpacity
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center", // Center the content horizontally and vertically
+          margin: 4,
+          backgroundColor: "rgba(0,0,0,0.4)",
+          borderRadius: 10,
+          overflow: "hidden",
+          
+        }}
+      >
+        {book.cover ? (
+          <Image
+            style={{
+              width: 100, // Set fixed width for book cover
+              height: 144, // Set fixed height for book cover
+              resizeMode: "contain", // Ensure the image maintains its aspect ratio
+            }}
+            source={{ uri: book.cover }}
+          />
+        ) : (
+          <View
+            style={{
+              width: 100, // Fixed width for the placeholder
+              height: 144, // Fixed height for the placeholder
+              alignItems: "center",
+              justifyContent: "center",
+              marginRight: 16,
+              backgroundColor: "#d1d5db",
+              borderRadius: 8,
+            }}
+          >
+            <Text
               style={{
-                flexDirection: "row",
-                marginTop: 3,
-                padding: 1,
-                borderRadius: 10,
-                width: "100%",
-                backgroundColor: "rgba(0,0,0,0.4)",
+                color: "#f0dcc7",
+                fontSize: 12,
+                lineHeight: 16,
+                textAlign: "center",
               }}
             >
-              {book.cover ? (
-                <Image
-                  style={{ width: 100, height: 144 }}
-                  source={{ uri: book.cover }}
-                />
-              ) : (
-                <View
-                  style={{
-                    width: 100,
-                    height: 144,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginRight: 16,
-                    backgroundColor: "#d1d5db",
-                    borderRadius: 8,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#f0dcc7",
-                      fontSize: 12,
-                      lineHeight: 16,
-                      textAlign: "center",
-                    }}
-                  >
-                    No Image Available
-                  </Text>
-                </View>
-              )}
-              <View style={{ flex: 1, justifyContent: "space-between" }}>
-                <Text
-                  style={{ fontSize: 20, fontWeight: "bold", color: "#f0dcc7" }}
-                >
-                  {book.title}
-                </Text>
-                <Text style={{ fontSize: 15, color: "#f0dcc7" }}>
-                  Author: {book.author}
-                </Text>
-                <Text style={{ fontSize: 15, color: "#f0dcc7" }}>
-                  Year: {book.year}
-                </Text>
-                <Text style={{ fontSize: 15, color: "#f0dcc7" }}>
-                  Publisher: {book.publisher}
-                </Text>
-                <Text style={{ fontSize: 15, color: "#f0dcc7" }}>
-                  Status: {statusMap[book.status] || book.status}
-                </Text>
-
-                <Button
-                  title="Delete Book"
-                  onPress={() => handleDeleteBook(book.id)}
-                  color="#bf471b"
-                />
-              </View>
-            </View>
-          )}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-          keyboardShouldPersistTaps="handled"
-        />
+              No Image Available
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    </Link>
+  )}
+  refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+  keyboardShouldPersistTaps="handled"
+/>
       </LinearGradient>
     </ImageBackground>
   );

@@ -1,7 +1,7 @@
 // app/DisplayBooks/index.tsx
 import { useFriendContext } from "@/utils/Context/FriendContext";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -19,7 +19,10 @@ export default function FriendList() {
   const { friends, removeFriend, fetchCurrentUserFriends } = useFriendContext();
   const [refreshing, setRefreshing] = useState(false);
 
-  // Function to handle refresh
+  useEffect(() => {
+    fetchCurrentUserFriends();
+  }, []);
+
   const onRefresh = async () => {
     setRefreshing(true);
     try {
@@ -29,7 +32,6 @@ export default function FriendList() {
     }
     setRefreshing(false); // Ensure this happens last
   };
-
   const handleRemoveFriend = (id: number) => {
     if (Platform.OS === "web") {
       // Web-specific alert
@@ -37,14 +39,16 @@ export default function FriendList() {
         removeFriend(id);
       }
     } else {
-      // Mobile-specific alert
       Alert.alert("Delete Book", "Are you sure you want to delete this book?", [
         { text: "Cancel", style: "cancel" },
-        { text: "Delete", onPress: () => removeFriend(id), style: "destructive" },
+        {
+          text: "Delete",
+          onPress: () => removeFriend(id),
+          style: "destructive",
+        },
       ]);
     }
   };
-
 
   return (
     <ImageBackground
@@ -114,16 +118,19 @@ export default function FriendList() {
                   </Text>
                 </View>
               )}
-              <View style={{ flex: 1, justifyContent: "space-between" }}>
+
+              <View style={{ flex: 1, justifyContent: "space-around" }}>
                 <Text
                   style={{ fontSize: 20, fontWeight: "bold", color: "#f0dcc7" }}
                 >
-                 Name: {friend.name}
+                  Name: {friend.name ? friend.name : friend.email}
                 </Text>
-                <Text style={{ fontSize: 15, color: "#f0dcc7" }}>
-                  Email: {friend.email}
+                <Text
+                  style={{ fontSize: 20, fontWeight: "bold", color: "#f0dcc7" }}
+                >
+                  Email: {friend.email ? friend.email : "No Email Provided"}
                 </Text>
-            
+
                 <Button
                   title="Remove Friend"
                   onPress={() => handleRemoveFriend(friend.id)}

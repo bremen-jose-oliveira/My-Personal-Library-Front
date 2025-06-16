@@ -1,4 +1,14 @@
+import { ReactNode } from "react";
+
 export default  interface Book {
+    owner: ReactNode;
+    exchangeStatus: ReactNode;
+    exchanges: ReactNode;
+    reviews: ReactNode;
+    reviewCount: ReactNode;
+    createdAt: ReactNode;
+    updatedAt: ReactNode;
+    readingStatus: ReactNode;
     status: any;
     id: number;
     cover: string | null;

@@ -2,6 +2,7 @@ import { AuthProvider } from "@/utils/Context/AuthContext";
 import { useBookContext } from "@/utils/Context/BookContext";
 import { useFriendContext } from "@/utils/Context/FriendContext";
 import { LinearGradient } from "expo-linear-gradient";
+import { Link } from "expo-router";
 import { useState } from "react";
 import { View, Text, ImageBackground } from "react-native";
 
@@ -136,6 +137,7 @@ const HomeScreen = () => {
               </Text>
             </View>
           </View>
+
         </View>
       </LinearGradient>
     </ImageBackground>

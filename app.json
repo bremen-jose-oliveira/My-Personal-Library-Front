@@ -7,9 +7,15 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
+      "image": "./assets/images/splashscreen_logo.jpg",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
+    },    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "listUnknownPackages": false
+      }
     },
+    
     "ios": {
       "bundleIdentifier": "com.jose-oliv.mypersonallibraryfront",
       "supportsTablet": true,
@@ -49,7 +55,8 @@
     [  "expo-camera",
     {
       "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera.",
-         "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
+         "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone.",
+         "recordAudioAndroid": true
     }]
       
     ],

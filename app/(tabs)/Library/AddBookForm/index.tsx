@@ -4,6 +4,7 @@ import BarcodeScanner from "@/components/BarcodeScanner";
 import Book from "@/Interfaces/book";
 import { useBookContext } from "@/utils/Context/BookContext";
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import { ScrollView } from "react-native";
 import {
@@ -99,11 +100,20 @@ export default function AddBookForm() {
 
 
       rating: 0,
-      status: undefined
+      status: undefined,
+      owner: undefined,
+      exchangeStatus: undefined,
+      exchanges: undefined,
+      reviews: undefined,
+      reviewCount: undefined,
+      createdAt: undefined,
+      updatedAt: undefined,
+      readingStatus: undefined
     };
 
     addBook(bookData);
     setSelectedBook(null);
+       router.push("/Library/DisplayBooks"); 
 
  
     
