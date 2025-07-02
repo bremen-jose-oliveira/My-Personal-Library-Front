@@ -28,7 +28,7 @@ A cross-platform mobile and web app to manage your personal book collection, con
 
 1. **Clone the repository:**
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/your-username/My-Personal-Library-Front.git
    cd My-Personal-Library-Front
    ```
 2. **Install dependencies:**
@@ -59,6 +59,7 @@ assets/             # Images, fonts, and static assets
 constants/          # App-wide constants (colors, etc.)
 Interfaces/         # TypeScript interfaces for data models
 ```
+> Uses [Expo Router](https://docs.expo.dev/router/introduction/) for navigation.
 
 ---
 
@@ -74,34 +75,29 @@ Interfaces/         # TypeScript interfaces for data models
 ---
 
 ## Customization & Theming
+
 - Uses [Tailwind CSS](https://tailwindcss.com/) for styling via `nativewind`.
 - Custom colors and fonts are defined in `constants/Colors.ts` and `assets/fonts/`.
 
-<<<<<<< HEAD
 ---
 
 ## Scripts
+
 - `npm start` – Start Expo development server
 - `npm run android` – Run on Android device/emulator
 - `npm run ios` – Run on iOS simulator
 - `npm run web` – Run on web
-- `npm run reset-project` – Reset to a blank project
+- `npm run reset-project` – Reset to a blank project (moves starter code to `app-example` and creates a blank `app` directory)
 
 ---
 
 ## Learn More
+
 - [Expo Documentation](https://docs.expo.dev/)
 - [React Native](https://reactnative.dev/)
 - [Expo Router](https://docs.expo.dev/router/introduction/)
 
 ---
-
-## License
-MIT
-=======
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-
 
 ## 🤝 Contributing
 
@@ -111,12 +107,14 @@ MIT
 4. Add tests if applicable
 5. Submit a pull request
 
-## 📄 License
-
-This project is licensed under the MIT License.
+---
 
 ## 🆘 Support
 
 For support and questions, please open an issue in the repository or contact the development team.
 
->>>>>>> 91474d6e2b9997503393dc3d2e19cb514d614e89
+---
+
+## License
+
+MIT
