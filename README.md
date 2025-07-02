@@ -77,6 +77,7 @@ Interfaces/         # TypeScript interfaces for data models
 - Uses [Tailwind CSS](https://tailwindcss.com/) for styling via `nativewind`.
 - Custom colors and fonts are defined in `constants/Colors.ts` and `assets/fonts/`.
 
+<<<<<<< HEAD
 ---
 
 ## Scripts
@@ -97,3 +98,25 @@ Interfaces/         # TypeScript interfaces for data models
 
 ## License
 MIT
+=======
+- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
+- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support and questions, please open an issue in the repository or contact the development team.
+
+>>>>>>> 91474d6e2b9997503393dc3d2e19cb514d614e89
