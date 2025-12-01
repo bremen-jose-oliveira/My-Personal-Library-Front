@@ -7,10 +7,7 @@ import {
   Text,
   Image,
   FlatList,
-  ActivityIndicator,
-  Button,
   RefreshControl,
-  Alert,
   Platform,
   ImageBackground,
   TouchableOpacity,
@@ -18,7 +15,7 @@ import {
 import { Link } from "expo-router";
 
 export default function DisplayBooks() {
-  const { books, deleteBook, fetchCurrentUserBooks } = useBookContext();
+  const { books, fetchCurrentUserBooks } = useBookContext();
   const [refreshing, setRefreshing] = useState(false);
 
   // Function to handle refresh
@@ -30,21 +27,6 @@ export default function DisplayBooks() {
       console.error("Error refreshing books:", error);
     }
     setRefreshing(false); // Ensure this happens last
-  };
-
-  const handleDeleteBook = (id: number) => {
-    if (Platform.OS === "web") {
-      // Web-specific alert
-      if (window.confirm("Are you sure you want to delete this book?")) {
-        deleteBook(id);
-      }
-    } else {
-      // Mobile-specific alert
-      Alert.alert("Delete Book", "Are you sure you want to delete this book?", [
-        { text: "Cancel", style: "cancel" },
-        { text: "Delete", onPress: () => deleteBook(id), style: "destructive" },
-      ]);
-    }
   };
 
   const statusMap: { [key: string]: string } = {
@@ -93,31 +75,31 @@ export default function DisplayBooks() {
         style={{
           flex: 1,
           justifyContent: "center",
-          alignItems: "center", // Center the content horizontally and vertically
+          alignItems: "center",
           margin: 4,
           backgroundColor: "rgba(0,0,0,0.4)",
           borderRadius: 10,
           overflow: "hidden",
-          
+          padding: 8,
+          gap: 8,
         }}
       >
         {book.cover ? (
           <Image
             style={{
-              width: 100, // Set fixed width for book cover
-              height: 144, // Set fixed height for book cover
-              resizeMode: "contain", // Ensure the image maintains its aspect ratio
+              width: 100,
+              height: 144,
+              resizeMode: "contain",
             }}
             source={{ uri: book.cover }}
           />
         ) : (
           <View
             style={{
-              width: 100, // Fixed width for the placeholder
-              height: 144, // Fixed height for the placeholder
+              width: 100,
+              height: 144,
               alignItems: "center",
               justifyContent: "center",
-              marginRight: 16,
               backgroundColor: "#d1d5db",
               borderRadius: 8,
             }}
@@ -134,6 +116,16 @@ export default function DisplayBooks() {
             </Text>
           </View>
         )}
+        <View style={{ alignItems: "center" }}>
+          <Text style={{ color: "#f8f0e5", fontWeight: "600", textAlign: "center" }}>
+            {book.title}
+          </Text>
+          {book.readingStatus && (
+            <Text style={{ color: "#cbd5f5", fontSize: 12 }}>
+              Status: {statusMap[book.readingStatus] ?? book.readingStatus}
+            </Text>
+          )}
+        </View>
       </TouchableOpacity>
     </Link>
   )}

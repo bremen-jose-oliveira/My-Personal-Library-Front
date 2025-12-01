@@ -48,22 +48,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   const appleLogin = async () => {
-    if(Platform.OS === 'web') {
-      //window.location.href = `${process.env.EXPO_PUBLIC_API_URL}/api/users/oauth2/login`;
-      window.location.href = `${process.env.EXPO_PUBLIC_API_URL}/oauth2/authorization/apple`;
-      
+    if (Platform.OS === 'web') {
+      const baseURL = process.env.EXPO_PUBLIC_API_URL;
+      if (!baseURL) {
+        console.error("EXPO_PUBLIC_API_URL is not defined");
+        return;
+      }
+  
+      const redirectURL = `${baseURL}/oauth2/authorization/apple`;
+      console.log("Redirecting to:", redirectURL);
+      window.location.href = redirectURL;
       return;
     }
+  
     try {
       await promptAsync({
         windowFeatures: { width: 500, height: 600 },
       });
     } catch (error) {
-      console.error('Google Login Error:', error);
-      Alert.alert('Google Login Failed', 'An error occurred during Google login.');
+      console.error('Apple Login Error:', error);
+      Alert.alert('Apple Login Failed', 'An error occurred during Apple login.');
     }
   };
-
+  
 
 /*
   const appleLogin = async () => {

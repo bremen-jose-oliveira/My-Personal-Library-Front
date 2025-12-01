@@ -1,23 +1,21 @@
-import { ReactNode } from "react";
+import type { Exchange } from "@/Interfaces/exchange";
+import type { Review } from "@/Interfaces/review";
 
-export default  interface Book {
-    owner: ReactNode;
-    exchangeStatus: ReactNode;
-    exchanges: ReactNode;
-    reviews: ReactNode;
-    reviewCount: ReactNode;
-    createdAt: ReactNode;
-    updatedAt: ReactNode;
-    readingStatus: ReactNode;
-    status: any;
-    id: number;
-    cover: string | null;
-    title: string;
-    author: string;
-    year: number;
-    publisher: string;
-    rating: number;
-    isbn: string;
-  }
-
-  
+export default interface Book {
+  id: number;
+  isbn: string;
+  title: string;
+  author: string;
+  year: number;
+  publisher: string;
+  cover?: string | null;
+  owner?: string;
+  ownerUsername?: string;
+  readingStatus?: string;
+  exchangeStatus?: string;
+  reviewCount?: number;
+  reviews?: Review[];
+  exchanges?: Exchange[];
+  createdAt?: string;
+  updatedAt?: string;
+}

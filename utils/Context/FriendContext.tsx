@@ -51,7 +51,13 @@ export const FriendProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         profilePicture: '', 
         friendshipStatus: friendship.friendshipStatus,
       }));
-      setFriends(formattedData);
+      
+      // Remove duplicates based on email (since backend might return friendships in both directions)
+      const uniqueFriends = formattedData.filter((friend, index, self) =>
+        index === self.findIndex((f) => f.email === friend.email)
+      );
+      
+      setFriends(uniqueFriends);
 
     } catch (error) {
       console.error('Error fetching friends:', error);

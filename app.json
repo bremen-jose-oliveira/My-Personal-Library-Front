@@ -19,6 +19,7 @@
     "ios": {
       "bundleIdentifier": "com.jose-oliv.mypersonallibraryfront",
       "supportsTablet": true,
+      "usesAppleSignIn": true,
       "infoPlist": {
         "NSCameraUsageDescription": "This app needs access to your camera to scan barcodes.",
         "ITSAppUsesNonExemptEncryption": false

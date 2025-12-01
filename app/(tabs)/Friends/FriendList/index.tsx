@@ -13,7 +13,9 @@ import {
   Alert,
   Platform,
   ImageBackground,
+  TouchableOpacity,
 } from "react-native";
+import { router } from "expo-router";
 
 export default function FriendList() {
   const { friends, removeFriend, fetchCurrentUserFriends } = useFriendContext();
@@ -120,16 +122,38 @@ export default function FriendList() {
               )}
 
               <View style={{ flex: 1, justifyContent: "space-around" }}>
-                <Text
-                  style={{ fontSize: 20, fontWeight: "bold", color: "#f0dcc7" }}
+                <TouchableOpacity
+                  onPress={() => {
+                    const friendEmail = friend.email || friend.friendEmail;
+                    if (friendEmail) {
+                      router.push(`/FriendBooks/${encodeURIComponent(friendEmail)}`);
+                    } else {
+                      Alert.alert("Error", "Friend email not available");
+                    }
+                  }}
+                  style={{ flex: 1 }}
                 >
-                  Name: {friend.name ? friend.name : friend.email}
-                </Text>
-                <Text
-                  style={{ fontSize: 20, fontWeight: "bold", color: "#f0dcc7" }}
-                >
-                  Email: {friend.email ? friend.email : "No Email Provided"}
-                </Text>
+                  <Text
+                    style={{ fontSize: 20, fontWeight: "bold", color: "#f0dcc7" }}
+                  >
+                    Name: {friend.name ? friend.name : friend.email || friend.friendEmail}
+                  </Text>
+                  <Text
+                    style={{ fontSize: 20, fontWeight: "bold", color: "#f0dcc7" }}
+                  >
+                    Email: {friend.email || friend.friendEmail || "No Email Provided"}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      color: "#bf471b",
+                      marginTop: 8,
+                      textDecorationLine: "underline",
+                    }}
+                  >
+                    View {friend.name || friend.email || friend.friendEmail || "Friend"}'s Books →
+                  </Text>
+                </TouchableOpacity>
 
                 <Button
                   title="Remove Friend"

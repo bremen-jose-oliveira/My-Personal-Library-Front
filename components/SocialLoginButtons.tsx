@@ -97,7 +97,7 @@ const SocialLoginButtons = (props: Props) => {
         entering={FadeInDown.delay(1100).duration(500)}
       >
 
-         {/*
+   
        <TouchableOpacity
           style={{
             flexDirection: "row",
@@ -119,7 +119,7 @@ const SocialLoginButtons = (props: Props) => {
           </Text>
         </TouchableOpacity>
 
-        */}
+      
 
 
       </Animated.View>

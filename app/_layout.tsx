@@ -7,6 +7,10 @@ import { BookProvider } from "@/utils/Context/BookContext";
 import "../global.css";
 import * as Linking from "expo-linking";
 import { FriendProvider } from "@/utils/Context/FriendContext";
+import { UserProvider } from "@/utils/Context/UserContext";
+import { ExchangeProvider } from "@/utils/Context/ExchangeContext";
+import { ReviewProvider } from "@/utils/Context/ReviewContext";
+import { NotificationProvider } from "@/utils/Context/NotificationContext";
 
 export default function Layout() {
   const router = useRouter();
@@ -41,34 +45,27 @@ export default function Layout() {
 
   return (
     <AuthProvider>
-      <FriendProvider>
-        <BookProvider>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false ,headerTitle: `` }} />
-            <Stack.Screen
-              name="Login/index"
-              options={{ presentation: "modal" }}
-            />
-            <Stack.Screen
-              name="Register/index"
-              options={{ presentation: "modal" }}
-            />
-            <Stack.Screen
-              name="ForgotPassword"
-              options={{ presentation: "modal" }}
-            />
-            <Stack.Screen
-              name="ResetPassword"
-              options={{ presentation: "modal" }}
-            />
-            <Stack.Screen
-              name="BookDetails/[id]"
-              options={{ headerTitle: "Book Details" }}
-     
-            />
-          </Stack>
-        </BookProvider>
-      </FriendProvider>
+      <UserProvider>
+        <NotificationProvider>
+          <FriendProvider>
+            <ExchangeProvider>
+              <ReviewProvider>
+                <BookProvider>
+                  <Stack>
+                    <Stack.Screen name="(tabs)" options={{ headerShown: false, headerTitle: `` }} />
+                    <Stack.Screen name="Login/index" options={{ presentation: "modal" }} />
+                    <Stack.Screen name="Register/index" options={{ presentation: "modal" }} />
+                    <Stack.Screen name="ForgotPassword" options={{ presentation: "modal" }} />
+                    <Stack.Screen name="ResetPassword" options={{ presentation: "modal" }} />
+                    <Stack.Screen name="BookDetails/[id]" options={{ headerTitle: "Book Details" }} />
+                    <Stack.Screen name="Notifications/index" options={{ headerTitle: "Notifications" }} />
+                  </Stack>
+                </BookProvider>
+              </ReviewProvider>
+            </ExchangeProvider>
+          </FriendProvider>
+        </NotificationProvider>
+      </UserProvider>
     </AuthProvider>
   );
 }
