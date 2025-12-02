@@ -20,6 +20,7 @@ export default {
       bundleIdentifier: "com.jose-oliv.mypersonallibraryfront",
       supportsTablet: true,
       usesAppleSignIn: true,
+      buildNumber: "1",
       infoPlist: {
         NSCameraUsageDescription: "This app needs access to your camera to scan barcodes.",
         ITSAppUsesNonExemptEncryption: false
@@ -33,7 +34,8 @@ export default {
       adaptiveIcon: {
         backgroundColor: "#ffffff"
       },
-      package: "com.joseoliv.mypersonallibraryfront"
+      package: "com.joseoliv.mypersonallibraryfront",
+      versionCode: 1
     },
     web: {
       bundler: "metro",
