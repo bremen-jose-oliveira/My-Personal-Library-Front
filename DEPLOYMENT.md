@@ -11,7 +11,7 @@ The frontend uses `EXPO_PUBLIC_*` environment variables that need to be set in N
 3. Add the following variables:
 
 ```
-EXPO_PUBLIC_API_URL=https://your-backend-url.fly.dev
+EXPO_PUBLIC_API_URL=https://jose-long-morning-2431.fly.dev
 EXPO_PUBLIC_IOS_CLIENT_ID=958080376950-ov7dgq16sggjncpa7u5p4edesradrr0g.apps.googleusercontent.com
 EXPO_PUBLIC_ANDROID_CLIENT_ID=your-android-client-id.apps.googleusercontent.com
 EXPO_PUBLIC_WEB_CLIENT_ID=958080376950-ii8vapnkoq7r9s7ji8ps55fh09ie47m7.apps.googleusercontent.com
@@ -59,28 +59,7 @@ eas secret:create --scope project --name EXPO_PUBLIC_ANDROID_CLIENT_ID --value y
 eas secret:create --scope project --name EXPO_PUBLIC_WEB_CLIENT_ID --value your-web-client-id
 ```
 
-2. Create `eas.json` configuration file (if not exists):
-```json
-{
-  "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    },
-    "preview": {
-      "distribution": "internal",
-      "env": {
-        "EXPO_PUBLIC_API_URL": "https://your-backend-url.fly.dev"
-      }
-    },
-    "production": {
-      "env": {
-        "EXPO_PUBLIC_API_URL": "https://your-backend-url.fly.dev"
-      }
-    }
-  }
-}
-```
+2. The `eas.json` file is already configured with environment variables for preview and production builds. The backend URL is set to `https://jose-long-morning-2431.fly.dev`.
 
 ### Building for Android
 
