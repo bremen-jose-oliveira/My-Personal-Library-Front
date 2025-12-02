@@ -32,11 +32,13 @@ export default {
         "android.permission.CAMERA"
       ],
       adaptiveIcon: {
+        foregroundImage: "./assets/images/adaptive-icon.png",
         backgroundColor: "#ffffff"
       },
       package: "com.joseoliv.mypersonallibraryfront",
       versionCode: 1
     },
+    icon: "./assets/images/adaptive-icon.png",
     web: {
       bundler: "metro",
       output: "static",
