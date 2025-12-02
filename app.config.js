@@ -20,7 +20,7 @@ export default {
       bundleIdentifier: "com.jose-oliv.mypersonallibraryfront",
       supportsTablet: true,
       usesAppleSignIn: true,
-      buildNumber: "1",
+      // buildNumber is managed by EAS (appVersionSource: remote in eas.json)
       infoPlist: {
         NSCameraUsageDescription: "This app needs access to your camera to scan barcodes.",
         ITSAppUsesNonExemptEncryption: false
@@ -36,7 +36,7 @@ export default {
         backgroundColor: "#ffffff"
       },
       package: "com.joseoliv.mypersonallibraryfront",
-      versionCode: 1
+      // versionCode is managed by EAS (appVersionSource: remote in eas.json)
     },
     icon: "./assets/images/app-icon.png",
     web: {
