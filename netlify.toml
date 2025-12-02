@@ -4,4 +4,9 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  # Environment variables must be set in Netlify dashboard:
+  # EXPO_PUBLIC_API_URL=https://jose-long-morning-2431.fly.dev
+  # EXPO_PUBLIC_IOS_CLIENT_ID=958080376950-ov7dgq16sggjncpa7u5p4edesradrr0g.apps.googleusercontent.com
+  # EXPO_PUBLIC_ANDROID_CLIENT_ID=your-android-client-id.apps.googleusercontent.com
+  # EXPO_PUBLIC_WEB_CLIENT_ID=958080376950-ii8vapnkoq7r9s7ji8ps55fh09ie47m7.apps.googleusercontent.com
 
