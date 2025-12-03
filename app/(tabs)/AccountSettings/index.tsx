@@ -4,12 +4,12 @@ import { AuthContext } from "@/utils/Context/AuthContext";
 import { Link, router, Stack } from "expo-router";
 import React, { useState, useContext } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Alert, TouchableOpacity, View, Text } from "react-native";
+import { Alert, TouchableOpacity, View, Text, Platform } from "react-native";
 import Ioicons from "react-native-vector-icons/Ionicons";
-import { getToken } from "@/utils/Context/storageUtils";
+import { getToken, removeToken } from "@/utils/Context/storageUtils";
 
 const AccountSettings = () => {
-
+  const { logout } = useContext(AuthContext);
 
   const [secureText, setSecureText] = useState(true);
 
@@ -101,6 +101,122 @@ const handleUpdatePassword = async () => {
     }
 };
 
+  const handleDeleteAccount = async () => {
+  // Show warning dialog
+  const showWarning = () => {
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(
+        '⚠️ WARNING: This action is PERMANENT and cannot be undone!\n\n' +
+        'Deleting your account will permanently remove:\n' +
+        '• All your books\n' +
+        '• All your reviews\n' +
+        '• All your exchanges\n' +
+        '• All your friendships\n' +
+        '• All your notifications\n' +
+        '• Your account data\n\n' +
+        'Are you absolutely sure you want to delete your account?'
+      );
+      
+      if (confirmed) {
+        // Second confirmation
+        const doubleConfirmed = window.confirm(
+          'This is your LAST chance to cancel.\n\n' +
+          'Click OK to permanently delete your account, or Cancel to keep it.'
+        );
+        
+        if (doubleConfirmed) {
+          performDelete();
+        }
+      }
+    } else {
+      Alert.alert(
+        '⚠️ Delete Account',
+        'This action is PERMANENT and cannot be undone!\n\n' +
+        'Deleting your account will permanently remove:\n' +
+        '• All your books\n' +
+        '• All your reviews\n' +
+        '• All your exchanges\n' +
+        '• All your friendships\n' +
+        '• All your notifications\n' +
+        '• Your account data',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: () => {
+              // Second confirmation
+              Alert.alert(
+                '⚠️ Final Confirmation',
+                'This is your LAST chance to cancel.\n\n' +
+                'Are you absolutely sure you want to permanently delete your account?',
+                [
+                  {
+                    text: 'Cancel',
+                    style: 'cancel',
+                  },
+                  {
+                    text: 'Yes, Delete Forever',
+                    style: 'destructive',
+                    onPress: performDelete,
+                  },
+                ]
+              );
+            },
+          },
+        ]
+      );
+    }
+  };
+
+  const performDelete = async () => {
+    try {
+      const token = await getToken();
+      if (!token) {
+        throw new Error('You must be logged in to delete your account');
+      }
+
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/users/current`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete account');
+      }
+
+      // Account deleted successfully
+      Alert.alert(
+        'Account Deleted',
+        'Your account has been permanently deleted. We\'re sorry to see you go!',
+        [
+          {
+            text: 'OK',
+            onPress: async () => {
+              // Clear token and logout
+              await removeToken();
+              logout();
+              router.replace('/');
+            },
+          },
+        ]
+      );
+    } catch (error: any) {
+      console.error('Error deleting account:', error);
+      Alert.alert('Error', error.message || 'Failed to delete account. Please try again.');
+    }
+  };
+
+  showWarning();
+};
+
 
 
     return (
@@ -180,11 +296,150 @@ const handleUpdatePassword = async () => {
 >
     <Text className="text-white text-lg font-semibold">Update Password</Text>
 </TouchableOpacity>
+
+    <View style={{ marginTop: 40, paddingTop: 30, borderTopWidth: 1, borderTopColor: "#e0e0e0", width: "100%" }}>
+      <Text className="text-xl font-semibold tracking-wide text-red-600 mb-4 text-center">
+        Danger Zone
+      </Text>
+      <Text className="text-sm text-gray-600 mb-6 text-center px-4">
+        Deleting your account will permanently remove all your data including books, reviews, exchanges, and friendships. This action cannot be undone.
+      </Text>
+      <TouchableOpacity
+        style={{ 
+          backgroundColor: "#dc2626", 
+          alignItems: "center", 
+          borderRadius: 5, 
+          alignSelf: "stretch", 
+          paddingVertical: 14, 
+          paddingHorizontal: 18,
+          marginBottom: 20
+        }}
+        onPress={handleDeleteAccount}
+      >
+        <Text className="text-white text-lg font-semibold">Delete Account</Text>
+      </TouchableOpacity>
+    </View>
  
        
           </View>
         </>
       );
+};
+
+const handleDeleteAccount = async () => {
+  // Show warning dialog
+  const showWarning = () => {
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm(
+        '⚠️ WARNING: This action is PERMANENT and cannot be undone!\n\n' +
+        'Deleting your account will permanently remove:\n' +
+        '• All your books\n' +
+        '• All your reviews\n' +
+        '• All your exchanges\n' +
+        '• All your friendships\n' +
+        '• All your notifications\n' +
+        '• Your account data\n\n' +
+        'Are you absolutely sure you want to delete your account?'
+      );
+      
+      if (confirmed) {
+        // Second confirmation
+        const doubleConfirmed = window.confirm(
+          'This is your LAST chance to cancel.\n\n' +
+          'Click OK to permanently delete your account, or Cancel to keep it.'
+        );
+        
+        if (doubleConfirmed) {
+          performDelete();
+        }
+      }
+    } else {
+      Alert.alert(
+        '⚠️ Delete Account',
+        'This action is PERMANENT and cannot be undone!\n\n' +
+        'Deleting your account will permanently remove:\n' +
+        '• All your books\n' +
+        '• All your reviews\n' +
+        '• All your exchanges\n' +
+        '• All your friendships\n' +
+        '• All your notifications\n' +
+        '• Your account data',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+          },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: () => {
+              // Second confirmation
+              Alert.alert(
+                '⚠️ Final Confirmation',
+                'This is your LAST chance to cancel.\n\n' +
+                'Are you absolutely sure you want to permanently delete your account?',
+                [
+                  {
+                    text: 'Cancel',
+                    style: 'cancel',
+                  },
+                  {
+                    text: 'Yes, Delete Forever',
+                    style: 'destructive',
+                    onPress: performDelete,
+                  },
+                ]
+              );
+            },
+          },
+        ]
+      );
+    }
+  };
+
+  const performDelete = async () => {
+    try {
+      const token = await getToken();
+      if (!token) {
+        throw new Error('You must be logged in to delete your account');
+      }
+
+      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/users/current`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete account');
+      }
+
+      // Account deleted successfully
+      Alert.alert(
+        'Account Deleted',
+        'Your account has been permanently deleted. We\'re sorry to see you go!',
+        [
+          {
+            text: 'OK',
+            onPress: async () => {
+              // Clear token and logout
+              await removeToken();
+              logout();
+              router.replace('/');
+            },
+          },
+        ]
+      );
+    } catch (error: any) {
+      console.error('Error deleting account:', error);
+      Alert.alert('Error', error.message || 'Failed to delete account. Please try again.');
+    }
+  };
+
+  showWarning();
 };
 
 export default AccountSettings;
