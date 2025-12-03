@@ -2,17 +2,16 @@
 import 'react-native-gesture-handler';  // Must be imported first
 import 'react-native-reanimated';        // Then Reanimated
 
-import { Link, Stack } from "expo-router";
+import { Link, Stack, Redirect } from "expo-router";
 import "../global.css";
 import { TouchableOpacity, View, Text, ImageBackground, ActivityIndicator } from "react-native";
 import Animated, { FadeInRight } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
 import { useEffect } from 'react';
 import * as Linking from 'expo-linking';
 import { AuthContext } from "@/utils/Context/AuthContext";
-import { useRouter } from 'expo-router';
 import 'react-native-reanimated';
 import 'expo-dev-client';
 import { NavigationContainer } from '@react-navigation/native';
@@ -20,35 +19,60 @@ import { NavigationContainer } from '@react-navigation/native';
 
 
 export default function WelcomeScreen() {
-  const { isLoggedIn, loading } = useContext(AuthContext);
-  const router = useRouter();
+  const authContext = useContext(AuthContext);
+  const [loadingTimeout, setLoadingTimeout] = React.useState(false);
 
-  // Redirect to tabs if user is already logged in
+  // Safety check - if AuthContext is not available, show welcome screen
+  if (!authContext) {
+    console.error('❌ AuthContext is not available!');
+    // Still show the welcome screen
+  }
+
+  const { isLoggedIn, loading } = authContext || { isLoggedIn: false, loading: false };
+
+  console.log('🔍 WelcomeScreen - isLoggedIn:', isLoggedIn, 'loading:', loading);
+
+  // Timeout fallback - if loading takes more than 5 seconds, show welcome screen anyway
   useEffect(() => {
-    if (!loading && isLoggedIn) {
-      console.log('✅ User is logged in, redirecting to tabs...');
-      router.replace('/(tabs)');
-    }
-  }, [isLoggedIn, loading, router]);
+    const timer = setTimeout(() => {
+      if (loading) {
+        console.warn('⚠️ Loading timeout - showing welcome screen anyway');
+        setLoadingTimeout(true);
+      }
+    }, 5000);
 
-  // Show loading spinner while checking login status
-  if (loading) {
+    return () => clearTimeout(timer);
+  }, [loading]);
+
+  // Use Redirect component instead of router.replace to avoid mounting issues
+  if (!loading && isLoggedIn) {
+    console.log('✅ User is logged in, redirecting to tabs...');
+    return <Redirect href="/(tabs)" />;
+  }
+
+  // Show loading spinner while checking login status (with timeout fallback)
+  if (loading && !loadingTimeout) {
+    console.log('⏳ Still loading...');
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
         <ActivityIndicator size="large" color="#FF6347" />
+        <Text style={{ marginTop: 10, color: '#666' }}>Loading...</Text>
       </View>
     );
   }
 
   // Show loading while redirecting if user is logged in
   if (isLoggedIn) {
+    console.log('🔄 User logged in, redirecting...');
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
         <ActivityIndicator size="large" color="#FF6347" />
         <Text style={{ marginTop: 10, color: '#666' }}>Redirecting...</Text>
       </View>
     );
   }
+
+  console.log('✅ Showing welcome screen');
 
   return (
     <>
