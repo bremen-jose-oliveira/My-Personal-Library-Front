@@ -6,7 +6,8 @@ import { storeToken, getToken, removeToken } from './storageUtils';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri } from 'expo-auth-session';
-import * as AppleAuthentication from 'expo-apple-authentication'; 
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { useRouter } from 'expo-router'; 
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -39,7 +40,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (Platform.OS === 'web') {
           const urlParams = new URLSearchParams(window.location.search);
           const urlToken = urlParams.get('token');
+          const error = urlParams.get('error');
           const hasOAuthParams = urlParams.has('token') || urlParams.has('error') || urlParams.has('state') || urlParams.has('code');
+          
+          // If there's an error in URL, handle it immediately
+          if (error) {
+            console.log('🔍 OAuth error detected in URL - processing error...');
+            // The OAuth redirect handler will process this and set loading to false
+            return;
+          }
           
           // If there are OAuth parameters in URL, let the OAuth handler process them first
           // Don't check AsyncStorage yet - wait for OAuth handler to finish
@@ -245,12 +254,20 @@ if(Platform.OS === 'web') {
         const errorMessage = error === 'oauth_failed' 
           ? 'Authentication failed. Please try again.' 
           : 'An error occurred during login. Please try again.';
-        Alert.alert('Login Failed', errorMessage);
         // Clear any existing token
         await removeToken();
         setIsLoggedIn(false);
+        setLoading(false); // IMPORTANT: Stop loading spinner
         // Clean up URL by removing query parameters
         window.history.replaceState({}, document.title, window.location.pathname);
+        // Redirect to welcome/login screen
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 100);
+        // Show alert after a brief delay to avoid blocking redirect
+        setTimeout(() => {
+          Alert.alert('Login Failed', errorMessage);
+        }, 200);
         return;
       }
     
@@ -263,6 +280,7 @@ if(Platform.OS === 'web') {
           Alert.alert('Login Failed', 'Invalid authentication token.');
           await removeToken();
           setIsLoggedIn(false);
+          setLoading(false); // IMPORTANT: Stop loading spinner
           // Clean up URL
           window.history.replaceState({}, document.title, window.location.pathname);
           return;
