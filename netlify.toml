@@ -3,11 +3,13 @@
   publish = "dist"
 
 # Netlify redirects for client-side routing (Expo Router)
-# This ensures all routes are handled by the React app
+# This ensures all routes are handled by the React app, not Netlify's file system
+# The _redirects file should also be copied, but this provides a backup
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  force = true
 
 [build.environment]
   NODE_VERSION = "18"

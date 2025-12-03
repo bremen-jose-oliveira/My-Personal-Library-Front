@@ -1,4 +1,6 @@
-# Redirect all routes to index.html for client-side routing
+# Redirect all routes to index.html for client-side routing (Expo Router)
+# This ensures all routes are handled by the React app, not Netlify's file system
+# Format: <path> <destination> <status>
 /*    /index.html   200
 
 
