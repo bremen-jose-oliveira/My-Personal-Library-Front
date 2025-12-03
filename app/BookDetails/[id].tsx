@@ -251,18 +251,6 @@ export default function BookDetails() {
             <>
               <TouchableOpacity
                 style={{
-                  backgroundColor: "#bf471b",
-                  padding: 12,
-                  borderRadius: 8,
-                  alignItems: "center",
-                  marginBottom: 8,
-                }}
-                onPress={() => router.push(`/Library/EditBook/${selectedBook.id}`)}
-              >
-                <Text style={{ color: "#fff", fontWeight: "600" }}>Edit Book</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{
                   backgroundColor: "#b91c1c",
                   padding: 12,
                   borderRadius: 8,
