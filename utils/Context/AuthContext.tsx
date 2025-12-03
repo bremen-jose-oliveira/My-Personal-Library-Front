@@ -52,8 +52,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           
           // If there are OAuth parameters in URL, let the OAuth handler process them first
           // Don't check AsyncStorage yet - wait for OAuth handler to finish
-          if (hasOAuthParams) {
-            console.log('🔍 OAuth parameters detected in URL - waiting for OAuth handler to process...');
+          if (hasOAuthParams && urlToken) {
+            console.log('🔍 OAuth token detected in URL - waiting for OAuth handler to process...');
             // The OAuth redirect handler (below) will process this and set loading to false
             return;
           }
@@ -61,10 +61,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         // No OAuth params in URL, check AsyncStorage for stored token
         const token = await getToken();
+        console.log('🔍 Checking stored token - found:', !!token);
         setIsLoggedIn(!!token);
         setLoading(false);
       } catch (error) {
         console.error('Error checking login status:', error);
+        setIsLoggedIn(false);
         setLoading(false);
       }
     };
