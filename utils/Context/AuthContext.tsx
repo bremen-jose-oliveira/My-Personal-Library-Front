@@ -206,18 +206,87 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   
 if(Platform.OS === 'web') {
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-  
-    if (token) {
-      storeToken(token)
-        .then(() => {
-          console.log('Token stored successfully');
+    const handleOAuthRedirect = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      const error = urlParams.get('error');
+      const state = urlParams.get('state');
+      const code = urlParams.get('code');
+    
+      console.log('🔍 Checking OAuth redirect - token:', !!token, 'error:', error, 'state:', !!state, 'code:', !!code);
+    
+      // Handle OAuth errors - if there's an error parameter, login failed
+      if (error) {
+        console.error('❌ OAuth login error:', error);
+        const errorMessage = error === 'oauth_failed' 
+          ? 'Authentication failed. Please try again.' 
+          : 'An error occurred during login. Please try again.';
+        Alert.alert('Login Failed', errorMessage);
+        // Clear any existing token
+        await removeToken();
+        setIsLoggedIn(false);
+        // Clean up URL by removing query parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
+      }
+    
+      // Only store token if it exists and has valid JWT format
+      if (token) {
+        // Validate token format (JWT has 3 parts separated by dots)
+        const tokenParts = token.split('.');
+        if (tokenParts.length !== 3) {
+          console.error('❌ Invalid token format');
+          Alert.alert('Login Failed', 'Invalid authentication token.');
+          await removeToken();
+          setIsLoggedIn(false);
+          // Clean up URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+          return;
+        }
+
+        // Store the token - if it's invalid, API calls will fail and user will be logged out
+        try {
+          await storeToken(token);
+          console.log('✅ Token stored successfully - user logged in');
           setIsLoggedIn(true);
-        })
-        .catch(err => console.error('Failed to store token:', err));
-    }
-  }, []);
+          // Clean up URL by removing token parameter
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (err) {
+          console.error('❌ Failed to store token:', err);
+          await removeToken();
+          setIsLoggedIn(false);
+          // Clean up URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      } else if (state || code) {
+        // OAuth redirect parameters present but no token - might be in progress or failed
+        // Don't do anything yet, wait for the redirect to complete
+        // This handles the case where user is redirected back from OAuth provider
+        console.log('⏳ OAuth redirect in progress - waiting for token...');
+        // Clean up any stale OAuth parameters after a delay if no token arrives
+        setTimeout(() => {
+          const currentParams = new URLSearchParams(window.location.search);
+          if (!currentParams.get('token') && (currentParams.get('state') || currentParams.get('code'))) {
+            console.log('⚠️ OAuth redirect completed but no token - cleaning up URL');
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        }, 2000);
+      }
+    };
+
+    // Check on mount
+    handleOAuthRedirect();
+
+    // Also listen for popstate events (back/forward navigation)
+    const handlePopState = () => {
+      handleOAuthRedirect();
+    };
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []); // Only run once on mount
 
 }
 
@@ -225,6 +294,13 @@ if(Platform.OS === 'web') {
     try {
       await removeToken();
       setIsLoggedIn(false);
+      
+      // On web, clean up URL parameters to ensure clean state for next login
+      if (Platform.OS === 'web') {
+        // Remove any query parameters from URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        console.log('Logout: Cleared URL parameters');
+      }
     } catch (error) {
       console.error('Logout error:', error);
     }
