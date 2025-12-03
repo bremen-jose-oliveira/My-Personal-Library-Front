@@ -33,44 +33,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // On web, the OAuth handler below will handle everything
+  // On mobile, check stored token
   useEffect(() => {
-    const checkLoginStatus = async () => {
-      try {
-        // On web, check URL for token first (OAuth redirect)
-        if (Platform.OS === 'web') {
-          const urlParams = new URLSearchParams(window.location.search);
-          const urlToken = urlParams.get('token');
-          const error = urlParams.get('error');
-          const hasOAuthParams = urlParams.has('token') || urlParams.has('error') || urlParams.has('state') || urlParams.has('code');
-          
-          // If there's an error in URL, handle it immediately
-          if (error) {
-            console.log('🔍 OAuth error detected in URL - processing error...');
-            // The OAuth redirect handler will process this and set loading to false
-            return;
-          }
-          
-          // If there are OAuth parameters in URL, let the OAuth handler process them first
-          // Don't check AsyncStorage yet - wait for OAuth handler to finish
-          if (hasOAuthParams && urlToken) {
-            console.log('🔍 OAuth token detected in URL - waiting for OAuth handler to process...');
-            // The OAuth redirect handler (below) will process this and set loading to false
-            return;
-          }
+    if (Platform.OS !== 'web') {
+      const checkLoginStatus = async () => {
+        try {
+          const token = await getToken();
+          console.log('🔍 [Mobile] Checking stored token - found:', !!token);
+          setIsLoggedIn(!!token);
+          setLoading(false);
+        } catch (error) {
+          console.error('Error checking login status:', error);
+          setIsLoggedIn(false);
+          setLoading(false);
         }
-        
-        // No OAuth params in URL, check AsyncStorage for stored token
-        const token = await getToken();
-        console.log('🔍 Checking stored token - found:', !!token);
-        setIsLoggedIn(!!token);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error checking login status:', error);
-        setIsLoggedIn(false);
-        setLoading(false);
-      }
-    };
-    checkLoginStatus();
+      };
+      checkLoginStatus();
+    }
   }, []);
 
 
@@ -240,12 +220,20 @@ if(Platform.OS === 'web') {
       const state = urlParams.get('state');
       const code = urlParams.get('code');
     
-      console.log('🔍 Checking OAuth redirect - token:', !!token, 'error:', error, 'state:', !!state, 'code:', !!code);
+      console.log('🔍 [Web] Checking OAuth redirect - token:', !!token, 'error:', error, 'state:', !!state, 'code:', !!code);
       
-      // If no OAuth parameters, just check stored token and finish loading
+      // If no OAuth parameters, check stored token (normal page load/refresh)
       if (!token && !error && !state && !code) {
+        console.log('🔍 [Web] No OAuth params - checking stored token...');
         const storedToken = await getToken();
-        setIsLoggedIn(!!storedToken);
+        console.log('🔍 [Web] Stored token found:', !!storedToken);
+        if (storedToken) {
+          console.log('✅ [Web] Token exists, setting isLoggedIn = true');
+          setIsLoggedIn(true);
+        } else {
+          console.log('❌ [Web] No token found, setting isLoggedIn = false');
+          setIsLoggedIn(false);
+        }
         setLoading(false);
         return;
       }
@@ -306,7 +294,9 @@ if(Platform.OS === 'web') {
         }
       } else {
         // No token, no error - check stored token and finish loading
+        console.log('🔍 [Web] No token in URL - checking stored token...');
         const storedToken = await getToken();
+        console.log('🔍 [Web] Stored token result:', !!storedToken);
         setIsLoggedIn(!!storedToken);
         setLoading(false);
         // Clean up any stale OAuth parameters if present
@@ -317,7 +307,7 @@ if(Platform.OS === 'web') {
       }
     };
 
-    // Check on mount
+    // Check on mount - this handles both OAuth redirects and normal page loads
     handleOAuthRedirect();
 
     // Also listen for popstate events (back/forward navigation)
