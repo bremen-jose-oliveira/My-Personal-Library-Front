@@ -12,6 +12,7 @@ import SocialLoginButtons from "@/components/SocialLoginButtons";
 import { useEffect } from 'react';
 import * as Linking from 'expo-linking';
 import { AuthContext } from "@/utils/Context/AuthContext";
+import { useRouter } from 'expo-router';
 import 'react-native-reanimated';
 import 'expo-dev-client';
 import { NavigationContainer } from '@react-navigation/native';
@@ -19,6 +20,26 @@ import { NavigationContainer } from '@react-navigation/native';
 
 
 export default function WelcomeScreen() {
+  const { isLoggedIn, loading } = useContext(AuthContext);
+  const router = useRouter();
+
+  // Redirect to tabs if user is already logged in
+  useEffect(() => {
+    if (!loading && isLoggedIn) {
+      console.log('✅ User is logged in, redirecting to tabs...');
+      router.replace('/(tabs)');
+    }
+  }, [isLoggedIn, loading, router]);
+
+  // Don't show welcome screen while checking login status
+  if (loading) {
+    return null; // Or a loading spinner
+  }
+
+  // Don't show welcome screen if user is logged in (will redirect)
+  if (isLoggedIn) {
+    return null;
+  }
 
   return (
     <>
