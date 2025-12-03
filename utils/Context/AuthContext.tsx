@@ -35,11 +35,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
+        // On web, check URL for token first (OAuth redirect)
+        if (Platform.OS === 'web') {
+          const urlParams = new URLSearchParams(window.location.search);
+          const urlToken = urlParams.get('token');
+          const hasOAuthParams = urlParams.has('token') || urlParams.has('error') || urlParams.has('state') || urlParams.has('code');
+          
+          // If there are OAuth parameters in URL, let the OAuth handler process them first
+          // Don't check AsyncStorage yet - wait for OAuth handler to finish
+          if (hasOAuthParams) {
+            console.log('🔍 OAuth parameters detected in URL - waiting for OAuth handler to process...');
+            // The OAuth redirect handler (below) will process this and set loading to false
+            return;
+          }
+        }
+        
+        // No OAuth params in URL, check AsyncStorage for stored token
         const token = await getToken();
         setIsLoggedIn(!!token);
+        setLoading(false);
       } catch (error) {
         console.error('Error checking login status:', error);
-      } finally {
         setLoading(false);
       }
     };
@@ -214,6 +230,14 @@ if(Platform.OS === 'web') {
       const code = urlParams.get('code');
     
       console.log('🔍 Checking OAuth redirect - token:', !!token, 'error:', error, 'state:', !!state, 'code:', !!code);
+      
+      // If no OAuth parameters, just check stored token and finish loading
+      if (!token && !error && !state && !code) {
+        const storedToken = await getToken();
+        setIsLoggedIn(!!storedToken);
+        setLoading(false);
+        return;
+      }
     
       // Handle OAuth errors - if there's an error parameter, login failed
       if (error) {
@@ -249,28 +273,27 @@ if(Platform.OS === 'web') {
           await storeToken(token);
           console.log('✅ Token stored successfully - user logged in');
           setIsLoggedIn(true);
+          setLoading(false); // Finish loading after token is stored
           // Clean up URL by removing token parameter
           window.history.replaceState({}, document.title, window.location.pathname);
         } catch (err) {
           console.error('❌ Failed to store token:', err);
           await removeToken();
           setIsLoggedIn(false);
+          setLoading(false);
           // Clean up URL
           window.history.replaceState({}, document.title, window.location.pathname);
         }
-      } else if (state || code) {
-        // OAuth redirect parameters present but no token - might be in progress or failed
-        // Don't do anything yet, wait for the redirect to complete
-        // This handles the case where user is redirected back from OAuth provider
-        console.log('⏳ OAuth redirect in progress - waiting for token...');
-        // Clean up any stale OAuth parameters after a delay if no token arrives
-        setTimeout(() => {
-          const currentParams = new URLSearchParams(window.location.search);
-          if (!currentParams.get('token') && (currentParams.get('state') || currentParams.get('code'))) {
-            console.log('⚠️ OAuth redirect completed but no token - cleaning up URL');
-            window.history.replaceState({}, document.title, window.location.pathname);
-          }
-        }, 2000);
+      } else {
+        // No token, no error - check stored token and finish loading
+        const storedToken = await getToken();
+        setIsLoggedIn(!!storedToken);
+        setLoading(false);
+        // Clean up any stale OAuth parameters if present
+        if (state || code) {
+          console.log('⚠️ OAuth parameters present but no token - cleaning up URL');
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
       }
     };
 
