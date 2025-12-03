@@ -4,7 +4,7 @@ import 'react-native-reanimated';        // Then Reanimated
 
 import { Link, Stack } from "expo-router";
 import "../global.css";
-import { TouchableOpacity, View, Text, ImageBackground } from "react-native";
+import { TouchableOpacity, View, Text, ImageBackground, ActivityIndicator } from "react-native";
 import Animated, { FadeInRight } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useContext } from "react";
@@ -31,14 +31,23 @@ export default function WelcomeScreen() {
     }
   }, [isLoggedIn, loading, router]);
 
-  // Don't show welcome screen while checking login status
+  // Show loading spinner while checking login status
   if (loading) {
-    return null; // Or a loading spinner
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+        <ActivityIndicator size="large" color="#FF6347" />
+      </View>
+    );
   }
 
-  // Don't show welcome screen if user is logged in (will redirect)
+  // Show loading while redirecting if user is logged in
   if (isLoggedIn) {
-    return null;
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+        <ActivityIndicator size="large" color="#FF6347" />
+        <Text style={{ marginTop: 10, color: '#666' }}>Redirecting...</Text>
+      </View>
+    );
   }
 
   return (

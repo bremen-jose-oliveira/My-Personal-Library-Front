@@ -1,10 +1,18 @@
 [build]
-  command = "npm install && npx expo export -p web && cp -r public/* dist/ 2>/dev/null || true"
+  command = "npm install && npx expo export -p web && cp -r public/* dist/ 2>/dev/null || true && cp public/_redirects dist/_redirects 2>/dev/null || true"
   publish = "dist"
+
+# Netlify redirects for client-side routing (Expo Router)
+# This ensures all routes are handled by the React app
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
 [build.environment]
   NODE_VERSION = "18"
-  # Environment variables must be set in Netlify dashboard:
+  # Environment variables must be set in Netlify dashboard (Site settings → Environment variables):
+  # Note: OAuth Client IDs are PUBLIC (safe to commit) - they're meant to be in frontend code
   # EXPO_PUBLIC_API_URL=https://jose-long-morning-2431.fly.dev
   # EXPO_PUBLIC_IOS_CLIENT_ID=958080376950-ov7dgq16sggjncpa7u5p4edesradrr0g.apps.googleusercontent.com
   # EXPO_PUBLIC_ANDROID_CLIENT_ID=your-android-client-id.apps.googleusercontent.com
