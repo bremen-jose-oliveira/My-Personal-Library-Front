@@ -19,5 +19,9 @@ web-build/
 expo-env.d.ts
 # @end expo-cli
 .env
+.env.local
+.env.*.local
 # Local Netlify folder
 .netlify
+# Netlify config with secrets (if you create one)
+netlify.toml.local
