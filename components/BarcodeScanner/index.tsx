@@ -12,6 +12,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
   const html5QrCodeRef = useRef<any>(null);
   const [scannerId] = useState(() => `html5qr-scanner-${Date.now()}`);
   const [retryKey, setRetryKey] = useState(0);
+  const [isInitializing, setIsInitializing] = useState(false);
 
   const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) => {
     if (scanned) return;
@@ -38,38 +39,56 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
     }
   };
 
-  useEffect(() => {
-    if (Platform.OS === 'web') {
-      const initWebScanner = async () => {
-        try {
+  // Function to initialize scanner (can be called manually for user gesture)
+  const initWebScanner = React.useCallback(async () => {
+    if (Platform.OS !== 'web') return;
+    if (isInitializing) return;
+    setIsInitializing(true);
+    try {
           const { Html5Qrcode } = await import('html5-qrcode');
           
-          // Create scanner div directly in body for simplicity
-          let scannerDiv = document.getElementById(scannerId);
-          if (!scannerDiv) {
-            scannerDiv = document.createElement('div');
+          // Function to create and initialize scanner
+          const createAndInitScanner = async () => {
+            // Remove any existing scanner div
+            const existingDiv = document.getElementById(scannerId);
+            if (existingDiv) {
+              existingDiv.remove();
+            }
+
+            // Create scanner div directly in body
+            const scannerDiv = document.createElement('div');
             scannerDiv.id = scannerId;
             scannerDiv.style.cssText = `
-              position: fixed;
-              top: 0;
-              left: 0;
-              width: 100vw;
-              height: 100vh;
-              background-color: #000;
-              z-index: 9999;
+              position: fixed !important;
+              top: 0 !important;
+              left: 0 !important;
+              width: 100vw !important;
+              height: 100vh !important;
+              background-color: #000 !important;
+              z-index: 9999 !important;
+              display: block !important;
             `;
             document.body.appendChild(scannerDiv);
-            console.log('✅ Created scanner div:', scannerId);
-          }
+            console.log('✅ Created scanner div:', scannerId, 'Dimensions:', scannerDiv.offsetWidth, 'x', scannerDiv.offsetHeight);
 
-          const initScanner = async () => {
+            // Wait a moment for the div to be fully in the DOM
+            await new Promise(resolve => setTimeout(resolve, 200));
+
             try {
               const html5QrCode = new Html5Qrcode(scannerId);
               html5QrCodeRef.current = html5QrCode;
 
-              console.log('🔄 Starting camera...');
+              console.log('🔄 Starting camera with element:', scannerId);
+              
+              // Try to get available cameras first
+              const cameras = await Html5Qrcode.getCameras();
+              console.log('📷 Available cameras:', cameras.length);
+              
+              // Use the first available camera, or environment-facing if available
+              const cameraId = cameras.find((cam: any) => cam.label?.toLowerCase().includes('back') || cam.label?.toLowerCase().includes('rear'))?.id || cameras[0]?.id;
+              
               await html5QrCode.start(
-                { facingMode: 'environment' },
+                cameraId || { facingMode: 'environment' },
                 {
                   fps: 10,
                   qrbox: { width: 250, height: 250 },
@@ -83,22 +102,43 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                   });
                 },
                 (errorMessage: string) => {
+                  // Ignore common scanning errors
                   if (!errorMessage.includes('NotFoundException') && 
                       !errorMessage.includes('No MultiFormat Readers') &&
-                      !errorMessage.includes('QR code parse error')) {
-                    console.log('Scanner:', errorMessage);
+                      !errorMessage.includes('QR code parse error') &&
+                      !errorMessage.includes('No QR code found')) {
+                    console.log('Scanner message:', errorMessage);
                   }
                 }
               );
-              console.log('✅ Scanner started!');
+              console.log('✅ Scanner started successfully!');
               setHasPermission(true);
             } catch (err: any) {
               console.error('❌ Error starting scanner:', err);
+              console.error('Error details:', {
+                name: err.name,
+                message: err.message,
+                code: err.code,
+                stack: err.stack?.substring(0, 300)
+              });
               setHasPermission(false);
+              
+              // Remove the div on error
+              const errorDiv = document.getElementById(scannerId);
+              if (errorDiv) {
+                errorDiv.remove();
+              }
+              
               if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError' || err.message?.includes('permission')) {
                 Alert.alert(
                   'Camera Permission Required',
-                  'Please allow camera access in your browser settings.',
+                  'Please allow camera access in your browser settings. Look for a camera icon in the address bar.',
+                  [{ text: 'OK' }]
+                );
+              } else if (err.message?.includes('element') || err.message?.includes('container') || err.message?.includes('not found')) {
+                Alert.alert(
+                  'Scanner Error',
+                  'Failed to initialize scanner. Please try again.',
                   [{ text: 'OK' }]
                 );
               } else {
@@ -107,16 +147,29 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
             }
           };
 
-          // Wait a bit for the div to be in the DOM
-          setTimeout(initScanner, 100);
+          // Initialize immediately
+          createAndInitScanner();
         } catch (err: any) {
           console.error('Error loading html5-qrcode:', err);
           setHasPermission(false);
           Alert.alert('Scanner Error', 'Failed to load barcode scanner library.');
+        } finally {
+          setIsInitializing(false);
         }
-      };
+  }, [scannerId, isInitializing, handleBarcodeScanned]);
 
-      initWebScanner();
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      // Only auto-init on desktop, require user gesture on mobile
+      if (typeof window !== 'undefined') {
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (!isMobile) {
+          initWebScanner();
+        } else {
+          // On mobile, wait for user interaction
+          setHasPermission(null);
+        }
+      }
 
       return () => {
         if (html5QrCodeRef.current) {
@@ -138,10 +191,27 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
       };
       getCameraPermissions();
     }
-  }, [scannerId, retryKey]);
+  }, [scannerId, retryKey, initWebScanner]);
 
   if (hasPermission === null) {
-    return <Text>Requesting camera permission...</Text>;
+    return (
+      <View style={styles.container}>
+        <Text style={{ marginBottom: 20, textAlign: 'center', padding: 20, fontSize: 16, color: '#fff' }}>
+          {Platform.OS === 'web' 
+            ? 'Click the button below to start the camera scanner.'
+            : 'Requesting camera permission...'}
+        </Text>
+        {Platform.OS === 'web' && (
+          <View style={{ alignItems: 'center', gap: 10 }}>
+            <Button 
+              title={isInitializing ? "Starting Camera..." : "Start Camera Scanner"} 
+              onPress={initWebScanner}
+              disabled={isInitializing}
+            />
+          </View>
+        )}
+      </View>
+    );
   }
 
   if (hasPermission === false) {
