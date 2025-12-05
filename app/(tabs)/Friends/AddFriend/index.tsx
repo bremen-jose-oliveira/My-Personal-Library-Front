@@ -68,7 +68,7 @@ const AddFriend = () => {
 
   return (
     <ImageBackground
-      source={require("@/assets/images/Background.jpg")}
+      source={require("@/assets/images/background2.png")}
       style={{ flex: 1, width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}
       resizeMode="cover"
     >

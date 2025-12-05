@@ -54,7 +54,7 @@ export default function ExchangesScreen() {
 
   return (
     <ImageBackground
-      source={require("@/assets/images/Background.jpg")}
+      source={require("@/assets/images/background2.png")}
       style={styles.backgroundImage}
       resizeMode="cover"
     >

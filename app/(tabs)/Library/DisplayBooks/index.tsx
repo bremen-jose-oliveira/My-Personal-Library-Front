@@ -38,7 +38,7 @@ export default function DisplayBooks() {
 
   return (
     <ImageBackground
-      source={require("@/assets/images/Background.jpg")}
+      source={require("@/assets/images/background2.png")}
       style={{
         flex: 1, // Take full screen
         width: "100%", // Make sure it spans full width
