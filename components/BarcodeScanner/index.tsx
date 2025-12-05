@@ -72,12 +72,16 @@
                     element = document.createElement('div');
                     element.id = scannerId;
                     element.style.cssText = `
-                      width: 100%;
-                      height: 100%;
-                      min-height: 400px;
-                      position: relative;
+                      width: 100vw;
+                      height: 100vh;
+                      min-width: 100%;
+                      min-height: 100%;
+                      position: fixed;
+                      top: 0;
+                      left: 0;
                       background-color: #000;
                       display: block;
+                      z-index: 1;
                     `;
                     try {
                       (container as HTMLElement).appendChild(element);
@@ -90,22 +94,45 @@
                 
                 if (element) {
                   console.log('✅ Found scanner element with ID:', scannerId);
+                  
+                  // Force proper dimensions for mobile
+                  const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+                  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+                  
+                  element.style.cssText = `
+                    width: ${viewportWidth}px;
+                    height: ${viewportHeight}px;
+                    min-width: 100%;
+                    min-height: 100%;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    background-color: #000;
+                    display: block;
+                    z-index: 1;
+                  `;
+                  
                   console.log('Element details:', {
                     id: element.id,
                     parent: element.parentElement?.tagName || element.parentNode?.nodeName,
                     width: element.offsetWidth,
                     height: element.offsetHeight,
+                    viewportWidth,
+                    viewportHeight,
                     display: window.getComputedStyle(element).display,
                     visible: element.offsetWidth > 0 && element.offsetHeight > 0
                   });
                   
                   // Ensure element is visible
                   if (element.offsetWidth === 0 || element.offsetHeight === 0) {
-                    console.warn('⚠️ Element has zero dimensions, adjusting styles...');
-                    element.style.width = '100%';
-                    element.style.height = '100%';
-                    element.style.minHeight = '400px';
+                    console.warn('⚠️ Element has zero dimensions, forcing viewport size...');
+                    element.style.width = `${viewportWidth}px`;
+                    element.style.height = `${viewportHeight}px`;
+                    element.style.position = 'fixed';
+                    element.style.top = '0';
+                    element.style.left = '0';
                     element.style.display = 'block';
+                    element.style.zIndex = '1';
                   }
                   
                   try {
@@ -308,16 +335,35 @@
             if (!scannerDiv) {
               scannerDiv = document.createElement('div');
               scannerDiv.id = scannerId;
+              // Use viewport units for mobile compatibility
               scannerDiv.style.cssText = `
-                width: 100%;
-                height: 100%;
-                min-height: 400px;
-                position: relative;
+                width: 100vw;
+                height: 100vh;
+                min-width: 100%;
+                min-height: 100%;
+                position: fixed;
+                top: 0;
+                left: 0;
                 background-color: #000;
                 display: block;
+                z-index: 1;
               `;
               domNode.appendChild(scannerDiv);
               console.log('✅ Created scanner div with ID:', scannerId, 'in container');
+            } else {
+              // Update existing div styles to ensure visibility
+              scannerDiv.style.cssText = `
+                width: 100vw;
+                height: 100vh;
+                min-width: 100%;
+                min-height: 100%;
+                position: fixed;
+                top: 0;
+                left: 0;
+                background-color: #000;
+                display: block;
+                z-index: 1;
+              `;
             }
           } else {
             // Fallback: try to find by querying the document
@@ -327,12 +373,16 @@
                 scannerDiv = document.createElement('div');
                 scannerDiv.id = scannerId;
                 scannerDiv.style.cssText = `
-                  width: 100%;
-                  height: 100%;
-                  min-height: 400px;
-                  position: relative;
+                  width: 100vw;
+                  height: 100vh;
+                  min-width: 100%;
+                  min-height: 100%;
+                  position: fixed;
+                  top: 0;
+                  left: 0;
                   background-color: #000;
                   display: block;
+                  z-index: 1;
                 `;
                 // Try to find the container in the DOM
                 const containerElement = document.querySelector('[data-testid="scanner-container"]') || 
@@ -390,12 +440,14 @@
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      width: '100%',
+      height: '100%',
+      backgroundColor: '#000', // Black background for camera
     },
     webScannerContainer: {
       width: '100%',
       height: '100%',
+      flex: 1,
     },
     buttonContainer: {
       position: 'absolute',
