@@ -42,3 +42,6 @@ console.log('\nRequired sizes:');
 console.log('iOS: 1024x1024 (App Store) + various device sizes');
 console.log('Android: 512x512 (Play Store) + various densities');
 
+
+
+

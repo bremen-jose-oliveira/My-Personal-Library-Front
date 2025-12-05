@@ -4,7 +4,7 @@ import { AuthContext } from "@/utils/Context/AuthContext";
 import { Link, router, Stack } from "expo-router";
 import React, { useState, useContext } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Alert, TouchableOpacity, View, Text, Platform } from "react-native";
+import { Alert, TouchableOpacity, View, Text, Platform, ScrollView } from "react-native";
 import Ioicons from "react-native-vector-icons/Ionicons";
 import { getToken, removeToken } from "@/utils/Context/storageUtils";
 
@@ -227,219 +227,124 @@ const handleUpdatePassword = async () => {
             }}
           />
     
-          <View className="flex-1 justify-center items-center px-5 bg-gray-100">
-            <Text className="text-2xl font-semibold tracking-wide text-black mb-12">
-             Change Username
-            </Text>
-    
-            <InputField
-             value={username}
-             onChangeText={setUsername}
-              placeholder="Enter a Username"
-              placeholderTextColor="gray"
-              autoCapitalize="none"
-            />
-       <TouchableOpacity
-             style={{  backgroundColor: "#bf471b", alignItems:"center", borderRadius: 5, alignSelf: "stretch",   paddingVertical: 14,paddingHorizontal: 18,  marginBottom: 30,}}
-           
-            onPress={handleUpdateUsername}
+          <View style={{ flex: 1, justifyContent: 'flex-start', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 20, backgroundColor: '#f3f4f6' }}>
+            <ScrollView 
+              style={{ width: '100%', maxWidth: 600 }}
+              contentContainerStyle={{ paddingBottom: 40 }}
+              showsVerticalScrollIndicator={false}
             >
-              <Text className="text-white text-lg font-semibold">Update Username</Text>
-            </TouchableOpacity>
-         
-     <Text className="text-2xl font-semibold tracking-wide text-black mb-12">
-              Change Password
-            </Text>
-            <InputField
-           secureTextEntry={secureText}
-            value={oldPassword}
-              onChangeText={setOldPassword}
-              placeholder="Enter Old Password..."
-              placeholderTextColor="gray"
-            />
-               <InputField
-           secureTextEntry={secureText}
-            value={password}
-              onChangeText={setPassword}
-              placeholder="Enter New Password..."
-              placeholderTextColor="gray"
-            />
-    
-    
-            <InputField
-             secureTextEntry={secureText}
-             value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              placeholder="Confirm New Password..."
-              placeholderTextColor="gray"
-            />
-            <TouchableOpacity onPress={() => setSecureText(!secureText)}>
-              <Text
-                style={{
-                  color: "#bf471b",
-                  fontWeight: "600",
-                  marginBottom: 20,
-                }}
-              >
-                {secureText ? "Show Password" : "Hide Password"}
+              <Text style={{ fontSize: 24, fontWeight: '600', letterSpacing: 0.5, color: '#000', marginBottom: 24, marginTop: 10, textAlign: 'center' }}>
+                Change Username
               </Text>
-              
-            </TouchableOpacity>
     
-            {passwordError && (
-              <Text className="text-red-500 mt-1 mb-2">{passwordError}</Text>
-            )}
+              <InputField
+                value={username}
+                onChangeText={setUsername}
+                placeholder="Enter a Username"
+                placeholderTextColor="gray"
+                autoCapitalize="none"
+              />
+              <TouchableOpacity
+                style={{ 
+                  backgroundColor: "#bf471b", 
+                  alignItems: "center", 
+                  borderRadius: 5, 
+                  alignSelf: "stretch", 
+                  paddingVertical: 14,
+                  paddingHorizontal: 18, 
+                  marginBottom: 30,
+                  minHeight: 48
+                }}
+                onPress={handleUpdateUsername}
+              >
+                <Text style={{ color: '#fff', fontSize: 18, fontWeight: '600' }}>Update Username</Text>
+              </TouchableOpacity>
+         
+              <Text style={{ fontSize: 24, fontWeight: '600', letterSpacing: 0.5, color: '#000', marginBottom: 24, marginTop: 10, textAlign: 'center' }}>
+                Change Password
+              </Text>
+              <InputField
+                secureTextEntry={secureText}
+                value={oldPassword}
+                onChangeText={setOldPassword}
+                placeholder="Enter Old Password..."
+                placeholderTextColor="gray"
+              />
+              <InputField
+                secureTextEntry={secureText}
+                value={password}
+                onChangeText={setPassword}
+                placeholder="Enter New Password..."
+                placeholderTextColor="gray"
+              />
     
-    <TouchableOpacity
-    style={{ backgroundColor: "#bf471b", alignItems: "center", borderRadius: 5, alignSelf: "stretch", paddingVertical: 14, paddingHorizontal: 18, marginBottom: 30 }}
-    onPress={handleUpdatePassword}
->
-    <Text className="text-white text-lg font-semibold">Update Password</Text>
-</TouchableOpacity>
+              <InputField
+                secureTextEntry={secureText}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder="Confirm New Password..."
+                placeholderTextColor="gray"
+              />
+              <TouchableOpacity onPress={() => setSecureText(!secureText)}>
+                <Text
+                  style={{
+                    color: "#bf471b",
+                    fontWeight: "600",
+                    marginBottom: 20,
+                    fontSize: 14,
+                  }}
+                >
+                  {secureText ? "Show Password" : "Hide Password"}
+                </Text>
+              </TouchableOpacity>
+    
+              {passwordError && (
+                <Text style={{ color: '#ef4444', marginTop: 4, marginBottom: 8, fontSize: 14 }}>{passwordError}</Text>
+              )}
+    
+              <TouchableOpacity
+                style={{ 
+                  backgroundColor: "#bf471b", 
+                  alignItems: "center", 
+                  borderRadius: 5, 
+                  alignSelf: "stretch", 
+                  paddingVertical: 14, 
+                  paddingHorizontal: 18, 
+                  marginBottom: 30,
+                  minHeight: 48
+                }}
+                onPress={handleUpdatePassword}
+              >
+                <Text style={{ color: '#fff', fontSize: 18, fontWeight: '600' }}>Update Password</Text>
+              </TouchableOpacity>
 
-    <View style={{ marginTop: 40, paddingTop: 30, borderTopWidth: 1, borderTopColor: "#e0e0e0", width: "100%" }}>
-      <Text className="text-xl font-semibold tracking-wide text-red-600 mb-4 text-center">
-        Danger Zone
-      </Text>
-      <Text className="text-sm text-gray-600 mb-6 text-center px-4">
-        Deleting your account will permanently remove all your data including books, reviews, exchanges, and friendships. This action cannot be undone.
-      </Text>
-      <TouchableOpacity
-        style={{ 
-          backgroundColor: "#dc2626", 
-          alignItems: "center", 
-          borderRadius: 5, 
-          alignSelf: "stretch", 
-          paddingVertical: 14, 
-          paddingHorizontal: 18,
-          marginBottom: 20
-        }}
-        onPress={handleDeleteAccount}
-      >
-        <Text className="text-white text-lg font-semibold">Delete Account</Text>
-      </TouchableOpacity>
-    </View>
- 
-       
+              <View style={{ marginTop: 40, paddingTop: 30, borderTopWidth: 1, borderTopColor: "#e0e0e0", width: "100%" }}>
+                <Text style={{ fontSize: 20, fontWeight: '600', letterSpacing: 0.5, color: '#dc2626', marginBottom: 16, textAlign: 'center' }}>
+                  Danger Zone
+                </Text>
+                <Text style={{ fontSize: 14, color: '#4b5563', marginBottom: 24, textAlign: 'center', paddingHorizontal: 16, lineHeight: 20 }}>
+                  Deleting your account will permanently remove all your data including books, reviews, exchanges, and friendships. This action cannot be undone.
+                </Text>
+                <TouchableOpacity
+                  style={{ 
+                    backgroundColor: "#dc2626", 
+                    alignItems: "center", 
+                    borderRadius: 5, 
+                    alignSelf: "stretch", 
+                    paddingVertical: 14, 
+                    paddingHorizontal: 18,
+                    marginBottom: 20,
+                    minHeight: 48
+                  }}
+                  onPress={handleDeleteAccount}
+                >
+                  <Text style={{ color: '#fff', fontSize: 18, fontWeight: '600' }}>Delete Account</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
           </View>
         </>
       );
-};
-
-const handleDeleteAccount = async () => {
-  // Show warning dialog
-  const showWarning = () => {
-    if (Platform.OS === 'web') {
-      const confirmed = window.confirm(
-        '⚠️ WARNING: This action is PERMANENT and cannot be undone!\n\n' +
-        'Deleting your account will permanently remove:\n' +
-        '• All your books\n' +
-        '• All your reviews\n' +
-        '• All your exchanges\n' +
-        '• All your friendships\n' +
-        '• All your notifications\n' +
-        '• Your account data\n\n' +
-        'Are you absolutely sure you want to delete your account?'
-      );
-      
-      if (confirmed) {
-        // Second confirmation
-        const doubleConfirmed = window.confirm(
-          'This is your LAST chance to cancel.\n\n' +
-          'Click OK to permanently delete your account, or Cancel to keep it.'
-        );
-        
-        if (doubleConfirmed) {
-          performDelete();
-        }
-      }
-    } else {
-      Alert.alert(
-        '⚠️ Delete Account',
-        'This action is PERMANENT and cannot be undone!\n\n' +
-        'Deleting your account will permanently remove:\n' +
-        '• All your books\n' +
-        '• All your reviews\n' +
-        '• All your exchanges\n' +
-        '• All your friendships\n' +
-        '• All your notifications\n' +
-        '• Your account data',
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel',
-          },
-          {
-            text: 'Delete',
-            style: 'destructive',
-            onPress: () => {
-              // Second confirmation
-              Alert.alert(
-                '⚠️ Final Confirmation',
-                'This is your LAST chance to cancel.\n\n' +
-                'Are you absolutely sure you want to permanently delete your account?',
-                [
-                  {
-                    text: 'Cancel',
-                    style: 'cancel',
-                  },
-                  {
-                    text: 'Yes, Delete Forever',
-                    style: 'destructive',
-                    onPress: performDelete,
-                  },
-                ]
-              );
-            },
-          },
-        ]
-      );
-    }
-  };
-
-  const performDelete = async () => {
-    try {
-      const token = await getToken();
-      if (!token) {
-        throw new Error('You must be logged in to delete your account');
-      }
-
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/users/current`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete account');
-      }
-
-      // Account deleted successfully
-      Alert.alert(
-        'Account Deleted',
-        'Your account has been permanently deleted. We\'re sorry to see you go!',
-        [
-          {
-            text: 'OK',
-            onPress: async () => {
-              // Clear token and logout
-              await removeToken();
-              logout();
-              router.replace('/');
-            },
-          },
-        ]
-      );
-    } catch (error: any) {
-      console.error('Error deleting account:', error);
-      Alert.alert('Error', error.message || 'Failed to delete account. Please try again.');
-    }
-  };
-
-  showWarning();
 };
 
 export default AccountSettings;
