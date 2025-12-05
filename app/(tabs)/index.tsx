@@ -26,7 +26,7 @@ const HomeScreen = () => {
 
   return (
     <ImageBackground
-      source={require("@/assets/images/Backgroun2.png")}
+      source={require("@/assets/images/background2.png")}
       style={{
         flex: 1, 
         width: "100%",
