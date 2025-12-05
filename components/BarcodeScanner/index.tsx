@@ -1,4 +1,4 @@
-  import React, { useEffect, useState, useRef } from 'react';
+  import React, { useEffect, useState, useRef, useLayoutEffect } from 'react';
   import { View, Text, StyleSheet, Button, Alert, Platform } from 'react-native';
   import { Camera, CameraView } from 'expo-camera';
 
@@ -56,52 +56,25 @@
               const maxAttempts = 30; // Increased attempts for mobile
               
               const tryInit = async () => {
-                // Try multiple ways to find the element
-                let element = document.getElementById(scannerId);
-                
-                // If not found by ID, try to find by nativeID attribute (React Native Web)
-                if (!element && containerRef.current) {
-                  // @ts-ignore - accessing React Native Web internals
-                  const reactInstance = containerRef.current._internalFiberInstanceHandleDEV || 
-                                       containerRef.current._reactInternalFiber;
-                  if (reactInstance) {
-                    // Try to find child with nativeID
-                    const allElements = document.querySelectorAll(`[data-nativeid="${scannerId}"], [nativeid="${scannerId}"]`);
-                    if (allElements.length > 0) {
-                      element = allElements[0] as HTMLElement;
-                      // Set the ID so html5-qrcode can find it
-                      if (element && !element.id) {
-                        element.id = scannerId;
-                      }
-                    }
-                  }
-                }
-                
-                // Also try to find by searching all elements with the nativeID
-                if (!element) {
-                  const elementsByNativeId = document.querySelectorAll(`[data-nativeid="${scannerId}"]`);
-                  if (elementsByNativeId.length > 0) {
-                    element = elementsByNativeId[0] as HTMLElement;
-                    if (element && !element.id) {
-                      element.id = scannerId;
-                    }
-                  }
-                }
+                // Simply find element by ID - useLayoutEffect should have created it
+                const element = document.getElementById(scannerId);
                 
                 if (element) {
-                  console.log('✅ Found scanner element:', element.id || scannerId);
+                  console.log('✅ Found scanner element with ID:', scannerId);
+                  console.log('Element details:', {
+                    id: element.id,
+                    parent: element.parentElement?.tagName,
+                    width: element.offsetWidth,
+                    height: element.offsetHeight,
+                    display: window.getComputedStyle(element).display
+                  });
+                  
                   try {
-                    // Ensure element has an ID for html5-qrcode
-                    if (!element.id) {
-                      element.id = scannerId;
-                    }
-                    
                     const html5QrCode = new Html5Qrcode(scannerId);
                     html5QrCodeRef.current = html5QrCode;
 
                     console.log('🔄 Starting camera...');
                     // Request camera permission and start scanning
-                    // html5-qrcode will handle the permission request
                     await html5QrCode.start(
                       { facingMode: 'environment' }, // Use back camera on mobile devices
                       {
@@ -118,9 +91,9 @@
                       },
                       (errorMessage: string) => {
                         // Ignore scanning errors (they're normal while scanning)
-                        // Only log if it's not a common scanning error
                         if (!errorMessage.includes('NotFoundException') && 
-                            !errorMessage.includes('No MultiFormat Readers')) {
+                            !errorMessage.includes('No MultiFormat Readers') &&
+                            !errorMessage.includes('QR code parse error')) {
                           console.log('Scanner message:', errorMessage);
                         }
                       }
@@ -133,7 +106,7 @@
                     console.error('Error details:', {
                       name: err.name,
                       message: err.message,
-                      stack: err.stack
+                      code: err.code
                     });
                     setHasPermission(false);
                     if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError' || err.message?.includes('permission')) {
@@ -142,7 +115,7 @@
                         'Please allow camera access in your browser settings. Click the camera icon in your browser\'s address bar to grant permission.',
                         [{ text: 'OK' }]
                       );
-                    } else if (err.message?.includes('element') || err.message?.includes('container')) {
+                    } else if (err.message?.includes('element') || err.message?.includes('container') || err.message?.includes('not found')) {
                       console.log('⚠️ Element issue, will retry...');
                       return false; // Retry if element issue
                     } else {
@@ -151,7 +124,7 @@
                     return false;
                   }
                 } else {
-                  console.log(`⏳ Element not found yet (attempt ${attempts + 1}/${maxAttempts})`);
+                  console.log(`⏳ Element with ID "${scannerId}" not found yet (attempt ${attempts + 1}/${maxAttempts})`);
                 }
                 return false;
               };
@@ -172,9 +145,19 @@
               );
             };
             
-            // Wait longer for mobile browsers - they need more time to render
-            const delay = 500; // Increased delay for mobile
+            // Wait for useLayoutEffect to create the div, then initialize
+            // useLayoutEffect runs synchronously, but we still need a small delay
+            // to ensure the DOM is fully ready
+            const delay = 200; // Small delay to ensure DOM is ready
             setTimeout(findAndInitScanner, delay);
+            
+            // Also try after a longer delay as fallback for slower devices
+            setTimeout(() => {
+              if (hasPermission === null) {
+                console.log('🔄 Retrying scanner initialization after longer delay...');
+                findAndInitScanner();
+              }
+            }, 1000);
           } catch (err: any) {
             console.error('Error loading html5-qrcode:', err);
             setHasPermission(false);
@@ -247,64 +230,73 @@
     }
 
     if (Platform.OS === 'web') {
-      // Use useEffect to ensure the element has the correct ID after render
-      React.useEffect(() => {
-        // Find the element by nativeID and ensure it has an ID
-        const findAndSetId = () => {
-          // Try multiple ways to find the element
-          let element = document.getElementById(scannerId);
+      // Use useLayoutEffect to create the div synchronously before paint
+      useLayoutEffect(() => {
+        // Create the scanner div directly in the document
+        let scannerDiv = document.getElementById(scannerId);
+        if (!scannerDiv) {
+          scannerDiv = document.createElement('div');
+          scannerDiv.id = scannerId;
+          scannerDiv.style.width = '100%';
+          scannerDiv.style.height = '100%';
+          scannerDiv.style.position = 'relative';
+          scannerDiv.style.minHeight = '400px';
+          scannerDiv.style.display = 'block';
+          scannerDiv.style.backgroundColor = '#000'; // Black background for camera
           
-          if (!element) {
-            // Try to find by data-nativeid or nativeid attribute
-            const byNativeId = document.querySelector(`[data-nativeid="${scannerId}"], [nativeid="${scannerId}"]`);
-            if (byNativeId) {
-              element = byNativeId as HTMLElement;
-            }
-          }
-          
-          // If still not found, search in the container
-          if (!element && containerRef.current) {
-            // @ts-ignore - React Native Web internal
-            const containerElement = containerRef.current;
-            if (containerElement) {
-              const children = containerElement.querySelectorAll('*');
-              for (const child of children) {
-                const htmlChild = child as HTMLElement;
-                if (htmlChild.getAttribute('data-nativeid') === scannerId || 
-                    htmlChild.getAttribute('nativeid') === scannerId) {
-                  element = htmlChild;
-                  break;
-                }
+          // Function to find and append to container
+          const findAndAppend = () => {
+            if (containerRef.current) {
+              // @ts-ignore - React Native Web internals
+              const domNode = containerRef.current._internalFiberInstanceHandleDEV?.stateNode?.node ||
+                           containerRef.current._reactInternalFiber?.stateNode?.node;
+              
+              // Also try querySelector if the ref is a DOM element
+              const containerElement = (domNode && typeof domNode === 'object' && 'appendChild' in domNode) 
+                ? domNode 
+                : (containerRef.current as any)?.querySelector 
+                  ? containerRef.current 
+                  : null;
+              
+              if (containerElement && containerElement.appendChild) {
+                containerElement.appendChild(scannerDiv!);
+                console.log('✅ Created and appended scanner div with ID:', scannerId);
+                return true;
               }
             }
-          }
+            return false;
+          };
           
-          // Ensure element has the ID
-          if (element && !element.id) {
-            element.id = scannerId;
-            console.log('✅ Set element ID to:', scannerId);
+          // Try immediately
+          if (!findAndAppend()) {
+            // If container not ready, try multiple times
+            let attempts = 0;
+            const maxAttempts = 10;
+            const interval = setInterval(() => {
+              attempts++;
+              if (findAndAppend() || attempts >= maxAttempts) {
+                clearInterval(interval);
+                if (attempts >= maxAttempts && !document.getElementById(scannerId)?.parentElement) {
+                  console.warn('⚠️ Could not find container, appending to body as fallback');
+                  document.body.appendChild(scannerDiv!);
+                }
+              }
+            }, 50);
           }
-        };
-        
-        // Try immediately and also after a delay
-        findAndSetId();
-        const timer = setTimeout(findAndSetId, 100);
-        const timer2 = setTimeout(findAndSetId, 500);
+        }
         
         return () => {
-          clearTimeout(timer);
-          clearTimeout(timer2);
+          const element = document.getElementById(scannerId);
+          if (element && element.parentNode) {
+            element.parentNode.removeChild(element);
+          }
         };
       }, [scannerId]);
       
-      // For web, we need to render a container that html5-qrcode can attach to
-      // Use View with nativeID which React Native Web converts to an HTML element with that ID
       return (
         <View style={styles.container} ref={containerRef}>
-          <View
-            nativeID={scannerId}
-            style={styles.webScannerContainer}
-          />
+          {/* The scanner div will be created by useLayoutEffect and appended to container */}
+          <View style={styles.webScannerContainer} />
           {scanned && (
             <View style={styles.buttonContainer}>
               <Button title={"Tap to Scan Again"} onPress={() => {
