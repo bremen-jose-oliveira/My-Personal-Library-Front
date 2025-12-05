@@ -1,6 +1,7 @@
   import React, { useEffect, useState, useRef, useLayoutEffect } from 'react';
   import { View, Text, StyleSheet, Button, Alert, Platform } from 'react-native';
   import { Camera, CameraView } from 'expo-camera';
+  
 
   interface BarcodeScannerProps {
     onISBNScanned?: (isbn: string) => void; // Make the prop optional
@@ -56,24 +57,64 @@
               const maxAttempts = 30; // Increased attempts for mobile
               
               const tryInit = async () => {
-                // Simply find element by ID - useLayoutEffect should have created it
-                const element = document.getElementById(scannerId);
+                // Find element by ID
+                let element = document.getElementById(scannerId);
+                
+                // If not found, try to create it as a fallback
+                if (!element) {
+                  console.log(`⚠️ Element "${scannerId}" not found, attempting to create it...`);
+                  // Try to find the container and create the div
+                  const container = document.querySelector('[data-testid="scanner-container"]') || 
+                                  containerRef.current || 
+                                  document.body;
+                  
+                  if (container && (container.appendChild || (container as any).appendChild)) {
+                    element = document.createElement('div');
+                    element.id = scannerId;
+                    element.style.cssText = `
+                      width: 100%;
+                      height: 100%;
+                      min-height: 400px;
+                      position: relative;
+                      background-color: #000;
+                      display: block;
+                    `;
+                    try {
+                      (container as HTMLElement).appendChild(element);
+                      console.log('✅ Created scanner div as fallback');
+                    } catch (e) {
+                      console.error('Failed to append div:', e);
+                    }
+                  }
+                }
                 
                 if (element) {
                   console.log('✅ Found scanner element with ID:', scannerId);
                   console.log('Element details:', {
                     id: element.id,
-                    parent: element.parentElement?.tagName,
+                    parent: element.parentElement?.tagName || element.parentNode?.nodeName,
                     width: element.offsetWidth,
                     height: element.offsetHeight,
-                    display: window.getComputedStyle(element).display
+                    display: window.getComputedStyle(element).display,
+                    visible: element.offsetWidth > 0 && element.offsetHeight > 0
                   });
+                  
+                  // Ensure element is visible
+                  if (element.offsetWidth === 0 || element.offsetHeight === 0) {
+                    console.warn('⚠️ Element has zero dimensions, adjusting styles...');
+                    element.style.width = '100%';
+                    element.style.height = '100%';
+                    element.style.minHeight = '400px';
+                    element.style.display = 'block';
+                  }
                   
                   try {
                     const html5QrCode = new Html5Qrcode(scannerId);
                     html5QrCodeRef.current = html5QrCode;
 
-                    console.log('🔄 Starting camera...');
+                    console.log('🔄 Starting camera with element:', scannerId);
+                    console.log('Camera constraints:', { facingMode: 'environment' });
+                    
                     // Request camera permission and start scanning
                     await html5QrCode.start(
                       { facingMode: 'environment' }, // Use back camera on mobile devices
@@ -98,7 +139,7 @@
                         }
                       }
                     );
-                    console.log('✅ Scanner started successfully');
+                    console.log('✅ Scanner started successfully!');
                     setHasPermission(true);
                     return true;
                   } catch (err: any) {
@@ -106,7 +147,8 @@
                     console.error('Error details:', {
                       name: err.name,
                       message: err.message,
-                      code: err.code
+                      code: err.code,
+                      stack: err.stack?.substring(0, 200)
                     });
                     setHasPermission(false);
                     if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError' || err.message?.includes('permission')) {
@@ -119,12 +161,19 @@
                       console.log('⚠️ Element issue, will retry...');
                       return false; // Retry if element issue
                     } else {
-                      Alert.alert('Camera Error', `Failed to start camera: ${err.message || 'Unknown error'}. Please try again.`);
+                      const errorMsg = err.message || 'Unknown error';
+                      console.error('Camera error:', errorMsg);
+                      Alert.alert('Camera Error', `Failed to start camera: ${errorMsg}. Please try again.`);
                     }
                     return false;
                   }
                 } else {
                   console.log(`⏳ Element with ID "${scannerId}" not found yet (attempt ${attempts + 1}/${maxAttempts})`);
+                  // Log all divs for debugging
+                  if (attempts === 0) {
+                    const allDivs = Array.from(document.querySelectorAll('div')).slice(0, 10);
+                    console.log('First 10 divs in document:', allDivs.map(d => ({ id: d.id, className: d.className })));
+                  }
                 }
                 return false;
               };
@@ -145,19 +194,31 @@
               );
             };
             
-            // Wait for useLayoutEffect to create the div, then initialize
-            // useLayoutEffect runs synchronously, but we still need a small delay
-            // to ensure the DOM is fully ready
-            const delay = 200; // Small delay to ensure DOM is ready
-            setTimeout(findAndInitScanner, delay);
+            // Start immediately and retry multiple times
+            // The ref callback should create the div, but we need to wait for it
+            findAndInitScanner();
             
-            // Also try after a longer delay as fallback for slower devices
+            // Retry with increasing delays to ensure the div is created
             setTimeout(() => {
               if (hasPermission === null) {
-                console.log('🔄 Retrying scanner initialization after longer delay...');
+                console.log('🔄 Retrying scanner initialization (300ms)...');
                 findAndInitScanner();
               }
-            }, 1000);
+            }, 300);
+            
+            setTimeout(() => {
+              if (hasPermission === null) {
+                console.log('🔄 Retrying scanner initialization (800ms)...');
+                findAndInitScanner();
+              }
+            }, 800);
+            
+            setTimeout(() => {
+              if (hasPermission === null) {
+                console.log('🔄 Retrying scanner initialization (1500ms)...');
+                findAndInitScanner();
+              }
+            }, 1500);
           } catch (err: any) {
             console.error('Error loading html5-qrcode:', err);
             setHasPermission(false);
@@ -230,72 +291,68 @@
     }
 
     if (Platform.OS === 'web') {
-      // Use useLayoutEffect to create the div synchronously before paint
-      useLayoutEffect(() => {
-        // Create the scanner div directly in the document
-        let scannerDiv = document.getElementById(scannerId);
-        if (!scannerDiv) {
-          scannerDiv = document.createElement('div');
-          scannerDiv.id = scannerId;
-          scannerDiv.style.width = '100%';
-          scannerDiv.style.height = '100%';
-          scannerDiv.style.position = 'relative';
-          scannerDiv.style.minHeight = '400px';
-          scannerDiv.style.display = 'block';
-          scannerDiv.style.backgroundColor = '#000'; // Black background for camera
+      // Use a ref callback to get the actual DOM element and create the scanner div
+      const containerRefCallback = (node: any) => {
+        if (node) {
+          containerRef.current = node;
           
-          // Function to find and append to container
-          const findAndAppend = () => {
-            if (containerRef.current) {
-              // @ts-ignore - React Native Web internals
-              const domNode = containerRef.current._internalFiberInstanceHandleDEV?.stateNode?.node ||
-                           containerRef.current._reactInternalFiber?.stateNode?.node;
-              
-              // Also try querySelector if the ref is a DOM element
-              const containerElement = (domNode && typeof domNode === 'object' && 'appendChild' in domNode) 
-                ? domNode 
-                : (containerRef.current as any)?.querySelector 
-                  ? containerRef.current 
-                  : null;
-              
-              if (containerElement && containerElement.appendChild) {
-                containerElement.appendChild(scannerDiv!);
-                console.log('✅ Created and appended scanner div with ID:', scannerId);
-                return true;
-              }
+          // Get the actual DOM element from React Native Web
+          // @ts-ignore - React Native Web internals
+          const domNode = node._internalFiberInstanceHandleDEV?.stateNode?.node ||
+                         node._reactInternalFiber?.stateNode?.node ||
+                         (node.querySelector ? node : null);
+          
+          if (domNode) {
+            // Create or find the scanner div
+            let scannerDiv = document.getElementById(scannerId);
+            if (!scannerDiv) {
+              scannerDiv = document.createElement('div');
+              scannerDiv.id = scannerId;
+              scannerDiv.style.cssText = `
+                width: 100%;
+                height: 100%;
+                min-height: 400px;
+                position: relative;
+                background-color: #000;
+                display: block;
+              `;
+              domNode.appendChild(scannerDiv);
+              console.log('✅ Created scanner div with ID:', scannerId, 'in container');
             }
-            return false;
-          };
-          
-          // Try immediately
-          if (!findAndAppend()) {
-            // If container not ready, try multiple times
-            let attempts = 0;
-            const maxAttempts = 10;
-            const interval = setInterval(() => {
-              attempts++;
-              if (findAndAppend() || attempts >= maxAttempts) {
-                clearInterval(interval);
-                if (attempts >= maxAttempts && !document.getElementById(scannerId)?.parentElement) {
-                  console.warn('⚠️ Could not find container, appending to body as fallback');
-                  document.body.appendChild(scannerDiv!);
-                }
+          } else {
+            // Fallback: try to find by querying the document
+            setTimeout(() => {
+              let scannerDiv = document.getElementById(scannerId);
+              if (!scannerDiv) {
+                scannerDiv = document.createElement('div');
+                scannerDiv.id = scannerId;
+                scannerDiv.style.cssText = `
+                  width: 100%;
+                  height: 100%;
+                  min-height: 400px;
+                  position: relative;
+                  background-color: #000;
+                  display: block;
+                `;
+                // Try to find the container in the DOM
+                const containerElement = document.querySelector('[data-testid="scanner-container"]') || 
+                                        document.body;
+                containerElement.appendChild(scannerDiv);
+                console.log('✅ Created scanner div with ID:', scannerId, 'as fallback');
               }
-            }, 50);
+            }, 100);
           }
         }
-        
-        return () => {
-          const element = document.getElementById(scannerId);
-          if (element && element.parentNode) {
-            element.parentNode.removeChild(element);
-          }
-        };
-      }, [scannerId]);
+      };
       
       return (
-        <View style={styles.container} ref={containerRef}>
-          {/* The scanner div will be created by useLayoutEffect and appended to container */}
+        <View 
+          style={styles.container} 
+          ref={containerRefCallback}
+          // @ts-ignore - Web-only test ID
+          testID="scanner-container"
+        >
+          {/* The scanner div will be created by the ref callback */}
           <View style={styles.webScannerContainer} />
           {scanned && (
             <View style={styles.buttonContainer}>
