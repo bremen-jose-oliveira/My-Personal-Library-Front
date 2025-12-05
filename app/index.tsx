@@ -78,7 +78,7 @@ export default function WelcomeScreen() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <ImageBackground
-        source={require("@/assets/images/livraria-lello3.jpg")}
+        source={require("@/assets/images/login.png")}
         style={{
           flex: 1, 
           width: "100%", 
