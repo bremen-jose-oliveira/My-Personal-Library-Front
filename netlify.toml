@@ -12,7 +12,7 @@
   force = true
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "20"
   # Environment variables must be set in Netlify dashboard (Site settings → Environment variables):
   # Note: OAuth Client IDs are PUBLIC (safe to commit) - they're meant to be in frontend code
   # EXPO_PUBLIC_API_URL=https://jose-long-morning-2431.fly.dev
