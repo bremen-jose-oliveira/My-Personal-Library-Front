@@ -184,7 +184,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
           console.error("Scanner error:", err);
           if (isMounted) {
             setHasPermission(false);
-            const errorMessage = err?.message || err?.toString() || "Failed to initialize scanner";
+            const errorMessage =
+              err?.message || err?.toString() || "Failed to initialize scanner";
             console.error("Full error details:", err);
             Alert.alert(
               "Camera Error",
