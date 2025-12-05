@@ -47,47 +47,61 @@
         // Web implementation using html5-qrcode
         const initWebScanner = async () => {
           try {
-            // First, explicitly request camera permissions
-            try {
-              const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: 'environment' } 
-              });
-              // Stop the stream immediately - we just needed permission
-              stream.getTracks().forEach(track => track.stop());
-              console.log('✅ Camera permission granted');
-            } catch (permErr: any) {
-              console.error('Camera permission denied:', permErr);
-              setHasPermission(false);
-              if (permErr.name === 'NotAllowedError' || permErr.name === 'PermissionDeniedError') {
-                Alert.alert(
-                  'Camera Permission Required',
-                  'Please allow camera access in your browser settings to use the barcode scanner. Click the camera icon in your browser\'s address bar to grant permission.',
-                  [{ text: 'OK' }]
-                );
-              } else {
-                Alert.alert('Camera Error', 'Failed to access camera. Please check your browser settings.');
-              }
-              return;
-            }
-
             const { Html5Qrcode } = await import('html5-qrcode');
             
             // Wait for DOM to be ready and find the element
             const findAndInitScanner = async () => {
               // Try multiple times to find the element
               let attempts = 0;
-              const maxAttempts = 20;
+              const maxAttempts = 30; // Increased attempts for mobile
               
               const tryInit = async () => {
-                // Try to find element by ID in document
-                const element = document.getElementById(scannerId);
+                // Try multiple ways to find the element
+                let element = document.getElementById(scannerId);
+                
+                // If not found by ID, try to find by nativeID attribute (React Native Web)
+                if (!element && containerRef.current) {
+                  // @ts-ignore - accessing React Native Web internals
+                  const reactInstance = containerRef.current._internalFiberInstanceHandleDEV || 
+                                       containerRef.current._reactInternalFiber;
+                  if (reactInstance) {
+                    // Try to find child with nativeID
+                    const allElements = document.querySelectorAll(`[data-nativeid="${scannerId}"], [nativeid="${scannerId}"]`);
+                    if (allElements.length > 0) {
+                      element = allElements[0] as HTMLElement;
+                      // Set the ID so html5-qrcode can find it
+                      if (element && !element.id) {
+                        element.id = scannerId;
+                      }
+                    }
+                  }
+                }
+                
+                // Also try to find by searching all elements with the nativeID
+                if (!element) {
+                  const elementsByNativeId = document.querySelectorAll(`[data-nativeid="${scannerId}"]`);
+                  if (elementsByNativeId.length > 0) {
+                    element = elementsByNativeId[0] as HTMLElement;
+                    if (element && !element.id) {
+                      element.id = scannerId;
+                    }
+                  }
+                }
                 
                 if (element) {
+                  console.log('✅ Found scanner element:', element.id || scannerId);
                   try {
+                    // Ensure element has an ID for html5-qrcode
+                    if (!element.id) {
+                      element.id = scannerId;
+                    }
+                    
                     const html5QrCode = new Html5Qrcode(scannerId);
                     html5QrCodeRef.current = html5QrCode;
 
-                    // Start scanning (permission already granted)
+                    console.log('🔄 Starting camera...');
+                    // Request camera permission and start scanning
+                    // html5-qrcode will handle the permission request
                     await html5QrCode.start(
                       { facingMode: 'environment' }, // Use back camera on mobile devices
                       {
@@ -96,31 +110,48 @@
                         aspectRatio: 1.0,
                       },
                       (decodedText: string, decodedResult: any) => {
+                        console.log('📷 Barcode scanned:', decodedText);
                         handleBarcodeScanned({ 
                           type: decodedResult?.result?.format?.formatName || 'unknown', 
                           data: decodedText 
                         });
                       },
                       (errorMessage: string) => {
-                        // Ignore errors, just keep scanning
+                        // Ignore scanning errors (they're normal while scanning)
+                        // Only log if it's not a common scanning error
+                        if (!errorMessage.includes('NotFoundException') && 
+                            !errorMessage.includes('No MultiFormat Readers')) {
+                          console.log('Scanner message:', errorMessage);
+                        }
                       }
                     );
+                    console.log('✅ Scanner started successfully');
                     setHasPermission(true);
                     return true;
                   } catch (err: any) {
-                    console.error('Error starting scanner:', err);
+                    console.error('❌ Error starting scanner:', err);
+                    console.error('Error details:', {
+                      name: err.name,
+                      message: err.message,
+                      stack: err.stack
+                    });
                     setHasPermission(false);
-                    if (err.name === 'NotAllowedError' || err.message?.includes('permission')) {
+                    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError' || err.message?.includes('permission')) {
                       Alert.alert(
                         'Camera Permission Required',
                         'Please allow camera access in your browser settings. Click the camera icon in your browser\'s address bar to grant permission.',
                         [{ text: 'OK' }]
                       );
+                    } else if (err.message?.includes('element') || err.message?.includes('container')) {
+                      console.log('⚠️ Element issue, will retry...');
+                      return false; // Retry if element issue
                     } else {
-                      Alert.alert('Camera Error', 'Failed to start camera. Please try again.');
+                      Alert.alert('Camera Error', `Failed to start camera: ${err.message || 'Unknown error'}. Please try again.`);
                     }
                     return false;
                   }
+                } else {
+                  console.log(`⏳ Element not found yet (attempt ${attempts + 1}/${maxAttempts})`);
                 }
                 return false;
               };
@@ -129,15 +160,21 @@
                 const success = await tryInit();
                 if (success) return;
                 attempts++;
-                await new Promise(resolve => setTimeout(resolve, 100));
+                await new Promise(resolve => setTimeout(resolve, 150)); // Slightly longer delay
               }
               
+              console.error('❌ Failed to find scanner element after', maxAttempts, 'attempts');
               setHasPermission(false);
-              Alert.alert('Scanner Error', 'Failed to initialize scanner container. Please try again.');
+              Alert.alert(
+                'Scanner Error', 
+                'Failed to initialize scanner container. Please close and reopen the scanner.',
+                [{ text: 'OK' }]
+              );
             };
             
-            // Wait a bit for the DOM to be ready
-            setTimeout(findAndInitScanner, 300);
+            // Wait longer for mobile browsers - they need more time to render
+            const delay = 500; // Increased delay for mobile
+            setTimeout(findAndInitScanner, delay);
           } catch (err: any) {
             console.error('Error loading html5-qrcode:', err);
             setHasPermission(false);
@@ -210,6 +247,56 @@
     }
 
     if (Platform.OS === 'web') {
+      // Use useEffect to ensure the element has the correct ID after render
+      React.useEffect(() => {
+        // Find the element by nativeID and ensure it has an ID
+        const findAndSetId = () => {
+          // Try multiple ways to find the element
+          let element = document.getElementById(scannerId);
+          
+          if (!element) {
+            // Try to find by data-nativeid or nativeid attribute
+            const byNativeId = document.querySelector(`[data-nativeid="${scannerId}"], [nativeid="${scannerId}"]`);
+            if (byNativeId) {
+              element = byNativeId as HTMLElement;
+            }
+          }
+          
+          // If still not found, search in the container
+          if (!element && containerRef.current) {
+            // @ts-ignore - React Native Web internal
+            const containerElement = containerRef.current;
+            if (containerElement) {
+              const children = containerElement.querySelectorAll('*');
+              for (const child of children) {
+                const htmlChild = child as HTMLElement;
+                if (htmlChild.getAttribute('data-nativeid') === scannerId || 
+                    htmlChild.getAttribute('nativeid') === scannerId) {
+                  element = htmlChild;
+                  break;
+                }
+              }
+            }
+          }
+          
+          // Ensure element has the ID
+          if (element && !element.id) {
+            element.id = scannerId;
+            console.log('✅ Set element ID to:', scannerId);
+          }
+        };
+        
+        // Try immediately and also after a delay
+        findAndSetId();
+        const timer = setTimeout(findAndSetId, 100);
+        const timer2 = setTimeout(findAndSetId, 500);
+        
+        return () => {
+          clearTimeout(timer);
+          clearTimeout(timer2);
+        };
+      }, [scannerId]);
+      
       // For web, we need to render a container that html5-qrcode can attach to
       // Use View with nativeID which React Native Web converts to an HTML element with that ID
       return (

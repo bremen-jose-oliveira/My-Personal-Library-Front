@@ -11,7 +11,7 @@ import { getToken, removeToken } from "@/utils/Context/storageUtils";
 
 const AccountSettings = () => {
   const { logout } = useContext(AuthContext);
-  const { currentUser, refreshCurrentUser } = useUserContext();
+  const { currentUser, refreshCurrentUser, logoutUserLocally } = useUserContext();
 
   const [secureText, setSecureText] = useState(true);
 
@@ -197,22 +197,34 @@ const handleUpdatePassword = async () => {
         throw new Error(errorData.message || 'Failed to delete account');
       }
 
-      // Account deleted successfully
-      Alert.alert(
-        'Account Deleted',
-        'Your account has been permanently deleted. We\'re sorry to see you go!',
-        [
-          {
-            text: 'OK',
-            onPress: async () => {
-              // Clear token and logout
-              await removeToken();
-              logout();
-              router.replace('/');
-            },
-          },
-        ]
-      );
+      // Account deleted successfully - immediately clear token and redirect
+      console.log('✅ Account deleted successfully, clearing token and redirecting...');
+      
+      // Clear token and user data immediately
+      await removeToken();
+      await logoutUserLocally();
+      logout();
+      
+      // Clean up URL parameters on web
+      if (Platform.OS === 'web') {
+        window.history.replaceState({}, document.title, '/');
+      }
+      
+      // Redirect to welcome screen immediately
+      // The logout() call should trigger AuthContext to redirect, but we'll ensure it happens
+      router.replace('/');
+      
+      // Show success message after redirect is initiated
+      setTimeout(() => {
+        if (Platform.OS === 'web') {
+          alert('Your account has been permanently deleted. We\'re sorry to see you go!');
+        } else {
+          Alert.alert(
+            'Account Deleted',
+            'Your account has been permanently deleted. We\'re sorry to see you go!'
+          );
+        }
+      }, 500);
     } catch (error: any) {
       console.error('Error deleting account:', error);
       Alert.alert('Error', error.message || 'Failed to delete account. Please try again.');
