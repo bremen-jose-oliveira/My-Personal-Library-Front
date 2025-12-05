@@ -1,4 +1,4 @@
-const { getDefaultConfig } = require('@expo/metro-config');
+const { getDefaultConfig } = require("@expo/metro-config");
 const { withNativeWind } = require("nativewind/metro");
 
 /** @type {import('expo/metro-config').MetroConfig} */
@@ -8,34 +8,54 @@ const { transformer, resolver } = config;
 
 config.transformer = {
   ...transformer,
-  babelTransformerPath: require.resolve('react-native-svg-transformer/expo'), // SVG support
+  babelTransformerPath: require.resolve("react-native-svg-transformer/expo"), // SVG support
 };
 
 config.resolver = {
   ...resolver,
-  assetExts: resolver.assetExts.filter(ext => ext !== 'svg'),
+  assetExts: resolver.assetExts.filter((ext) => ext !== "svg"),
   sourceExts: [
     ...resolver.sourceExts,
-    'svg',
-    'web.js',
-    'web.jsx',
-    'web.ts',
-    'web.tsx',
+    "svg",
+    "web.js",
+    "web.jsx",
+    "web.ts",
+    "web.tsx",
   ],
   extraNodeModules: {
-    'react-native': require.resolve('react-native-web'),
+    "react-native": require.resolve("react-native-web"),
   },
   resolveRequest: (context, moduleName, platform) => {
     if (platform === "web") {
+      // Handle Quagga2 for web builds
+      if (
+        moduleName === "@ericblade/quagga2" ||
+        moduleName.startsWith("@ericblade/quagga2/")
+      ) {
+        // Let Metro resolve it normally - it should work with dynamic imports
+        return context.resolveRequest(context, moduleName, platform);
+      }
       if (moduleName.endsWith("BaseViewConfig")) {
-        return { filePath: require.resolve("identity-obj-proxy"), type: "sourceFile" };
+        return {
+          filePath: require.resolve("identity-obj-proxy"),
+          type: "sourceFile",
+        };
       }
       if (moduleName.endsWith("RCTNetworking")) {
-        return { filePath: require.resolve("identity-obj-proxy"), type: "sourceFile" };
-      }
-      if (moduleName.endsWith("../Components/AccessibilityInfo/legacySendAccessibilityEvent")) {
         return {
-          filePath: require.resolve("react-native-web/dist/exports/AccessibilityInfo"),
+          filePath: require.resolve("identity-obj-proxy"),
+          type: "sourceFile",
+        };
+      }
+      if (
+        moduleName.endsWith(
+          "../Components/AccessibilityInfo/legacySendAccessibilityEvent"
+        )
+      ) {
+        return {
+          filePath: require.resolve(
+            "react-native-web/dist/exports/AccessibilityInfo"
+          ),
           type: "sourceFile",
         };
       }
@@ -58,14 +78,22 @@ config.resolver = {
         };
       }
       if (moduleName.endsWith("DevToolsSettings/DevToolsSettingsManager")) {
-        return { filePath: require.resolve("identity-obj-proxy"), type: "sourceFile" };
+        return {
+          filePath: require.resolve("identity-obj-proxy"),
+          type: "sourceFile",
+        };
       }
       if (moduleName.endsWith("Utilities/BackHandler")) {
-        return { filePath: require.resolve("identity-obj-proxy"), type: "sourceFile" };
+        return {
+          filePath: require.resolve("identity-obj-proxy"),
+          type: "sourceFile",
+        };
       }
       if (moduleName.endsWith("./Utilities/BackHandler")) {
         return {
-          filePath: require.resolve("react-native-web/dist/exports/Utilities/BackHandler"),
+          filePath: require.resolve(
+            "react-native-web/dist/exports/Utilities/BackHandler"
+          ),
           type: "sourceFile",
         };
       }
@@ -116,7 +144,5 @@ process.on("unhandledRejection", (error) => {
   }
   throw error;
 });
-
-
 
 module.exports = withNativeWind(config, { input: "./global.css" });

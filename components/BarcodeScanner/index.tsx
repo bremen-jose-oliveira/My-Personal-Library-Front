@@ -59,20 +59,47 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
       let isMounted = true;
 
       const initScanner = async () => {
+        // Only try to load Quagga2 if we're in a browser environment
+        if (typeof window === "undefined" || typeof document === "undefined") {
+          if (isMounted) {
+            setHasPermission(false);
+          }
+          return;
+        }
+
         try {
-          // Dynamic import with better error handling
+          // Dynamic import with better error handling - use a try-catch to prevent build failures
           let Quagga;
           try {
-            const quaggaModule = await import("@ericblade/quagga2");
+            // Use dynamic import that won't break static export
+            // Wrap in a function to ensure it's truly lazy-loaded
+            const loadQuagga = () => import("@ericblade/quagga2");
+            const quaggaModule = await loadQuagga().catch((e) => {
+              console.warn("Quagga2 import failed, scanner will not work:", e);
+              return null;
+            });
+
+            if (!quaggaModule) {
+              throw new Error("Quagga2 module not available");
+            }
+
             Quagga = quaggaModule.default || quaggaModule;
+
+            // Additional check to ensure Quagga is properly loaded
+            if (!Quagga) {
+              throw new Error("Quagga2 default export not found");
+            }
           } catch (importError: any) {
             console.error("Failed to import Quagga2:", importError);
             if (isMounted) {
               setHasPermission(false);
-              Alert.alert(
-                "Scanner Error",
-                "Failed to load barcode scanner library. Please refresh the page."
-              );
+              // Don't show alert during build/SSR - only in browser
+              if (typeof window !== "undefined") {
+                Alert.alert(
+                  "Scanner Error",
+                  "Barcode scanner is not available. Please try again later or use manual entry."
+                );
+              }
             }
             return;
           }
@@ -195,30 +222,47 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
         }
       };
 
-      // Small delay to ensure DOM is ready
-      const timer = setTimeout(initScanner, 300);
+      // Small delay to ensure DOM is ready - only if we're in browser
+      if (typeof window !== "undefined") {
+        const timer = setTimeout(() => {
+          initScanner().catch((err) => {
+            console.error("Scanner initialization error:", err);
+            if (isMounted) {
+              setHasPermission(false);
+            }
+          });
+        }, 300);
 
-      return () => {
-        isMounted = false;
-        clearTimeout(timer);
-        if (quaggaRef.current) {
-          try {
-            quaggaRef.current.offDetected();
-            quaggaRef.current.stop();
-          } catch (e) {
-            console.error("Error stopping Quagga:", e);
+        return () => {
+          isMounted = false;
+          clearTimeout(timer);
+          if (quaggaRef.current) {
+            try {
+              quaggaRef.current.offDetected();
+              quaggaRef.current.stop();
+            } catch (e) {
+              console.error("Error stopping Quagga:", e);
+            }
           }
+          if (scannerElementRef.current?.parentNode) {
+            scannerElementRef.current.parentNode.removeChild(
+              scannerElementRef.current
+            );
+          }
+          const container = document.getElementById("scanner-container");
+          if (container) {
+            container.remove();
+          }
+        };
+      } else {
+        // SSR/build time - just set permission to false
+        if (isMounted) {
+          setHasPermission(false);
         }
-        if (scannerElementRef.current?.parentNode) {
-          scannerElementRef.current.parentNode.removeChild(
-            scannerElementRef.current
-          );
-        }
-        const container = document.getElementById("scanner-container");
-        if (container) {
-          container.remove();
-        }
-      };
+        return () => {
+          isMounted = false;
+        };
+      }
     } else {
       const getCameraPermissions = async () => {
         const { status } = await Camera.requestCameraPermissionsAsync();
