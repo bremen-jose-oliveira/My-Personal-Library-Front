@@ -12,6 +12,7 @@
     const html5QrCodeRef = useRef<any>(null);
     const containerRef = useRef<View>(null);
     const [scannerId] = useState(() => `html5qr-scanner-${Date.now()}`);
+    const [retryKey, setRetryKey] = useState(0); // Key to force re-initialization
 
     const handleBarcodeScanned = ({ type, data }: { type: string; data: string }) => {
       if (scanned) return; // Prevent scanning multiple times
@@ -46,6 +47,29 @@
         // Web implementation using html5-qrcode
         const initWebScanner = async () => {
           try {
+            // First, explicitly request camera permissions
+            try {
+              const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment' } 
+              });
+              // Stop the stream immediately - we just needed permission
+              stream.getTracks().forEach(track => track.stop());
+              console.log('✅ Camera permission granted');
+            } catch (permErr: any) {
+              console.error('Camera permission denied:', permErr);
+              setHasPermission(false);
+              if (permErr.name === 'NotAllowedError' || permErr.name === 'PermissionDeniedError') {
+                Alert.alert(
+                  'Camera Permission Required',
+                  'Please allow camera access in your browser settings to use the barcode scanner. Click the camera icon in your browser\'s address bar to grant permission.',
+                  [{ text: 'OK' }]
+                );
+              } else {
+                Alert.alert('Camera Error', 'Failed to access camera. Please check your browser settings.');
+              }
+              return;
+            }
+
             const { Html5Qrcode } = await import('html5-qrcode');
             
             // Wait for DOM to be ready and find the element
@@ -63,7 +87,7 @@
                     const html5QrCode = new Html5Qrcode(scannerId);
                     html5QrCodeRef.current = html5QrCode;
 
-                    // Request camera permission and start scanning
+                    // Start scanning (permission already granted)
                     await html5QrCode.start(
                       { facingMode: 'environment' }, // Use back camera on mobile devices
                       {
@@ -86,7 +110,15 @@
                   } catch (err: any) {
                     console.error('Error starting scanner:', err);
                     setHasPermission(false);
-                    Alert.alert('Camera Error', 'Failed to access camera. Please ensure you have granted camera permissions.');
+                    if (err.name === 'NotAllowedError' || err.message?.includes('permission')) {
+                      Alert.alert(
+                        'Camera Permission Required',
+                        'Please allow camera access in your browser settings. Click the camera icon in your browser\'s address bar to grant permission.',
+                        [{ text: 'OK' }]
+                      );
+                    } else {
+                      Alert.alert('Camera Error', 'Failed to start camera. Please try again.');
+                    }
                     return false;
                   }
                 }
@@ -133,13 +165,48 @@
 
         getCameraPermissions();
       }
-    }, [scannerId]);
+    }, [scannerId, retryKey]); // Add retryKey to dependencies to re-run on retry
 
     if (hasPermission === null) {
       return <Text>Requesting for camera permission...</Text>;
     }
     if (hasPermission === false) {
-      return <Text>No access to camera. Please enable camera access in your device settings.</Text>;
+      return (
+        <View style={styles.container}>
+          <Text style={{ marginBottom: 20, textAlign: 'center', padding: 20, fontSize: 16 }}>
+            {Platform.OS === 'web' 
+              ? 'Camera access is required to scan barcodes. Please allow camera permissions in your browser settings.'
+              : 'No access to camera. Please enable camera access in your device settings.'}
+          </Text>
+          {Platform.OS === 'web' && (
+            <View style={{ alignItems: 'center', gap: 10 }}>
+              <Button 
+                title="Request Camera Permission" 
+                onPress={async () => {
+                  try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                      video: { facingMode: 'environment' } 
+                    });
+                    stream.getTracks().forEach(track => track.stop());
+                    setHasPermission(null); // Reset to trigger re-initialization
+                    setRetryKey(prev => prev + 1); // Force re-initialization
+                  } catch (err: any) {
+                    console.error('Permission request failed:', err);
+                    Alert.alert(
+                      'Permission Denied',
+                      'Please click the camera icon (🔒 or 📷) in your browser\'s address bar to grant camera permission, then click "Request Camera Permission" again.',
+                      [{ text: 'OK' }]
+                    );
+                  }
+                }} 
+              />
+              <Text style={{ fontSize: 12, color: '#666', textAlign: 'center', paddingHorizontal: 20, marginTop: 10 }}>
+                Tip: Look for a camera icon in your browser's address bar and click it to allow camera access.
+              </Text>
+            </View>
+          )}
+        </View>
+      );
     }
 
     if (Platform.OS === 'web') {
