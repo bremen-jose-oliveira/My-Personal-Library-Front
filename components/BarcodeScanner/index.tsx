@@ -60,7 +60,26 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
 
       const initScanner = async () => {
         try {
-          const Quagga = (await import("@ericblade/quagga2")).default;
+          // Dynamic import with better error handling
+          let Quagga;
+          try {
+            const quaggaModule = await import("@ericblade/quagga2");
+            Quagga = quaggaModule.default || quaggaModule;
+          } catch (importError: any) {
+            console.error("Failed to import Quagga2:", importError);
+            if (isMounted) {
+              setHasPermission(false);
+              Alert.alert(
+                "Scanner Error",
+                "Failed to load barcode scanner library. Please refresh the page."
+              );
+            }
+            return;
+          }
+
+          if (!Quagga || typeof Quagga.init !== "function") {
+            throw new Error("Quagga2 library is not properly loaded");
+          }
 
           // Create a container div for the scanner
           const scannerDiv = document.createElement("div");
@@ -165,9 +184,11 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
           console.error("Scanner error:", err);
           if (isMounted) {
             setHasPermission(false);
+            const errorMessage = err?.message || err?.toString() || "Failed to initialize scanner";
+            console.error("Full error details:", err);
             Alert.alert(
               "Camera Error",
-              err.message || "Failed to initialize scanner"
+              `Scanner initialization failed: ${errorMessage}. Please ensure you're using HTTPS or localhost.`
             );
           }
         }

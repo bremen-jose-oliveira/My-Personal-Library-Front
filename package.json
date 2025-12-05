@@ -40,7 +40,6 @@
     "expo-status-bar": "~2.0.0",
     "expo-system-ui": "~4.0.9",
     "expo-web-browser": "~14.0.1",
-    "html5-qrcode": "^2.3.8",
     "identity-obj-proxy": "^3.0.0",
     "metro": "^0.81.0",
     "metro-core": "^0.81.0",
