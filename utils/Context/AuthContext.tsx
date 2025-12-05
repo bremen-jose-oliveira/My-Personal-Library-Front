@@ -13,6 +13,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 interface AuthContextProps {
   isLoggedIn: boolean;
+  loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   createUser: (username: string, email: string, password: string) => Promise<void>;
@@ -225,13 +226,26 @@ if(Platform.OS === 'web') {
       // If no OAuth parameters, check stored token (normal page load/refresh)
       if (!token && !error && !state && !code) {
         console.log('🔍 [Web] No OAuth params - checking stored token...');
-        const storedToken = await getToken();
-        console.log('🔍 [Web] Stored token found:', !!storedToken);
-        if (storedToken) {
-          console.log('✅ [Web] Token exists, setting isLoggedIn = true');
-          setIsLoggedIn(true);
-        } else {
-          console.log('❌ [Web] No token found, setting isLoggedIn = false');
+        try {
+          const storedToken = await getToken();
+          console.log('🔍 [Web] Stored token found:', !!storedToken);
+          if (storedToken) {
+            // Validate token format before setting logged in
+            const tokenParts = storedToken.split('.');
+            if (tokenParts.length === 3) {
+              console.log('✅ [Web] Valid token exists, setting isLoggedIn = true');
+              setIsLoggedIn(true);
+            } else {
+              console.log('❌ [Web] Invalid token format, removing token');
+              await removeToken();
+              setIsLoggedIn(false);
+            }
+          } else {
+            console.log('❌ [Web] No token found, setting isLoggedIn = false');
+            setIsLoggedIn(false);
+          }
+        } catch (err) {
+          console.error('❌ [Web] Error checking stored token:', err);
           setIsLoggedIn(false);
         }
         setLoading(false);
@@ -284,6 +298,14 @@ if(Platform.OS === 'web') {
           setLoading(false); // Finish loading after token is stored
           // Clean up URL by removing token parameter
           window.history.replaceState({}, document.title, window.location.pathname);
+          // Navigate to tabs after successful login - use setTimeout to ensure token is fully stored
+          setTimeout(() => {
+            if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+              console.log('🔄 Navigating to tabs after successful login');
+              // Use window.location.replace to avoid adding to history
+              window.location.replace('/(tabs)');
+            }
+          }, 100);
         } catch (err) {
           console.error('❌ Failed to store token:', err);
           await removeToken();
@@ -295,9 +317,26 @@ if(Platform.OS === 'web') {
       } else {
         // No token, no error - check stored token and finish loading
         console.log('🔍 [Web] No token in URL - checking stored token...');
-        const storedToken = await getToken();
-        console.log('🔍 [Web] Stored token result:', !!storedToken);
-        setIsLoggedIn(!!storedToken);
+        try {
+          const storedToken = await getToken();
+          console.log('🔍 [Web] Stored token result:', !!storedToken);
+          if (storedToken) {
+            // Validate token format
+            const tokenParts = storedToken.split('.');
+            if (tokenParts.length === 3) {
+              setIsLoggedIn(true);
+            } else {
+              console.log('❌ [Web] Invalid token format, removing');
+              await removeToken();
+              setIsLoggedIn(false);
+            }
+          } else {
+            setIsLoggedIn(false);
+          }
+        } catch (err) {
+          console.error('❌ [Web] Error checking stored token:', err);
+          setIsLoggedIn(false);
+        }
         setLoading(false);
         // Clean up any stale OAuth parameters if present
         if (state || code) {
