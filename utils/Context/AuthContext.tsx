@@ -215,13 +215,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 if(Platform.OS === 'web') {
   useEffect(() => {
     const handleOAuthRedirect = async () => {
+      // Get current path and search params
+      const currentPath = window.location.pathname;
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('token');
       const error = urlParams.get('error');
       const state = urlParams.get('state');
       const code = urlParams.get('code');
     
-      console.log('🔍 [Web] Checking OAuth redirect - token:', !!token, 'error:', error, 'state:', !!state, 'code:', !!code);
+      console.log('🔍 [Web] Checking OAuth redirect - path:', currentPath, 'token:', !!token, 'error:', error, 'state:', !!state, 'code:', !!code);
       
       // If no OAuth parameters, check stored token (normal page load/refresh)
       if (!token && !error && !state && !code) {
@@ -296,16 +298,18 @@ if(Platform.OS === 'web') {
           console.log('✅ Token stored successfully - user logged in');
           setIsLoggedIn(true);
           setLoading(false); // Finish loading after token is stored
+          
           // Clean up URL by removing token parameter
-          window.history.replaceState({}, document.title, window.location.pathname);
-          // Navigate to tabs after successful login - use setTimeout to ensure token is fully stored
-          setTimeout(() => {
-            if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-              console.log('🔄 Navigating to tabs after successful login');
-              // Use window.location.replace to avoid adding to history
-              window.location.replace('/(tabs)');
-            }
-          }, 100);
+          const currentPath = window.location.pathname;
+          window.history.replaceState({}, document.title, currentPath);
+          
+          // If we're on /(tabs) or any route other than /, we're good - just stay there
+          // If we're on /, the Redirect component will handle navigation
+          if (currentPath === '/' || currentPath === '/index.html') {
+            console.log('🔄 Token stored on welcome screen, Redirect component will handle navigation');
+          } else {
+            console.log('✅ Token stored, user is on route:', currentPath, '- staying here');
+          }
         } catch (err) {
           console.error('❌ Failed to store token:', err);
           await removeToken();
@@ -354,9 +358,27 @@ if(Platform.OS === 'web') {
       handleOAuthRedirect();
     };
     window.addEventListener('popstate', handlePopState);
+    
+    // Also check periodically in case URL changes without popstate (like OAuth redirects)
+    // This is especially important for OAuth redirects that go directly to /(tabs)
+    const intervalId = setInterval(() => {
+      // Only check if we have a token in URL and we're not already logged in
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      if (token && !isLoggedIn) {
+        console.log('🔄 Found token in URL during interval check, processing...');
+        handleOAuthRedirect();
+      }
+    }, 500); // Check every 500ms for the first few seconds after mount
+
+    // Clear interval after 5 seconds (should be enough for OAuth redirect)
+    setTimeout(() => {
+      clearInterval(intervalId);
+    }, 5000);
 
     return () => {
       window.removeEventListener('popstate', handlePopState);
+      clearInterval(intervalId);
     };
   }, []); // Only run once on mount
 
