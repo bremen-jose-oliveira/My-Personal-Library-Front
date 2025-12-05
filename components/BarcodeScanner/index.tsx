@@ -143,17 +143,13 @@
     }
 
     if (Platform.OS === 'web') {
-      // For web, we need to render a div element that html5-qrcode can attach to
+      // For web, we need to render a container that html5-qrcode can attach to
+      // Use View with nativeID which React Native Web converts to an HTML element with that ID
       return (
         <View style={styles.container} ref={containerRef}>
-          {/* @ts-ignore - Web-specific HTML element */}
-          <div 
-            id={scannerId}
-            style={{ 
-              width: '100%', 
-              height: '100%',
-              position: 'relative'
-            }}
+          <View
+            nativeID={scannerId}
+            style={styles.webScannerContainer}
           />
           {scanned && (
             <View style={styles.buttonContainer}>

@@ -361,20 +361,24 @@ if(Platform.OS === 'web') {
     
     // Also check periodically in case URL changes without popstate (like OAuth redirects)
     // This is especially important for OAuth redirects that go directly to /(tabs)
+    let checkCount = 0;
+    const maxChecks = 10; // Check 10 times (5 seconds total)
     const intervalId = setInterval(() => {
-      // Only check if we have a token in URL and we're not already logged in
+      checkCount++;
+      // Only check if we have a token in URL
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('token');
-      if (token && !isLoggedIn) {
+      if (token) {
         console.log('🔄 Found token in URL during interval check, processing...');
         handleOAuthRedirect();
+        clearInterval(intervalId); // Stop checking once we found and processed the token
+        return;
       }
-    }, 500); // Check every 500ms for the first few seconds after mount
-
-    // Clear interval after 5 seconds (should be enough for OAuth redirect)
-    setTimeout(() => {
-      clearInterval(intervalId);
-    }, 5000);
+      if (checkCount >= maxChecks) {
+        // Stop checking after max attempts
+        clearInterval(intervalId);
+      }
+    }, 500); // Check every 500ms
 
     return () => {
       window.removeEventListener('popstate', handlePopState);
