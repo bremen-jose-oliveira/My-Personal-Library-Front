@@ -1,8 +1,9 @@
 import InputField from "@/components/inputField";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
 import { AuthContext } from "@/utils/Context/AuthContext";
+import { useUserContext } from "@/utils/Context/UserContext";
 import { Link, router, Stack } from "expo-router";
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert, TouchableOpacity, View, Text, Platform, ScrollView } from "react-native";
 import Ioicons from "react-native-vector-icons/Ionicons";
@@ -10,6 +11,7 @@ import { getToken, removeToken } from "@/utils/Context/storageUtils";
 
 const AccountSettings = () => {
   const { logout } = useContext(AuthContext);
+  const { currentUser, refreshCurrentUser } = useUserContext();
 
   const [secureText, setSecureText] = useState(true);
 
@@ -58,6 +60,9 @@ const AccountSettings = () => {
         // Success feedback
         Alert.alert("Success", "Username updated successfully!");
         console.log("Updated User:", responseData);
+        // Refresh current user to show updated username
+        await refreshCurrentUser();
+        setUsername(""); // Clear the input field
         
     } catch (error:any) {
         console.error("Error updating username:", error);
@@ -233,6 +238,42 @@ const handleUpdatePassword = async () => {
               contentContainerStyle={{ paddingBottom: 40 }}
               showsVerticalScrollIndicator={false}
             >
+              {/* Current User Information */}
+              <View style={{ 
+                backgroundColor: '#fff', 
+                borderRadius: 8, 
+                padding: 16, 
+                marginBottom: 24, 
+                width: '100%',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.1,
+                shadowRadius: 2,
+                elevation: 2
+              }}>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#6b7280', marginBottom: 8 }}>
+                  Current Account Information
+                </Text>
+                {currentUser ? (
+                  <>
+                    {currentUser.username && (
+                      <View style={{ marginBottom: 8 }}>
+                        <Text style={{ fontSize: 14, color: '#9ca3af', marginBottom: 4 }}>Username</Text>
+                        <Text style={{ fontSize: 18, fontWeight: '600', color: '#000' }}>{currentUser.username}</Text>
+                      </View>
+                    )}
+                    {currentUser.email && (
+                      <View>
+                        <Text style={{ fontSize: 14, color: '#9ca3af', marginBottom: 4 }}>Email</Text>
+                        <Text style={{ fontSize: 18, fontWeight: '600', color: '#000' }}>{currentUser.email}</Text>
+                      </View>
+                    )}
+                  </>
+                ) : (
+                  <Text style={{ fontSize: 14, color: '#9ca3af' }}>Loading user information...</Text>
+                )}
+              </View>
+
               <Text style={{ fontSize: 24, fontWeight: '600', letterSpacing: 0.5, color: '#000', marginBottom: 24, marginTop: 10, textAlign: 'center' }}>
                 Change Username
               </Text>
