@@ -111,13 +111,14 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
           // Create a container div for the scanner
           const scannerDiv = document.createElement("div");
           scannerDiv.id = "quagga-scanner";
-          scannerDiv.style.width = "100%";
-          scannerDiv.style.height = "100%";
-          scannerDiv.style.position = "absolute";
+          scannerDiv.style.width = "100vw";
+          scannerDiv.style.height = "100vh";
+          scannerDiv.style.position = "fixed";
           scannerDiv.style.top = "0";
           scannerDiv.style.left = "0";
-          scannerDiv.style.zIndex = "1000";
+          scannerDiv.style.zIndex = "10000";
           scannerDiv.style.backgroundColor = "#000";
+          scannerDiv.style.overflow = "hidden";
 
           // Find or create container
           let container = document.getElementById("scanner-container");
@@ -136,6 +137,17 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
           container.appendChild(scannerDiv);
           scannerElementRef.current = scannerDiv;
 
+          // Set up detection callback BEFORE initialization
+          const detectionHandler = (result: any) => {
+            if (isMounted && result?.codeResult) {
+              console.log("Barcode detected:", result.codeResult);
+              handleBarcodeScanned({
+                type: result.codeResult.format || "unknown",
+                data: result.codeResult.code,
+              });
+            }
+          };
+
           // Initialize Quagga2
           Quagga.init(
             {
@@ -151,7 +163,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
               },
               decoder: {
                 readers: [
-                  "ean_reader",
+                  "ean_reader", // EAN-13 for ISBN
                   "ean_8_reader",
                   "code_128_reader",
                   "code_39_reader",
@@ -163,8 +175,14 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
               locator: {
                 halfSample: true,
                 patchSize: "medium",
+                showBoundingBox: true,
+                showPatches: false,
+                showFoundPatches: false,
+                showSkeleton: false,
+                showLabels: false,
+                showPatchLabels: false,
               },
-              numOfWorkers: 2,
+              numOfWorkers: 4,
               frequency: 10,
             },
             (err: Error | null) => {
@@ -191,22 +209,36 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
               }
 
               if (isMounted) {
+                // Set up detection callback after init but before start
+                Quagga.onDetected(detectionHandler);
+
+                // Also listen for processed frames for debugging
+                Quagga.onProcessed((result: any) => {
+                  // Log when frames are being processed (helps debug if scanning is working)
+                  if (result && result.codeResult) {
+                    console.log(
+                      "Processed barcode detected:",
+                      result.codeResult
+                    );
+                  }
+                });
+
+                // Start Quagga
                 Quagga.start();
-                setHasPermission(true);
-                quaggaRef.current = Quagga;
+
+                // Small delay to ensure everything is initialized
+                setTimeout(() => {
+                  if (isMounted) {
+                    setHasPermission(true);
+                    quaggaRef.current = Quagga;
+                    console.log(
+                      "Quagga2 started successfully and ready to scan"
+                    );
+                  }
+                }, 500);
               }
             }
           );
-
-          // Handle detected barcodes
-          Quagga.onDetected((result: any) => {
-            if (isMounted && result?.codeResult) {
-              handleBarcodeScanned({
-                type: result.codeResult.format || "unknown",
-                data: result.codeResult.code,
-              });
-            }
-          });
         } catch (err: any) {
           console.error("Scanner error:", err);
           if (isMounted) {
@@ -295,6 +327,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
   if (Platform.OS === "web") {
     return (
       <View style={styles.container}>
+        {/* The Quagga2 scanner is rendered in a div appended to body */}
         <Text style={styles.text}>
           Camera is active. Point at a barcode to scan.
         </Text>
@@ -305,7 +338,18 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
               onPress={() => {
                 setScanned(false);
                 if (quaggaRef.current) {
-                  quaggaRef.current.resume();
+                  try {
+                    quaggaRef.current.resume();
+                  } catch (e) {
+                    console.error("Error resuming scanner:", e);
+                    // If resume fails, try restarting
+                    if (quaggaRef.current.stop) {
+                      quaggaRef.current.stop();
+                    }
+                    if (quaggaRef.current.start) {
+                      quaggaRef.current.start();
+                    }
+                  }
                 }
               }}
             />
