@@ -9,6 +9,8 @@ interface BarcodeScannerProps {
 const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
+  const [scanningStatus, setScanningStatus] =
+    useState<string>("Initializing...");
   const quaggaRef = useRef<any>(null);
   const scannerElementRef = useRef<HTMLDivElement | null>(null);
 
@@ -120,6 +122,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
           scannerDiv.style.backgroundColor = "#000";
           scannerDiv.style.overflow = "hidden";
 
+          // Ensure Quagga2 canvas elements are visible
+          // Quagga2 will create canvas elements for video and drawing overlay
+          scannerDiv.style.display = "block";
+
           // Find or create container
           let container = document.getElementById("scanner-container");
           if (!container) {
@@ -139,25 +145,17 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
 
           // Set up detection callback BEFORE initialization
           const detectionHandler = (result: any) => {
-            console.log("onDetected callback fired!", result);
             if (isMounted && result) {
               // Check different possible result structures
               const codeResult = result.codeResult || result;
               if (codeResult && codeResult.code) {
-                console.log("Barcode detected:", {
-                  code: codeResult.code,
-                  format: codeResult.format,
-                  fullResult: codeResult,
-                });
+                if (isMounted) {
+                  setScanningStatus(`Detected: ${codeResult.code}`);
+                }
                 handleBarcodeScanned({
                   type: codeResult.format || "unknown",
                   data: codeResult.code,
                 });
-              } else {
-                console.warn(
-                  "onDetected fired but no valid code found:",
-                  result
-                );
               }
             }
           };
@@ -170,8 +168,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                 type: "LiveStream",
                 target: scannerDiv,
                 constraints: {
-                  width: 1280,
-                  height: 720,
+                  // Use reasonable constraints for mobile devices
+                  width: 640,
+                  height: 480,
                   facingMode: "environment", // Use back camera by default
                 },
               },
@@ -188,7 +187,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
               locate: true,
               locator: {
                 halfSample: true,
-                patchSize: "large", // Try larger patch size for better detection
+                patchSize: "medium", // Medium works better on mobile
                 showBoundingBox: true,
                 showPatches: false,
                 showFoundPatches: false,
@@ -196,8 +195,15 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                 showLabels: false,
                 showPatchLabels: false,
               },
-              numOfWorkers: 0, // Set to 0 to disable workers (some browsers have issues)
-              frequency: 30, // Increase frequency for more scans per second
+              numOfWorkers: 0, // Set to 0 to disable workers (mobile browsers have issues)
+              frequency: 10, // Lower frequency for mobile performance
+              // Enable visual debugging - shows the red scanning line
+              debug: {
+                drawBoundingBox: true,
+                showFrequency: false,
+                drawScanline: true, // This shows the red scanning line
+                showPattern: false,
+              },
             },
             (err: Error | null) => {
               if (err) {
@@ -231,14 +237,20 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                   if (isMounted) {
                     // Set up detection callback
                     Quagga.onDetected(detectionHandler);
-                    console.log("Detection callback registered");
 
                     // Also listen for processed frames - this fires more reliably than onDetected
                     // Use a debounce mechanism to avoid multiple detections
                     let lastDetectedCode = "";
                     let lastDetectionTime = 0;
+                    let frameCount = 0;
 
                     Quagga.onProcessed((result: any) => {
+                      frameCount++;
+                      // Update status every 30 frames to show it's working
+                      if (frameCount % 30 === 0 && isMounted) {
+                        setScanningStatus("Scanning... Point at barcode");
+                      }
+
                       if (result && result.codeResult) {
                         const codeResult = result.codeResult;
                         const code = codeResult.code;
@@ -250,11 +262,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                           (code !== lastDetectedCode ||
                             now - lastDetectionTime > 2000)
                         ) {
-                          console.log("Barcode found in processed frame:", {
-                            code: code,
-                            format: codeResult.format,
-                            fullResult: codeResult,
-                          });
+                          if (isMounted) {
+                            setScanningStatus(`Found: ${code}`);
+                          }
 
                           lastDetectedCode = code;
                           lastDetectionTime = now;
@@ -266,18 +276,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                           });
                         }
                       }
-                      // Log occasionally to show scanning is active
-                      if (Math.random() < 0.01) {
-                        console.log("Frame processed (scanning active)");
-                      }
                     });
-                    console.log("Processed callback registered");
 
                     setHasPermission(true);
                     quaggaRef.current = Quagga;
-                    console.log(
-                      "Quagga2 started successfully and ready to scan"
-                    );
+                    if (isMounted) {
+                      setScanningStatus("Ready - Point at barcode");
+                    }
                   }
                 }, 1000); // Increased delay to ensure Quagga is fully started
               }
@@ -372,20 +377,20 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
     return (
       <View style={styles.container}>
         {/* The Quagga2 scanner is rendered in a div appended to body */}
-        <Text style={styles.text}>
-          Camera is active. Point at a barcode to scan.
-        </Text>
+        <View style={styles.statusContainer}>
+          <Text style={styles.statusText}>{scanningStatus}</Text>
+        </View>
         {scanned && (
           <View style={styles.buttonContainer}>
             <Button
               title="Tap to Scan Again"
               onPress={() => {
                 setScanned(false);
+                setScanningStatus("Ready - Point at barcode");
                 if (quaggaRef.current) {
                   try {
                     quaggaRef.current.resume();
                   } catch (e) {
-                    console.error("Error resuming scanner:", e);
                     // If resume fails, try restarting
                     if (quaggaRef.current.stop) {
                       quaggaRef.current.stop();
@@ -435,11 +440,28 @@ const styles = StyleSheet.create({
     textAlign: "center",
     padding: 20,
   },
+  statusContainer: {
+    position: "absolute",
+    top: 50,
+    left: 0,
+    right: 0,
+    zIndex: 10001,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    padding: 15,
+    borderRadius: 10,
+    marginHorizontal: 20,
+  },
+  statusText: {
+    color: "#fff",
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
   buttonContainer: {
     position: "absolute",
     bottom: 20,
     alignSelf: "center",
-    zIndex: 10,
+    zIndex: 10001,
   },
 });
 

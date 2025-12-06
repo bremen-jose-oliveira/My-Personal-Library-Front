@@ -32,6 +32,12 @@ declare module "@ericblade/quagga2" {
     };
     numOfWorkers?: number;
     frequency?: number;
+    debug?: {
+      drawBoundingBox?: boolean;
+      showFrequency?: boolean;
+      drawScanline?: boolean;
+      showPattern?: boolean;
+    };
   };
 
   export type QuaggaResult = {
