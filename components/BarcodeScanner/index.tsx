@@ -139,12 +139,26 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
 
           // Set up detection callback BEFORE initialization
           const detectionHandler = (result: any) => {
-            if (isMounted && result?.codeResult) {
-              console.log("Barcode detected:", result.codeResult);
-              handleBarcodeScanned({
-                type: result.codeResult.format || "unknown",
-                data: result.codeResult.code,
-              });
+            console.log("onDetected callback fired!", result);
+            if (isMounted && result) {
+              // Check different possible result structures
+              const codeResult = result.codeResult || result;
+              if (codeResult && codeResult.code) {
+                console.log("Barcode detected:", {
+                  code: codeResult.code,
+                  format: codeResult.format,
+                  fullResult: codeResult,
+                });
+                handleBarcodeScanned({
+                  type: codeResult.format || "unknown",
+                  data: codeResult.code,
+                });
+              } else {
+                console.warn(
+                  "onDetected fired but no valid code found:",
+                  result
+                );
+              }
             }
           };
 
@@ -174,7 +188,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
               locate: true,
               locator: {
                 halfSample: true,
-                patchSize: "medium",
+                patchSize: "large", // Try larger patch size for better detection
                 showBoundingBox: true,
                 showPatches: false,
                 showFoundPatches: false,
@@ -182,8 +196,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                 showLabels: false,
                 showPatchLabels: false,
               },
-              numOfWorkers: 4,
-              frequency: 10,
+              numOfWorkers: 0, // Set to 0 to disable workers (some browsers have issues)
+              frequency: 30, // Increase frequency for more scans per second
             },
             (err: Error | null) => {
               if (err) {
@@ -209,33 +223,63 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
               }
 
               if (isMounted) {
-                // Set up detection callback after init but before start
-                Quagga.onDetected(detectionHandler);
-
-                // Also listen for processed frames for debugging
-                Quagga.onProcessed((result: any) => {
-                  // Log when frames are being processed (helps debug if scanning is working)
-                  if (result && result.codeResult) {
-                    console.log(
-                      "Processed barcode detected:",
-                      result.codeResult
-                    );
-                  }
-                });
-
-                // Start Quagga
+                // Start Quagga first
                 Quagga.start();
 
-                // Small delay to ensure everything is initialized
+                // Set up callbacks after start (some versions need this)
                 setTimeout(() => {
                   if (isMounted) {
+                    // Set up detection callback
+                    Quagga.onDetected(detectionHandler);
+                    console.log("Detection callback registered");
+
+                    // Also listen for processed frames - this fires more reliably than onDetected
+                    // Use a debounce mechanism to avoid multiple detections
+                    let lastDetectedCode = "";
+                    let lastDetectionTime = 0;
+
+                    Quagga.onProcessed((result: any) => {
+                      if (result && result.codeResult) {
+                        const codeResult = result.codeResult;
+                        const code = codeResult.code;
+                        const now = Date.now();
+
+                        // Debounce: only process if it's a different code or 2 seconds have passed
+                        if (
+                          code &&
+                          (code !== lastDetectedCode ||
+                            now - lastDetectionTime > 2000)
+                        ) {
+                          console.log("Barcode found in processed frame:", {
+                            code: code,
+                            format: codeResult.format,
+                            fullResult: codeResult,
+                          });
+
+                          lastDetectedCode = code;
+                          lastDetectionTime = now;
+
+                          // Use the same handler
+                          handleBarcodeScanned({
+                            type: codeResult.format || "unknown",
+                            data: code,
+                          });
+                        }
+                      }
+                      // Log occasionally to show scanning is active
+                      if (Math.random() < 0.01) {
+                        console.log("Frame processed (scanning active)");
+                      }
+                    });
+                    console.log("Processed callback registered");
+
                     setHasPermission(true);
                     quaggaRef.current = Quagga;
                     console.log(
                       "Quagga2 started successfully and ready to scan"
                     );
                   }
-                }, 500);
+                }, 1000); // Increased delay to ensure Quagga is fully started
               }
             }
           );
