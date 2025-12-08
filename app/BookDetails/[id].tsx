@@ -344,7 +344,7 @@ export default function BookDetails() {
               onChangeText={setReviewComment}
               placeholder="Share your thoughts..."
               placeholderTextColor="#d1d5db"
-              multiline
+              multiline={true}
               style={{
                 flex: 1,
                 backgroundColor: "rgba(255,255,255,0.1)",
@@ -363,7 +363,7 @@ export default function BookDetails() {
               alignItems: "center",
             }}
             onPress={handleReviewSubmit}
-            disabled={submittingReview}
+            disabled={Boolean(submittingReview)}
           >
             <Text style={{ color: "#fff", fontWeight: "600" }}>
               {submittingReview ? "Submitting..." : "Submit Review"}
@@ -374,7 +374,7 @@ export default function BookDetails() {
 
       {/* Edit Review Modal */}
       <Modal
-        visible={editingReview !== null}
+        visible={Boolean(editingReview !== null)}
         transparent={true}
         animationType="slide"
         onRequestClose={() => setEditingReview(null)}
@@ -395,7 +395,7 @@ export default function BookDetails() {
             <TextInput
               value={editComment}
               onChangeText={setEditComment}
-              multiline
+              multiline={true}
               numberOfLines={4}
               style={[styles.modalInput, styles.modalTextArea]}
               placeholderTextColor="#d1d5db"

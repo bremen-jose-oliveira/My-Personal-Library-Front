@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Use your splash screen logo as the source (or any image you prefer)
-const sourceImage = path.join(__dirname, '../assets/images/splashscreen_logo.jpg');
+const sourceImage = path.join(__dirname, '../assets/images/splashscreen_logo.png');
 const outputIcon = path.join(__dirname, '../assets/images/app-icon.png');
 
 async function createIcon() {

@@ -1,5 +1,5 @@
 // app/_layout.tsx
-
+import 'react-native-gesture-handler';  // Must be imported first
 import React, { useEffect, useState } from "react";
 import { Stack, useRouter } from "expo-router";
 import { AuthProvider } from "@/utils/Context/AuthContext";

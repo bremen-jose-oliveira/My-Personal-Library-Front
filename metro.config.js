@@ -1,5 +1,5 @@
 const { getDefaultConfig } = require("@expo/metro-config");
-const { withNativeWind } = require("nativewind/metro");
+// const { withNativeWind } = require("nativewind/metro"); // DISABLED - causes CSS interop wrapping issues
 
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
@@ -145,4 +145,8 @@ process.on("unhandledRejection", (error) => {
   throw error;
 });
 
-module.exports = withNativeWind(config, { input: "./global.css" });
+// NativeWind Metro wrapper DISABLED to prevent CSS interop wrapping
+// NativeWind v4's withNativeWind enables CSS interop which causes Screen component wrapping
+// The patch in wrap-jsx.js prevents wrapping, but removing withNativeWind is safer
+// You can still use className with tailwind-react-native-classnames (already installed)
+module.exports = config;

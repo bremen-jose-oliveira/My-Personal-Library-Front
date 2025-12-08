@@ -101,7 +101,7 @@ export default function ExchangesScreen() {
                     <TouchableOpacity
                       style={[styles.button, styles.acceptButton]}
                       onPress={() => handleAccept(item.id)}
-                      disabled={isProcessing}
+                      disabled={Boolean(isProcessing)}
                     >
                       <Text style={styles.buttonText}>
                         {isProcessing ? "Processing..." : "Accept"}
@@ -110,7 +110,7 @@ export default function ExchangesScreen() {
                     <TouchableOpacity
                       style={[styles.button, styles.rejectButton]}
                       onPress={() => handleReject(item.id)}
-                      disabled={isProcessing}
+                      disabled={Boolean(isProcessing)}
                     >
                       <Text style={styles.buttonText}>
                         {isProcessing ? "Processing..." : "Reject"}

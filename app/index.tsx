@@ -1,6 +1,5 @@
 // app//index.tsx
-import 'react-native-gesture-handler';  // Must be imported first
-import 'react-native-reanimated';        // Then Reanimated
+import 'react-native-reanimated';        // Reanimated
 
 import { Link, Stack, Redirect } from "expo-router";
 import "../global.css";

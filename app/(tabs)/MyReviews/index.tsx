@@ -163,7 +163,7 @@ export default function MyReviewsScreen() {
 
       {/* Edit Review Modal */}
       <Modal
-        visible={editingReview !== null}
+        visible={Boolean(editingReview !== null)}
         transparent={true}
         animationType="slide"
         onRequestClose={() => setEditingReview(null)}
@@ -184,7 +184,7 @@ export default function MyReviewsScreen() {
             <TextInput
               value={editComment}
               onChangeText={setEditComment}
-              multiline
+              multiline={true}
               numberOfLines={4}
               style={[styles.modalInput, styles.modalTextArea]}
               placeholderTextColor="#d1d5db"

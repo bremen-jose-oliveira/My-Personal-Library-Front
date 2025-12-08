@@ -279,7 +279,7 @@ export default function AddBookForm() {
       </ScrollView>
     )}
 
-          <Modal visible={scannerVisible} animationType="slide">
+          <Modal visible={Boolean(scannerVisible)} animationType="slide">
             <View style={{ flex: 1 }}>
               <BarcodeScanner onISBNScanned={handleISBNScanned} />
               <Button

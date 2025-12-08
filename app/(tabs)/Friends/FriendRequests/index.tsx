@@ -81,7 +81,7 @@ export default function FriendshipRequests() {
                     <TouchableOpacity
                       style={[styles.button, styles.approveButton]}
                       onPress={() => handleApprove(request.friendEmail)}
-                      disabled={isProcessing}
+                      disabled={Boolean(isProcessing)}
                     >
                       <Text style={styles.buttonText}>
                         {isProcessing ? "Processing..." : "Approve"}
@@ -90,7 +90,7 @@ export default function FriendshipRequests() {
                     <TouchableOpacity
                       style={[styles.button, styles.rejectButton]}
                       onPress={() => handleReject(request.friendEmail)}
-                      disabled={isProcessing}
+                      disabled={Boolean(isProcessing)}
                     >
                       <Text style={styles.buttonText}>
                         {isProcessing ? "Processing..." : "Reject"}

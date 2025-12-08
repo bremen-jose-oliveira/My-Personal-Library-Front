@@ -5,10 +5,47 @@ import { Colors } from '@/constants/Colors'
 type Props = {}
 
 const inputField = (props: React.ComponentProps<typeof TextInput>) => {
+  // Ensure boolean props are actually booleans, not strings
+  // This prevents "String cannot be cast to Boolean" errors in React Native
+  const safeProps: React.ComponentProps<typeof TextInput> = {
+    ...props,
+  };
+  
+  // Convert string values to booleans for boolean props
+  if (props.secureTextEntry !== undefined) {
+    safeProps.secureTextEntry = typeof props.secureTextEntry === 'string' 
+      ? props.secureTextEntry === 'true' 
+      : Boolean(props.secureTextEntry);
+  }
+  
+  if (props.multiline !== undefined) {
+    safeProps.multiline = typeof props.multiline === 'string'
+      ? props.multiline === 'true'
+      : props.multiline === true;
+  }
+  
+  if (props.editable !== undefined) {
+    safeProps.editable = typeof props.editable === 'string'
+      ? props.editable !== 'false'
+      : props.editable !== false;
+  }
+  
+  if (props.autoFocus !== undefined) {
+    safeProps.autoFocus = typeof props.autoFocus === 'string'
+      ? props.autoFocus === 'true'
+      : Boolean(props.autoFocus);
+  }
+  
+  if (props.selectTextOnFocus !== undefined) {
+    safeProps.selectTextOnFocus = typeof props.selectTextOnFocus === 'string'
+      ? props.selectTextOnFocus === 'true'
+      : Boolean(props.selectTextOnFocus);
+  }
+  
   return (
   <TextInput
           
-          {...props}
+          {...safeProps}
         
           style={styles.inputField}
         
