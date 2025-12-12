@@ -1,4 +1,3 @@
-
 import Book from "@/Interfaces/book";
 import { fetchCoverImage } from "@/utils/fetchBookData";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -14,7 +13,10 @@ interface BookContextProps {
   fetchCurrentUserBooks: () => Promise<void>;
   fetchAllBooks: () => Promise<Book[]>;
   addBook: (book: Omit<Book, "id">) => Promise<void>;
-  updateBook: (id: number, book: Partial<Omit<Book, "id" | "owner" | "ownerUsername">>) => Promise<void>;
+  updateBook: (
+    id: number,
+    book: Partial<Omit<Book, "id" | "owner" | "ownerUsername">>
+  ) => Promise<void>;
   deleteBook: (id: number) => Promise<void>;
   updateReadingStatus: (bookId: number, status: BookStatus) => Promise<void>;
   getBookStatus: (bookId: number) => Promise<BookStatus | null>;
@@ -24,8 +26,7 @@ const BookContext = createContext<BookContextProps | undefined>(undefined);
 
 const getAuthToken = async () => {
   const token = await AsyncStorage.getItem("token");
-  if (!token) throw new Error("Token is missing or expired");
-  return token;
+  return token; // Return null if no token instead of throwing
 };
 
 const enrichBookWithCover = async (book: Book) => {
@@ -34,7 +35,9 @@ const enrichBookWithCover = async (book: Book) => {
   return { ...book, cover: coverUrl };
 };
 
-export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { currentUser, refreshCurrentUser } = useUserContext();
   const [books, setBooks] = useState<Book[]>([]);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
@@ -45,6 +48,10 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoadingDetails(true);
     try {
       const token = await getAuthToken();
+      if (!token) {
+        setLoadingDetails(false);
+        return; // Silently return if no token
+      }
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/books/details/${id}`,
         {
@@ -74,13 +81,17 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchCurrentUserBooks = async () => {
     try {
       const token = await getAuthToken();
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/books/my/with-status`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      if (!token) return; // Silently return if no token
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/books/my/with-status`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to fetch books: ${response.statusText}`);
@@ -97,11 +108,14 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addBook = async (book: Omit<Book, "id">) => {
     try {
       const token = await getAuthToken();
+      if (!token) {
+        throw new Error("You must be logged in to add books");
+      }
       const apiUrl = `${process.env.EXPO_PUBLIC_API_URL}/api/books`;
-      
+
       console.log("Adding book to:", apiUrl);
       console.log("Book data:", JSON.stringify(book, null, 2));
-      
+
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
@@ -118,7 +132,8 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (errorText) {
             try {
               const errorJson = JSON.parse(errorText);
-              errorMessage = errorJson.message || errorJson.error || errorMessage;
+              errorMessage =
+                errorJson.message || errorJson.error || errorMessage;
             } catch {
               errorMessage = errorText || errorMessage;
             }
@@ -126,25 +141,29 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch (parseError) {
           console.error("Error parsing error response:", parseError);
         }
-        
+
         if (response.status === 401) {
           errorMessage = "Authentication failed. Please login again.";
         } else if (response.status === 400) {
-          errorMessage = errorMessage || "Invalid book data. Please check all fields.";
+          errorMessage =
+            errorMessage || "Invalid book data. Please check all fields.";
         }
-        
+
         throw new Error(errorMessage);
       }
 
       await fetchCurrentUserBooks();
     } catch (error: any) {
       console.error("Error adding book:", error);
-      
+
       // Provide more specific error messages
-      if (error.message === "Token is missing or expired") {
-        throw new Error("Your session has expired. Please login again.");
-      } else if (error.message?.includes("Failed to fetch") || error.message?.includes("NetworkError")) {
-        throw new Error("Network error. Please check your connection and ensure the backend is running.");
+      if (
+        error.message?.includes("Failed to fetch") ||
+        error.message?.includes("NetworkError")
+      ) {
+        throw new Error(
+          "Network error. Please check your connection and ensure the backend is running."
+        );
       } else if (error.message) {
         throw error;
       } else {
@@ -153,17 +172,26 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const updateBook = async (id: number, book: Partial<Omit<Book, "id" | "owner" | "ownerUsername">>) => {
+  const updateBook = async (
+    id: number,
+    book: Partial<Omit<Book, "id" | "owner" | "ownerUsername">>
+  ) => {
     try {
       const token = await getAuthToken();
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/books/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(book),
-      });
+      if (!token) {
+        throw new Error("You must be logged in to update books");
+      }
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/books/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(book),
+        }
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -181,13 +209,19 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const deleteBook = async (id: number) => {
     try {
       const token = await getAuthToken();
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/books/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      if (!token) {
+        throw new Error("You must be logged in to delete books");
+      }
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/books/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -207,13 +241,17 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchAllBooks = async (): Promise<Book[]> => {
     try {
       const token = await getAuthToken();
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/books`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      if (!token) return []; // Return empty array if no token
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/books`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to fetch books: ${response.statusText}`);
@@ -239,6 +277,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       const token = await getAuthToken();
+      if (!token) return null; // Return null if no token
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/user-book-status/${user.id}/${bookId}`,
         {
@@ -277,6 +316,9 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       const token = await getAuthToken();
+      if (!token) {
+        throw new Error("You must be logged in to update reading status");
+      }
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/user-book-status/${user.id}/${bookId}?status=${status}`,
         {
@@ -298,19 +340,23 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (errorText) {
             try {
               const errorJson = JSON.parse(errorText);
-              errorMessage = errorJson.message || errorJson.error || errorMessage;
+              errorMessage =
+                errorJson.message || errorJson.error || errorMessage;
             } catch {
               errorMessage = errorText || errorMessage;
             }
           }
         }
-        
+
         if (response.status === 404) {
-          errorMessage = "Book not found. Please refresh the page and try again.";
+          errorMessage =
+            "Book not found. Please refresh the page and try again.";
         } else if (response.status === 400) {
-          errorMessage = errorMessage || "Invalid request. Please check the book ID and try again.";
+          errorMessage =
+            errorMessage ||
+            "Invalid request. Please check the book ID and try again.";
         }
-        
+
         throw new Error(errorMessage);
       }
 
