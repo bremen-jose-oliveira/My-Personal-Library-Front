@@ -69,10 +69,22 @@ export default function AddBookForm() {
     }
   };
 
+  // Clear all search state
+  const clearSearchState = () => {
+    setSearchResults([]);
+    setSelectedBook(null);
+    setSearchQuery("");
+    setStartIndex(0);
+  };
+
   // Handle ISBN scanned from the barcode scanner
   const handleISBNScanned = (isbn: string) => {
     setScannerVisible(false);
-    fetchBooks(isbn); // Fetch book data using the scanned ISBN
+    // Clear previous results before fetching new ones
+    clearSearchState();
+    // Format ISBN for Google Books API: use isbn: prefix for ISBN-specific search
+    const isbnQuery = `isbn:${isbn}`;
+    fetchBooks(isbnQuery, true); // Fetch book data using the scanned ISBN with proper prefix, reset results
   };
 
   // Select book from search results
@@ -167,61 +179,96 @@ export default function AddBookForm() {
           />
           {/* Render "Open Barcode Scanner" only if not on iOS Web */}
 
-          <Button
-            color="#bf471b"
-            title="Open Scanner"
-            onPress={() => setScannerVisible(true)}
-          />
+          <View style={{ flexDirection: "row", gap: 10, marginBottom: 10 }}>
+            <View style={{ flex: 1 }}>
+              <Button
+                color="#bf471b"
+                title="Open Scanner"
+                onPress={() => {
+                  clearSearchState(); // Clear previous results when opening scanner
+                  setScannerVisible(true);
+                }}
+              />
+            </View>
+            {searchResults.length > 0 && (
+              <View style={{ flex: 1 }}>
+                <Button
+                  color="#666"
+                  title="Clear Results"
+                  onPress={clearSearchState}
+                />
+              </View>
+            )}
+          </View>
 
           {searchResults.length > 0 && (
-            <FlatList
-              data={searchResults}
-              keyExtractor={(item: any, index: number) =>
-                `${
-                  item.id ||
-                  item.volumeInfo?.industryIdentifiers?.[0]?.identifier ||
-                  index
-                }`
-              }
-              renderItem={({ item }) => (
-                <TouchableOpacity onPress={() => handleBookSelect(item)}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      padding: 10,
-                      alignItems: "center",
-                    }}
-                  >
-                    {item.volumeInfo.imageLinks?.thumbnail ? (
-                      <Image
-                        source={{ uri: item.volumeInfo.imageLinks.thumbnail }}
-                        style={{ width: 50, height: 75, marginRight: 10 }}
-                      />
-                    ) : null}
+            <View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 10,
+                }}
+              >
+                <Text
+                  style={{ color: "#f0dcc7", fontSize: 16, fontWeight: "bold" }}
+                >
+                  Found {searchResults.length} result
+                  {searchResults.length !== 1 ? "s" : ""}
+                </Text>
+                <Button color="#666" title="Clear" onPress={clearSearchState} />
+              </View>
+              <FlatList
+                data={searchResults}
+                keyExtractor={(item: any, index: number) =>
+                  `${
+                    item.id ||
+                    item.volumeInfo?.industryIdentifiers?.[0]?.identifier ||
+                    index
+                  }`
+                }
+                renderItem={({ item }) => (
+                  <TouchableOpacity onPress={() => handleBookSelect(item)}>
                     <View
                       style={{
-                        flex: 1,
-                        padding: 17,
-                        borderRadius: 2,
-                        borderBlockColor: "#f0dcc7",
-                        backgroundColor: "rgba(0,0,0,0.4)",
+                        flexDirection: "row",
+                        padding: 10,
+                        alignItems: "center",
+                        marginBottom: 5,
                       }}
                     >
-                      <Text style={{ fontWeight: "bold", color: "#f0dcc7" }}>
-                        {item.volumeInfo.title}
-                      </Text>
-                      <Text style={{ color: "#f0dcc7" }}>
-                        {item.volumeInfo.authors?.join(", ") ||
-                          "Unknown Author"}
-                      </Text>
+                      {item.volumeInfo.imageLinks?.thumbnail ? (
+                        <Image
+                          source={{ uri: item.volumeInfo.imageLinks.thumbnail }}
+                          style={{ width: 50, height: 75, marginRight: 10 }}
+                        />
+                      ) : null}
+                      <View
+                        style={{
+                          flex: 1,
+                          padding: 17,
+                          borderRadius: 2,
+                          borderBlockColor: "#f0dcc7",
+                          backgroundColor: "rgba(0,0,0,0.4)",
+                        }}
+                      >
+                        <Text style={{ fontWeight: "bold", color: "#f0dcc7" }}>
+                          {item.volumeInfo.title}
+                        </Text>
+                        <Text style={{ color: "#f0dcc7" }}>
+                          {item.volumeInfo.authors?.join(", ") ||
+                            "Unknown Author"}
+                        </Text>
+                      </View>
                     </View>
-                  </View>
-                </TouchableOpacity>
-              )}
-              contentContainerStyle={{ paddingBottom: 100 }}
-              style={{ height: 800 }}
-              keyboardShouldPersistTaps="handled"
-            />
+                  </TouchableOpacity>
+                )}
+                contentContainerStyle={{ paddingBottom: 100 }}
+                style={{ maxHeight: 400 }}
+                keyboardShouldPersistTaps="handled"
+              />
+            </View>
           )}
           {selectedBook && (
             <ScrollView
@@ -234,6 +281,29 @@ export default function AddBookForm() {
               }}
             >
               <View style={{ alignItems: "center" }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    width: "100%",
+                    marginBottom: 10,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontWeight: "bold",
+                      color: "#f0dcc7",
+                      fontSize: 18,
+                    }}
+                  >
+                    Book Preview
+                  </Text>
+                  <Button
+                    title="Cancel"
+                    onPress={() => setSelectedBook(null)}
+                    color="#666"
+                  />
+                </View>
                 {selectedBook.volumeInfo.imageLinks?.thumbnail ? (
                   <Image
                     source={{
@@ -309,11 +379,32 @@ export default function AddBookForm() {
                   {selectedBook.volumeInfo.industryIdentifiers?.[0]
                     ?.identifier || "N/A"}
                 </Text>
-                <Button
-                  title="Add Book"
-                  onPress={handleAddBook}
-                  color="#bf471b"
-                />
+                <View
+                  style={{
+                    flexDirection: "row",
+                    gap: 10,
+                    width: "100%",
+                    marginTop: 10,
+                  }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Button
+                      title="Add Book"
+                      onPress={handleAddBook}
+                      color="#bf471b"
+                    />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Button
+                      title="Cancel"
+                      onPress={() => {
+                        setSelectedBook(null);
+                        clearSearchState();
+                      }}
+                      color="#666"
+                    />
+                  </View>
+                </View>
               </View>
             </ScrollView>
           )}
@@ -323,7 +414,10 @@ export default function AddBookForm() {
               <BarcodeScanner onISBNScanned={handleISBNScanned} />
               <Button
                 title="Close Scanner"
-                onPress={() => setScannerVisible(false)}
+                onPress={() => {
+                  setScannerVisible(false);
+                  // Don't clear results when closing scanner - user might want to see them
+                }}
                 color="#bf471b"
               />
             </View>

@@ -44,24 +44,46 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
 
     const isISBN = (data: string) => {
       const cleaned = data.replace(/[^0-9X]/g, "");
+
+      // ISBN-10: 10 digits (9 digits + 1 check digit which can be X)
+      const isbn10Pattern = /^\d{9}[\dX]$/;
+
+      // ISBN-13: 13 digits starting with 978 or 979 (EAN-13 format for books)
+      const isbn13Pattern = /^(978|979)\d{10}$/;
+
+      // Also accept any 13-digit EAN code (might be a valid ISBN-13)
+      const ean13Pattern = /^\d{13}$/;
+
+      // Also accept any 10-digit code (might be ISBN-10)
+      const tenDigitPattern = /^\d{10}$/;
+
       return (
-        /^\d{9}(\d|X)$/.test(cleaned) || /^(978|979)\d{9}(\d|X)$/.test(cleaned)
+        isbn10Pattern.test(cleaned) ||
+        isbn13Pattern.test(cleaned) ||
+        ean13Pattern.test(cleaned) ||
+        tenDigitPattern.test(cleaned)
       );
     };
 
     const cleanedData = data.replace(/[^0-9X]/g, "");
 
     if (isISBN(cleanedData)) {
-      console.log(`Valid ISBN: ${cleanedData}`);
+      console.log(`Valid ISBN/EAN detected: ${cleanedData} (Type: ${type})`);
       if (onISBNScanned) {
         onISBNScanned(cleanedData);
       } else {
         Alert.alert("ISBN Scanned", `ISBN: ${cleanedData}`);
       }
     } else {
-      Alert.alert("Unrecognized Barcode", `Type: ${type}, Data: ${data}`, [
-        { text: "OK", onPress: () => setScanned(false) },
-      ]);
+      // Show what was scanned to help debug
+      console.warn(
+        `Unrecognized barcode - Type: ${type}, Data: ${data}, Cleaned: ${cleanedData}`
+      );
+      Alert.alert(
+        "Unrecognized Barcode",
+        `Type: ${type}\nData: ${data}\n\nThis doesn't appear to be a valid ISBN. Please try scanning again or enter manually.`,
+        [{ text: "OK", onPress: () => setScanned(false) }]
+      );
     }
   };
 
@@ -208,7 +230,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
               },
               decoder: {
                 readers: [
-                  "ean_reader", // EAN-13 for ISBN
+                  "ean_reader", // EAN-13 for ISBN (most common for books)
                   "ean_8_reader",
                   "code_128_reader",
                   "code_39_reader",
@@ -218,8 +240,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
               },
               locate: true,
               locator: {
-                halfSample: true,
-                patchSize: "medium", // Medium works better on mobile
+                halfSample: false, // Use full sample for better accuracy
+                patchSize: "large", // Larger patch size for better EAN detection
                 showBoundingBox: true,
                 showPatches: false,
                 showFoundPatches: false,
@@ -227,8 +249,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                 showLabels: false,
                 showPatchLabels: false,
               },
-              numOfWorkers: 0, // Set to 0 to disable workers (mobile browsers have issues)
-              frequency: 10, // Lower frequency for mobile performance
+              numOfWorkers: 2, // Use workers for better performance
+              frequency: 30, // Higher frequency for faster detection
               // Enable visual debugging - shows the red scanning line
               debug: {
                 drawBoundingBox: true,
@@ -446,7 +468,16 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
         style={StyleSheet.absoluteFillObject}
         onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
         barcodeScannerSettings={{
-          barcodeTypes: ["ean13", "ean8", "pdf417", "qr"],
+          barcodeTypes: [
+            "ean13",
+            "ean8",
+            "upc_a",
+            "upc_e",
+            "code128",
+            "code39",
+            "pdf417",
+            "qr",
+          ],
         }}
       />
       {/* Scanning line overlay */}

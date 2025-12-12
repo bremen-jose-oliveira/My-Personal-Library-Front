@@ -135,6 +135,33 @@ function main() {
     hasErrors = true;
   }
 
+  // 7. Check for common native build issues (informational)
+  log("\n📱 Checking native project configuration...", "blue");
+  const iosDir = path.join(process.cwd(), "ios");
+  const androidDir = path.join(process.cwd(), "android");
+
+  if (fs.existsSync(iosDir)) {
+    log("✅ iOS native directory exists", "green");
+    const podfilePath = path.join(iosDir, "Podfile");
+    if (fs.existsSync(podfilePath)) {
+      log("✅ Podfile exists", "green");
+      // Check if Podfile.lock exists (indicates pods were installed)
+      const podfileLockPath = path.join(iosDir, "Podfile.lock");
+      if (fs.existsSync(podfileLockPath)) {
+        log("✅ Podfile.lock exists (pods installed)", "green");
+      } else {
+        log(
+          "⚠️  Podfile.lock missing - run 'cd ios && pod install' after prebuild",
+          "yellow"
+        );
+      }
+    }
+  }
+
+  if (fs.existsSync(androidDir)) {
+    log("✅ Android native directory exists", "green");
+  }
+
   // Summary
   log("\n" + "=".repeat(60), "blue");
   const passed = checks.filter((c) => c === true).length;
