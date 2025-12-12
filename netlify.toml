@@ -2,6 +2,9 @@
   command = "npm install && npx expo export -p web && cp -r public/* dist/ 2>/dev/null || true && cp public/_redirects dist/_redirects 2>/dev/null || true"
   publish = "dist"
 
+[build.processing]
+  skip_processing = false
+
 # Netlify redirects for client-side routing (Expo Router)
 # This ensures all routes are handled by the React app, not Netlify's file system
 # The _redirects file should also be copied, but this provides a backup
