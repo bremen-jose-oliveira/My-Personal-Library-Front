@@ -179,8 +179,8 @@ export default function AddBookForm() {
           />
           {/* Render "Open Barcode Scanner" only if not on iOS Web */}
 
-          <View style={{ flexDirection: "row", gap: 10, marginBottom: 10 }}>
-            <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: "row", marginBottom: 10 }}>
+            <View style={{ flex: 1, marginRight: searchResults.length > 0 ? 5 : 0 }}>
               <Button
                 color="#bf471b"
                 title="Open Scanner"
@@ -191,7 +191,7 @@ export default function AddBookForm() {
               />
             </View>
             {searchResults.length > 0 && (
-              <View style={{ flex: 1 }}>
+              <View style={{ flex: 1, marginLeft: 5 }}>
                 <Button
                   color="#666"
                   title="Clear Results"
@@ -382,19 +382,18 @@ export default function AddBookForm() {
                 <View
                   style={{
                     flexDirection: "row",
-                    gap: 10,
                     width: "100%",
                     marginTop: 10,
                   }}
                 >
-                  <View style={{ flex: 1 }}>
+                  <View style={{ flex: 1, marginRight: 5 }}>
                     <Button
                       title="Add Book"
                       onPress={handleAddBook}
                       color="#bf471b"
                     />
                   </View>
-                  <View style={{ flex: 1 }}>
+                  <View style={{ flex: 1, marginLeft: 5 }}>
                     <Button
                       title="Cancel"
                       onPress={() => {
