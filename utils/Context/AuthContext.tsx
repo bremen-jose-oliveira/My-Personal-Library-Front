@@ -1,13 +1,13 @@
 // utils/Context/AuthContext.tsx
 
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { Alert, ActivityIndicator, Platform } from 'react-native';
-import { storeToken, getToken, removeToken } from './storageUtils';
-import * as Google from 'expo-auth-session/providers/google';
-import * as WebBrowser from 'expo-web-browser';
-import { makeRedirectUri } from 'expo-auth-session';
-import * as AppleAuthentication from 'expo-apple-authentication';
-import { useRouter } from 'expo-router'; 
+import React, { createContext, useState, useEffect, ReactNode } from "react";
+import { Alert, ActivityIndicator, Platform } from "react-native";
+import { storeToken, getToken, removeToken } from "./storageUtils";
+import * as Google from "expo-auth-session/providers/google";
+import * as WebBrowser from "expo-web-browser";
+import { makeRedirectUri } from "expo-auth-session";
+import * as AppleAuthentication from "expo-apple-authentication";
+import { useRouter } from "expo-router";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -16,7 +16,11 @@ interface AuthContextProps {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  createUser: (username: string, email: string, password: string) => Promise<void>;
+  createUser: (
+    username: string,
+    email: string,
+    password: string
+  ) => Promise<void>;
   handleGoogleLogin: () => void;
   appleLogin: () => void;
 }
@@ -37,15 +41,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // On web, the OAuth handler below will handle everything
   // On mobile, check stored token
   useEffect(() => {
-    if (Platform.OS !== 'web') {
+    if (Platform.OS !== "web") {
       const checkLoginStatus = async () => {
         try {
           const token = await getToken();
-          console.log('🔍 [Mobile] Checking stored token - found:', !!token);
+          console.log("🔍 [Mobile] Checking stored token - found:", !!token);
           setIsLoggedIn(!!token);
           setLoading(false);
         } catch (error) {
-          console.error('Error checking login status:', error);
+          console.error("Error checking login status:", error);
           setIsLoggedIn(false);
           setLoading(false);
         }
@@ -54,33 +58,83 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-
   const appleLogin = async () => {
-    if (Platform.OS === 'web') {
+    if (Platform.OS === "web") {
       const baseURL = process.env.EXPO_PUBLIC_API_URL;
       if (!baseURL) {
         console.error("EXPO_PUBLIC_API_URL is not defined");
         return;
       }
-  
+
       const redirectURL = `${baseURL}/oauth2/authorization/apple`;
       console.log("Redirecting to:", redirectURL);
       window.location.href = redirectURL;
       return;
     }
-  
+
     try {
-      await promptAsync({
-        windowFeatures: { width: 500, height: 600 },
+      // Check if Apple Authentication is available (iOS only)
+      if (!AppleAuthentication.isAvailableAsync()) {
+        Alert.alert(
+          "Apple Sign In Not Available",
+          "Apple Sign In is only available on iOS devices."
+        );
+        return;
+      }
+
+      console.log("Attempting to sign in with Apple...");
+
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
       });
-    } catch (error) {
-      console.error('Apple Login Error:', error);
-      Alert.alert('Apple Login Failed', 'An error occurred during Apple login.');
+
+      console.log("Apple sign-in successful:", credential);
+
+      // Send credential to backend for token exchange
+      if (credential.identityToken) {
+        const response = await fetch(
+          `${process.env.EXPO_PUBLIC_API_URL}/api/auth/apple`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              identityToken: credential.identityToken,
+              authorizationCode: credential.authorizationCode,
+              user: credential.user,
+            }),
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.token) {
+            await storeToken(data.token);
+            setIsLoggedIn(true);
+          }
+        } else {
+          throw new Error("Failed to authenticate with backend");
+        }
+      }
+    } catch (e: any) {
+      console.log("Error during Apple sign-in:", e);
+      if (e.code === "ERR_CANCELED") {
+        console.log("User cancelled Apple Sign in");
+        // Don't show alert for user cancellation
+      } else {
+        Alert.alert(
+          "Apple Sign In Error",
+          e.message || "An error occurred during Apple login."
+        );
+      }
     }
   };
-  
 
-/*
+  /*
   const appleLogin = async () => {
     try {
 
@@ -122,56 +176,55 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };*/
 
   const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: Platform.select({ 
+    clientId: Platform.select({
       ios: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
       android: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID,
       web: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
     }),
     redirectUri: Platform.select({
       web: `${process.env.EXPO_PUBLIC_API_URL}/login/oauth2/code/google`,
-      
+
       default: makeRedirectUri({
-       
-        native:  `com.googleusercontent.apps.${process.env.EXPO_PUBLIC_IOS_CLIENT_ID}:'/oauthredirect'`,
-      ///  native: `${process.env.EXPO_PUBLIC_REDIRECT_URI}`,
+        native: `com.googleusercontent.apps.${process.env.EXPO_PUBLIC_IOS_CLIENT_ID}:'/oauthredirect'`,
+        ///  native: `${process.env.EXPO_PUBLIC_REDIRECT_URI}`,
       }),
     }),
   });
 
-
-
   const fetchGoogleUser = async (accessToken: string) => {
     if (!accessToken) return;
     try {
-      const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const response = await fetch(
+        "https://www.googleapis.com/oauth2/v2/userinfo",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch user info');
+        throw new Error("Failed to fetch user info");
       }
 
       const data = await response.json();
       await storeToken(data.token);
       setIsLoggedIn(true);
     } catch (error) {
-      console.error('Error fetching user info:', error);
+      console.error("Error fetching user info:", error);
     }
   };
 
-  if(Platform.OS !== 'web') {
-  useEffect(() => {
-    if (response?.type === 'success') {
-      fetchGoogleUser(response.authentication?.accessToken || '');
-    }
-  }, [response]);
-
+  if (Platform.OS !== "web") {
+    useEffect(() => {
+      if (response?.type === "success") {
+        fetchGoogleUser(response.authentication?.accessToken || "");
+      }
+    }, [response]);
   }
 
   const handleGoogleLogin = async () => {
-    if(Platform.OS === 'web') {
+    if (Platform.OS === "web") {
       window.location.href = `${process.env.EXPO_PUBLIC_API_URL}/oauth2/authorization/google`;
       return;
     }
@@ -180,248 +233,302 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         windowFeatures: { width: 500, height: 600 },
       });
     } catch (error) {
-      console.error('Google Login Error:', error);
-      Alert.alert('Google Login Failed', 'An error occurred during Google login.');
+      console.error("Google Login Error:", error);
+      Alert.alert(
+        "Google Login Failed",
+        "An error occurred during Google login."
+      );
     }
   };
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/users/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/users/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
-      if (!response.ok) throw new Error('Invalid credentials');
+      if (!response.ok) throw new Error("Invalid credentials");
 
       const data = await response.json();
       await storeToken(data.token);
       setIsLoggedIn(true);
     } catch (error: any) {
-      console.error('Login error:', error);
-      Alert.alert('Login Failed', error.message || 'An error occurred');
+      console.error("Login error:", error);
+      Alert.alert("Login Failed", error.message || "An error occurred");
     }
   };
-  
+
   /*
   const handleGoogleLogin = () => {
 
     window.location.href = `${process.env.EXPO_PUBLIC_API_URL}/oauth2/authorization/google`;
   }*/
 
-    
-  
-if(Platform.OS === 'web') {
-  useEffect(() => {
-    const handleOAuthRedirect = async () => {
-      // Get current path and search params
-      const currentPath = window.location.pathname;
-      const urlParams = new URLSearchParams(window.location.search);
-      const token = urlParams.get('token');
-      const error = urlParams.get('error');
-      const state = urlParams.get('state');
-      const code = urlParams.get('code');
-    
-      console.log('🔍 [Web] Checking OAuth redirect - path:', currentPath, 'token:', !!token, 'error:', error, 'state:', !!state, 'code:', !!code);
-      
-      // If no OAuth parameters, check stored token (normal page load/refresh)
-      if (!token && !error && !state && !code) {
-        console.log('🔍 [Web] No OAuth params - checking stored token...');
-        try {
-          const storedToken = await getToken();
-          console.log('🔍 [Web] Stored token found:', !!storedToken);
-          if (storedToken) {
-            // Validate token format before setting logged in
-            const tokenParts = storedToken.split('.');
-            if (tokenParts.length === 3) {
-              console.log('✅ [Web] Valid token exists, setting isLoggedIn = true');
-              setIsLoggedIn(true);
+  if (Platform.OS === "web") {
+    useEffect(() => {
+      const handleOAuthRedirect = async () => {
+        // Get current path and search params
+        const currentPath = window.location.pathname;
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get("token");
+        const error = urlParams.get("error");
+        const state = urlParams.get("state");
+        const code = urlParams.get("code");
+
+        console.log(
+          "🔍 [Web] Checking OAuth redirect - path:",
+          currentPath,
+          "token:",
+          !!token,
+          "error:",
+          error,
+          "state:",
+          !!state,
+          "code:",
+          !!code
+        );
+
+        // If no OAuth parameters, check stored token (normal page load/refresh)
+        if (!token && !error && !state && !code) {
+          console.log("🔍 [Web] No OAuth params - checking stored token...");
+          try {
+            const storedToken = await getToken();
+            console.log("🔍 [Web] Stored token found:", !!storedToken);
+            if (storedToken) {
+              // Validate token format before setting logged in
+              const tokenParts = storedToken.split(".");
+              if (tokenParts.length === 3) {
+                console.log(
+                  "✅ [Web] Valid token exists, setting isLoggedIn = true"
+                );
+                setIsLoggedIn(true);
+              } else {
+                console.log("❌ [Web] Invalid token format, removing token");
+                await removeToken();
+                setIsLoggedIn(false);
+              }
             } else {
-              console.log('❌ [Web] Invalid token format, removing token');
-              await removeToken();
+              console.log(
+                "❌ [Web] No token found, setting isLoggedIn = false"
+              );
               setIsLoggedIn(false);
             }
-          } else {
-            console.log('❌ [Web] No token found, setting isLoggedIn = false');
+          } catch (err) {
+            console.error("❌ [Web] Error checking stored token:", err);
             setIsLoggedIn(false);
           }
-        } catch (err) {
-          console.error('❌ [Web] Error checking stored token:', err);
-          setIsLoggedIn(false);
-        }
-        setLoading(false);
-        return;
-      }
-    
-      // Handle OAuth errors - if there's an error parameter, login failed
-      if (error) {
-        console.error('❌ OAuth login error:', error);
-        const errorMessage = error === 'oauth_failed' 
-          ? 'Authentication failed. Please try again.' 
-          : 'An error occurred during login. Please try again.';
-        // Clear any existing token
-        await removeToken();
-        setIsLoggedIn(false);
-        setLoading(false); // IMPORTANT: Stop loading spinner
-        // Clean up URL by removing query parameters
-        window.history.replaceState({}, document.title, window.location.pathname);
-        // Redirect to welcome/login screen
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 100);
-        // Show alert after a brief delay to avoid blocking redirect
-        setTimeout(() => {
-          Alert.alert('Login Failed', errorMessage);
-        }, 200);
-        return;
-      }
-    
-      // Only store token if it exists and has valid JWT format
-      if (token) {
-        // Validate token format (JWT has 3 parts separated by dots)
-        const tokenParts = token.split('.');
-        if (tokenParts.length !== 3) {
-          console.error('❌ Invalid token format');
-          Alert.alert('Login Failed', 'Invalid authentication token.');
-          await removeToken();
-          setIsLoggedIn(false);
-          setLoading(false); // IMPORTANT: Stop loading spinner
-          // Clean up URL
-          window.history.replaceState({}, document.title, window.location.pathname);
+          setLoading(false);
           return;
         }
 
-        // Store the token - if it's invalid, API calls will fail and user will be logged out
-        try {
-          await storeToken(token);
-          console.log('✅ Token stored successfully - user logged in');
-          setIsLoggedIn(true);
-          setLoading(false); // Finish loading after token is stored
-          
-          // Clean up URL by removing token parameter
-          const currentPath = window.location.pathname;
-          window.history.replaceState({}, document.title, currentPath);
-          
-          // If we're on /(tabs) or any route other than /, we're good - just stay there
-          // If we're on /, the Redirect component will handle navigation
-          if (currentPath === '/' || currentPath === '/index.html') {
-            console.log('🔄 Token stored on welcome screen, Redirect component will handle navigation');
-          } else {
-            console.log('✅ Token stored, user is on route:', currentPath, '- staying here');
-          }
-        } catch (err) {
-          console.error('❌ Failed to store token:', err);
+        // Handle OAuth errors - if there's an error parameter, login failed
+        if (error) {
+          console.error("❌ OAuth login error:", error);
+          const errorMessage =
+            error === "oauth_failed"
+              ? "Authentication failed. Please try again."
+              : "An error occurred during login. Please try again.";
+          // Clear any existing token
           await removeToken();
           setIsLoggedIn(false);
-          setLoading(false);
-          // Clean up URL
-          window.history.replaceState({}, document.title, window.location.pathname);
+          setLoading(false); // IMPORTANT: Stop loading spinner
+          // Clean up URL by removing query parameters
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+          );
+          // Redirect to welcome/login screen
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 100);
+          // Show alert after a brief delay to avoid blocking redirect
+          setTimeout(() => {
+            Alert.alert("Login Failed", errorMessage);
+          }, 200);
+          return;
         }
-      } else {
-        // No token, no error - check stored token and finish loading
-        console.log('🔍 [Web] No token in URL - checking stored token...');
-        try {
-          const storedToken = await getToken();
-          console.log('🔍 [Web] Stored token result:', !!storedToken);
-          if (storedToken) {
-            // Validate token format
-            const tokenParts = storedToken.split('.');
-            if (tokenParts.length === 3) {
-              setIsLoggedIn(true);
+
+        // Only store token if it exists and has valid JWT format
+        if (token) {
+          // Validate token format (JWT has 3 parts separated by dots)
+          const tokenParts = token.split(".");
+          if (tokenParts.length !== 3) {
+            console.error("❌ Invalid token format");
+            Alert.alert("Login Failed", "Invalid authentication token.");
+            await removeToken();
+            setIsLoggedIn(false);
+            setLoading(false); // IMPORTANT: Stop loading spinner
+            // Clean up URL
+            window.history.replaceState(
+              {},
+              document.title,
+              window.location.pathname
+            );
+            return;
+          }
+
+          // Store the token - if it's invalid, API calls will fail and user will be logged out
+          try {
+            await storeToken(token);
+            console.log("✅ Token stored successfully - user logged in");
+            setIsLoggedIn(true);
+            setLoading(false); // Finish loading after token is stored
+
+            // Clean up URL by removing token parameter
+            const currentPath = window.location.pathname;
+            window.history.replaceState({}, document.title, currentPath);
+
+            // If we're on /(tabs) or any route other than /, we're good - just stay there
+            // If we're on /, the Redirect component will handle navigation
+            if (currentPath === "/" || currentPath === "/index.html") {
+              console.log(
+                "🔄 Token stored on welcome screen, Redirect component will handle navigation"
+              );
             } else {
-              console.log('❌ [Web] Invalid token format, removing');
-              await removeToken();
+              console.log(
+                "✅ Token stored, user is on route:",
+                currentPath,
+                "- staying here"
+              );
+            }
+          } catch (err) {
+            console.error("❌ Failed to store token:", err);
+            await removeToken();
+            setIsLoggedIn(false);
+            setLoading(false);
+            // Clean up URL
+            window.history.replaceState(
+              {},
+              document.title,
+              window.location.pathname
+            );
+          }
+        } else {
+          // No token, no error - check stored token and finish loading
+          console.log("🔍 [Web] No token in URL - checking stored token...");
+          try {
+            const storedToken = await getToken();
+            console.log("🔍 [Web] Stored token result:", !!storedToken);
+            if (storedToken) {
+              // Validate token format
+              const tokenParts = storedToken.split(".");
+              if (tokenParts.length === 3) {
+                setIsLoggedIn(true);
+              } else {
+                console.log("❌ [Web] Invalid token format, removing");
+                await removeToken();
+                setIsLoggedIn(false);
+              }
+            } else {
               setIsLoggedIn(false);
             }
-          } else {
+          } catch (err) {
+            console.error("❌ [Web] Error checking stored token:", err);
             setIsLoggedIn(false);
           }
-        } catch (err) {
-          console.error('❌ [Web] Error checking stored token:', err);
-          setIsLoggedIn(false);
+          setLoading(false);
+          // Clean up any stale OAuth parameters if present
+          if (state || code) {
+            console.log(
+              "⚠️ OAuth parameters present but no token - cleaning up URL"
+            );
+            window.history.replaceState(
+              {},
+              document.title,
+              window.location.pathname
+            );
+          }
         }
-        setLoading(false);
-        // Clean up any stale OAuth parameters if present
-        if (state || code) {
-          console.log('⚠️ OAuth parameters present but no token - cleaning up URL');
-          window.history.replaceState({}, document.title, window.location.pathname);
-        }
-      }
-    };
+      };
 
-    // Check on mount - this handles both OAuth redirects and normal page loads
-    handleOAuthRedirect();
-
-    // Also listen for popstate events (back/forward navigation)
-    const handlePopState = () => {
+      // Check on mount - this handles both OAuth redirects and normal page loads
       handleOAuthRedirect();
-    };
-    window.addEventListener('popstate', handlePopState);
-    
-    // Also check periodically in case URL changes without popstate (like OAuth redirects)
-    // This is especially important for OAuth redirects that go directly to /(tabs)
-    let checkCount = 0;
-    const maxChecks = 10; // Check 10 times (5 seconds total)
-    const intervalId = setInterval(() => {
-      checkCount++;
-      // Only check if we have a token in URL
-      const urlParams = new URLSearchParams(window.location.search);
-      const token = urlParams.get('token');
-      if (token) {
-        console.log('🔄 Found token in URL during interval check, processing...');
+
+      // Also listen for popstate events (back/forward navigation)
+      const handlePopState = () => {
         handleOAuthRedirect();
-        clearInterval(intervalId); // Stop checking once we found and processed the token
-        return;
-      }
-      if (checkCount >= maxChecks) {
-        // Stop checking after max attempts
+      };
+      window.addEventListener("popstate", handlePopState);
+
+      // Also check periodically in case URL changes without popstate (like OAuth redirects)
+      // This is especially important for OAuth redirects that go directly to /(tabs)
+      let checkCount = 0;
+      const maxChecks = 10; // Check 10 times (5 seconds total)
+      const intervalId = setInterval(() => {
+        checkCount++;
+        // Only check if we have a token in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get("token");
+        if (token) {
+          console.log(
+            "🔄 Found token in URL during interval check, processing..."
+          );
+          handleOAuthRedirect();
+          clearInterval(intervalId); // Stop checking once we found and processed the token
+          return;
+        }
+        if (checkCount >= maxChecks) {
+          // Stop checking after max attempts
+          clearInterval(intervalId);
+        }
+      }, 500); // Check every 500ms
+
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
         clearInterval(intervalId);
-      }
-    }, 500); // Check every 500ms
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-      clearInterval(intervalId);
-    };
-  }, []); // Only run once on mount
-
-}
+      };
+    }, []); // Only run once on mount
+  }
 
   const logout = async () => {
     try {
       await removeToken();
       setIsLoggedIn(false);
-      
+
       // On web, clean up URL parameters to ensure clean state for next login
-      if (Platform.OS === 'web') {
+      if (Platform.OS === "web") {
         // Remove any query parameters from URL
-        window.history.replaceState({}, document.title, window.location.pathname);
-        console.log('Logout: Cleared URL parameters');
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname
+        );
+        console.log("Logout: Cleared URL parameters");
       }
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
-  const createUser = async (username: string, email: string, password: string) => {
+  const createUser = async (
+    username: string,
+    email: string,
+    password: string
+  ) => {
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/users/create`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password }),
-      });
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/users/create`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, email, password }),
+        }
+      );
 
-      if (!response.ok) throw new Error('Registration failed');
+      if (!response.ok) throw new Error("Registration failed");
 
-
-      Alert.alert('Registration Successful', 'Welcome!');
+      Alert.alert("Registration Successful", "Welcome!");
       await login(email, password);
-      
     } catch (error: any) {
       console.log("email", email);
-      console.error('Registration error:', error);
-      Alert.alert('Error', error.message || 'An error occurred');
+      console.error("Registration error:", error);
+      Alert.alert("Error", error.message || "An error occurred");
     }
   };
 
@@ -431,7 +538,14 @@ if(Platform.OS === 'web') {
 
   return (
     <AuthContext.Provider
-      value={{ isLoggedIn,appleLogin, handleGoogleLogin, login, logout, createUser }}
+      value={{
+        isLoggedIn,
+        appleLogin,
+        handleGoogleLogin,
+        login,
+        logout,
+        createUser,
+      }}
     >
       {children}
     </AuthContext.Provider>

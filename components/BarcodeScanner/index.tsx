@@ -1,5 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
-import { View, Text, StyleSheet, Button, Alert, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Button,
+  Alert,
+  Platform,
+  Animated,
+} from "react-native";
 import { Camera, CameraView } from "expo-camera";
 
 interface BarcodeScannerProps {
@@ -13,6 +21,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
     useState<string>("Initializing...");
   const quaggaRef = useRef<any>(null);
   const scannerElementRef = useRef<HTMLDivElement | null>(null);
+  const scanningLineAnim = useRef(new Animated.Value(0)).current;
 
   const handleBarcodeScanned = ({
     type,
@@ -55,6 +64,29 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
       ]);
     }
   };
+
+  // Animate scanning line for mobile
+  useEffect(() => {
+    if (Platform.OS !== "web" && hasPermission && !scanned) {
+      scanningLineAnim.setValue(0); // Reset to top
+      const animate = Animated.loop(
+        Animated.sequence([
+          Animated.timing(scanningLineAnim, {
+            toValue: 1,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(scanningLineAnim, {
+            toValue: 0,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      animate.start();
+      return () => animate.stop();
+    }
+  }, [hasPermission, scanned, scanningLineAnim]);
 
   useEffect(() => {
     if (Platform.OS === "web") {
@@ -417,6 +449,28 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
           barcodeTypes: ["ean13", "ean8", "pdf417", "qr"],
         }}
       />
+      {/* Scanning line overlay */}
+      {!scanned && (
+        <View style={styles.scanningOverlay}>
+          <View style={styles.scanningFrame}>
+            <Animated.View
+              style={[
+                styles.scanningLine,
+                {
+                  transform: [
+                    {
+                      translateY: scanningLineAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, 300], // Moves from top to bottom of frame
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            />
+          </View>
+        </View>
+      )}
       {scanned && (
         <View style={styles.buttonContainer}>
           <Button title="Tap to Scan Again" onPress={() => setScanned(false)} />
@@ -462,6 +516,34 @@ const styles = StyleSheet.create({
     bottom: 20,
     alignSelf: "center",
     zIndex: 10001,
+  },
+  scanningOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  scanningFrame: {
+    width: "80%",
+    aspectRatio: 1,
+    borderWidth: 2,
+    borderColor: "#fff",
+    borderRadius: 10,
+    position: "relative",
+    overflow: "hidden",
+  },
+  scanningLine: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: "#FF0000",
+    shadowColor: "#FF0000",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 10,
   },
 });
 
