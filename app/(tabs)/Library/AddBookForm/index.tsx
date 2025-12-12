@@ -21,7 +21,6 @@ import {
   ImageBackground,
 } from "react-native";
 
-
 export default function AddBookForm() {
   const { addBook } = useBookContext();
   const [searchQuery, setSearchQuery] = useState("");
@@ -96,11 +95,8 @@ export default function AddBookForm() {
       publisher: selectedBook.volumeInfo.publisher || "",
       cover: selectedBook.volumeInfo.imageLinks?.thumbnail || "",
       id: selectedBook.identifier,
-      isbn: selectedBook.volumeInfo.industryIdentifiers?.[0]?.identifier || "N/A",
-
-
-      rating: 0,
-      status: undefined,
+      isbn:
+        selectedBook.volumeInfo.industryIdentifiers?.[0]?.identifier || "N/A",
       owner: undefined,
       exchangeStatus: undefined,
       exchanges: undefined,
@@ -108,27 +104,20 @@ export default function AddBookForm() {
       reviewCount: undefined,
       createdAt: undefined,
       updatedAt: undefined,
-      readingStatus: undefined
+      readingStatus: undefined,
     };
 
     addBook(bookData);
     setSelectedBook(null);
-       router.push("/Library/DisplayBooks"); 
+    router.push("/Library/DisplayBooks");
 
- 
-    
-  if (Platform.OS === "web") {
+    if (Platform.OS === "web") {
       // Web-specific alert
-      window.confirm ("Success " + " Book added successfully!") 
-    
-    
+      window.confirm("Success " + " Book added successfully!");
     } else {
-
-    Alert.alert("Success", "Book added successfully!");
+      Alert.alert("Success", "Book added successfully!");
+    }
   };
-
-  }
-
 
   return (
     <ImageBackground
@@ -177,13 +166,12 @@ export default function AddBookForm() {
             color="#bf471b"
           />
           {/* Render "Open Barcode Scanner" only if not on iOS Web */}
-        
-            <Button
-               color="#bf471b"
-              title="Open Scanner"
-              onPress={() => setScannerVisible(true)}
-            />
-       
+
+          <Button
+            color="#bf471b"
+            title="Open Scanner"
+            onPress={() => setScannerVisible(true)}
+          />
 
           {searchResults.length > 0 && (
             <FlatList
@@ -235,49 +223,100 @@ export default function AddBookForm() {
               keyboardShouldPersistTaps="handled"
             />
           )}
-    {selectedBook && (
-      <ScrollView
-        style={{
-          marginTop: 20,
-          backgroundColor: "rgba(0,0,0,0.4)",
-          padding: 8,
-          borderRadius: 8,
-          maxHeight: 400, // Ensure the box has a max height
-        }}
-      >
-        <View style={{ alignItems: "center" }}>
-          {selectedBook.volumeInfo.imageLinks?.thumbnail ? (
-            <Image
-              source={{ uri: selectedBook.volumeInfo.imageLinks.thumbnail }}
-              style={{ width: 65, height: 90, marginBottom: 10 }}
-            />
-          ) : null}
-          <Text style={{ fontWeight: "bold", color: "#f0dcc7", marginBottom: 5 }}>
-            Title: {selectedBook.volumeInfo.title || ""}
-          </Text>
-          <Text style={{ fontWeight: "bold", color: "#f0dcc7", marginBottom: 5 }}>
-            Author: {selectedBook.volumeInfo.authors?.join(", ") || "Unknown Author"}
-          </Text>
-          <Text style={{ fontWeight: "bold", color: "#f0dcc7", marginBottom: 5 }}>
-            Publisher: {selectedBook.volumeInfo.publisher || ""}
-          </Text>
-          <Text style={{ fontWeight: "bold", color: "#f0dcc7", marginBottom: 5 }}>
-            Published Date: {selectedBook.volumeInfo.publishedDate || ""}
-          </Text>
-          <Text style={{ fontWeight: "bold", color: "#f0dcc7", marginBottom: 5 }}>
-            Categories: {selectedBook.volumeInfo.categories || ""}
-          </Text>
-          <Text style={{ fontWeight: "bold", color: "#f0dcc7", marginBottom: 5 }}>
-            Description: {selectedBook.volumeInfo.description || ""}
-          </Text>
-          <Text style={{ fontWeight: "bold", color: "#f0dcc7", marginBottom: 5 }}>
-            isbn: {selectedBook.volumeInfo.industryIdentifiers?.[0]?.identifier || "N/A"
-            }
-          </Text>
-          <Button title="Add Book" onPress={handleAddBook} color="#bf471b" />
-        </View>
-      </ScrollView>
-    )}
+          {selectedBook && (
+            <ScrollView
+              style={{
+                marginTop: 20,
+                backgroundColor: "rgba(0,0,0,0.4)",
+                padding: 8,
+                borderRadius: 8,
+                maxHeight: 400, // Ensure the box has a max height
+              }}
+            >
+              <View style={{ alignItems: "center" }}>
+                {selectedBook.volumeInfo.imageLinks?.thumbnail ? (
+                  <Image
+                    source={{
+                      uri: selectedBook.volumeInfo.imageLinks.thumbnail,
+                    }}
+                    style={{ width: 65, height: 90, marginBottom: 10 }}
+                  />
+                ) : null}
+                <Text
+                  style={{
+                    fontWeight: "bold",
+                    color: "#f0dcc7",
+                    marginBottom: 5,
+                  }}
+                >
+                  Title: {selectedBook.volumeInfo.title || ""}
+                </Text>
+                <Text
+                  style={{
+                    fontWeight: "bold",
+                    color: "#f0dcc7",
+                    marginBottom: 5,
+                  }}
+                >
+                  Author:{" "}
+                  {selectedBook.volumeInfo.authors?.join(", ") ||
+                    "Unknown Author"}
+                </Text>
+                <Text
+                  style={{
+                    fontWeight: "bold",
+                    color: "#f0dcc7",
+                    marginBottom: 5,
+                  }}
+                >
+                  Publisher: {selectedBook.volumeInfo.publisher || ""}
+                </Text>
+                <Text
+                  style={{
+                    fontWeight: "bold",
+                    color: "#f0dcc7",
+                    marginBottom: 5,
+                  }}
+                >
+                  Published Date: {selectedBook.volumeInfo.publishedDate || ""}
+                </Text>
+                <Text
+                  style={{
+                    fontWeight: "bold",
+                    color: "#f0dcc7",
+                    marginBottom: 5,
+                  }}
+                >
+                  Categories: {selectedBook.volumeInfo.categories || ""}
+                </Text>
+                <Text
+                  style={{
+                    fontWeight: "bold",
+                    color: "#f0dcc7",
+                    marginBottom: 5,
+                  }}
+                >
+                  Description: {selectedBook.volumeInfo.description || ""}
+                </Text>
+                <Text
+                  style={{
+                    fontWeight: "bold",
+                    color: "#f0dcc7",
+                    marginBottom: 5,
+                  }}
+                >
+                  isbn:{" "}
+                  {selectedBook.volumeInfo.industryIdentifiers?.[0]
+                    ?.identifier || "N/A"}
+                </Text>
+                <Button
+                  title="Add Book"
+                  onPress={handleAddBook}
+                  color="#bf471b"
+                />
+              </View>
+            </ScrollView>
+          )}
 
           <Modal visible={Boolean(scannerVisible)} animationType="slide">
             <View style={{ flex: 1 }}>
@@ -294,4 +333,3 @@ export default function AddBookForm() {
     </ImageBackground>
   );
 }
- 

@@ -10,7 +10,11 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
-    "generate-icons": "node ./scripts/generate-icons-with-sharp.js"
+    "generate-icons": "node ./scripts/generate-icons-with-sharp.js",
+    "validate": "node ./scripts/validate-before-prebuild.js",
+    "prebuild:safe": "npm run validate && npx expo prebuild",
+    "prebuild:ios": "npm run validate && npx expo prebuild --platform ios",
+    "prebuild:android": "npm run validate && npx expo prebuild --platform android"
   },
   "jest": {
     "preset": "jest-expo"

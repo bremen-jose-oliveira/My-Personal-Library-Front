@@ -32,7 +32,9 @@ export default function FriendBooksScreen() {
       }
 
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/books/user/${encodeURIComponent(email || "")}`,
+        `${process.env.EXPO_PUBLIC_API_URL}/api/books/user/${encodeURIComponent(
+          email || ""
+        )}`,
         {
           method: "GET",
           headers: {
@@ -47,7 +49,7 @@ export default function FriendBooksScreen() {
       }
 
       const data: Book[] = await response.json();
-      
+
       // Enrich books with cover images
       const booksWithCovers = await Promise.all(
         data.map(async (book) => ({
@@ -55,12 +57,14 @@ export default function FriendBooksScreen() {
           cover: book.cover || (await fetchCoverImage(book.title, book.author)),
         }))
       );
-      
+
       setBooks(booksWithCovers);
-      
+
       // Extract friend name from first book's owner if available
-      if (data.length > 0 && data[0].owner) {
-        setFriendName(data[0].owner.username || email || "Friend");
+      if (data.length > 0 && (data[0].ownerUsername || data[0].owner)) {
+        setFriendName(
+          data[0].ownerUsername || data[0].owner || email || "Friend"
+        );
       } else {
         setFriendName(email || "Friend");
       }
@@ -290,4 +294,3 @@ export default function FriendBooksScreen() {
     </ImageBackground>
   );
 }
-

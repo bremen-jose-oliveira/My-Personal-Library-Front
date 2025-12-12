@@ -27,6 +27,7 @@ interface AuthContextProps {
 
 export const AuthContext = createContext<AuthContextProps>({
   isLoggedIn: false,
+  loading: false,
   login: async () => {},
   logout: () => {},
   createUser: async () => {},
@@ -540,6 +541,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider
       value={{
         isLoggedIn,
+        loading,
         appleLogin,
         handleGoogleLogin,
         login,
