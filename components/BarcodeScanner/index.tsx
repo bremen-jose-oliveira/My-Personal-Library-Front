@@ -19,6 +19,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
   const [scanned, setScanned] = useState(false);
   const [scanningStatus, setScanningStatus] =
     useState<string>("Initializing...");
+  const [debugMessages, setDebugMessages] = useState<string[]>([]);
   const quaggaRef = useRef<any>(null);
   const scannerElementRef = useRef<HTMLDivElement | null>(null);
   const overlayElementRef = useRef<HTMLDivElement | null>(null);
@@ -200,7 +201,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
 
           // Set up detection callback BEFORE initialization
           const detectionHandler = (result: any) => {
-            console.log("detectionHandler called with:", result);
+            const msg = `onDetected called: ${JSON.stringify(result?.codeResult?.code || "no code")}`;
+            console.log(msg);
+            setDebugMessages((prev) => [...prev.slice(-4), msg]); // Keep last 5 messages
+            
             if (isMounted && result) {
               // Check different possible result structures
               const codeResult = result.codeResult || result;
@@ -209,6 +213,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                 console.log("Processing barcode:", codeResult.code);
                 if (isMounted) {
                   setScanningStatus(`Detected: ${codeResult.code}`);
+                  setDebugMessages((prev) => [...prev.slice(-4), `✅ Processing: ${codeResult.code}`]);
                 }
                 handleBarcodeScanned({
                   type: codeResult.format || "unknown",
@@ -216,6 +221,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                 });
               } else {
                 console.warn("No code found in result:", codeResult);
+                setDebugMessages((prev) => [...prev.slice(-4), "⚠️ No code in result"]);
               }
             } else {
               console.warn("Handler called but isMounted:", isMounted, "result:", result);
@@ -366,13 +372,22 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
 
                       // Log occasionally for debugging
                       if (frameCount % 100 === 0) {
-                        console.log("Quagga processing frames...", frameCount);
+                        const msg = `Frames: ${frameCount}`;
+                        console.log(msg);
+                        if (isMounted) {
+                          setDebugMessages((prev) => [...prev.slice(-4), msg]);
+                        }
                       }
 
                       if (result && result.codeResult) {
                         const codeResult = result.codeResult;
                         const code = codeResult.code;
                         console.log("onProcessed found code:", code);
+                        
+                        if (code && isMounted) {
+                          setDebugMessages((prev) => [...prev.slice(-4), `🔍 Found: ${code}`]);
+                        }
+                        
                         const now = Date.now();
 
                         // Debounce: only process if it's a different code or 2 seconds have passed
@@ -384,6 +399,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                           console.log("Processing detected code:", code);
                           if (isMounted) {
                             setScanningStatus(`Found: ${code}`);
+                            setDebugMessages((prev) => [...prev.slice(-4), `✅ Processing: ${code}`]);
                           }
 
                           lastDetectedCode = code;
@@ -503,8 +519,21 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.9 - Check console for logs
+            Scanner v2.10 - Debug mode
           </Text>
+          {/* Debug messages displayed on screen */}
+          {debugMessages.length > 0 && (
+            <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.5)", padding: 8, borderRadius: 4 }}>
+              <Text style={{ color: "#fff", fontSize: 9, fontWeight: "bold", marginBottom: 4 }}>
+                Debug Log:
+              </Text>
+              {debugMessages.map((msg, idx) => (
+                <Text key={idx} style={{ color: "#fff", fontSize: 8, marginTop: 2 }}>
+                  {msg}
+                </Text>
+              ))}
+            </View>
+          )}
         </View>
         {/* Overlay is created as DOM element in useEffect above */}
         {scanned && (
