@@ -248,17 +248,23 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                 type: "LiveStream",
                 target: scannerDiv,
                 constraints: {
-                  // Use reasonable constraints for mobile devices
-                  width: { ideal: 1280, min: 640 },
-                  height: { ideal: 720, min: 480 },
+                  // Lower resolution for better scanning range and autofocus
+                  width: { ideal: 640, max: 1280 },
+                  height: { ideal: 480, max: 720 },
                   facingMode: "environment", // Use back camera by default
-                  // Enable autofocus to prevent blur when getting close
+                  // Enable autofocus for better close-range scanning
                   focusMode: "continuous",
                   advanced: [
                     {
                       focusMode: "continuous",
                     },
+                    {
+                      // Try different focus modes for better range
+                      focusMode: "auto",
+                    },
                   ],
+                  // Zoom constraints for better range
+                  zoom: { ideal: 1.0, max: 2.0 },
                 } as any,
               },
               decoder: {
@@ -274,7 +280,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
               locate: true,
               locator: {
                 halfSample: false, // Use full sample for better accuracy
-                patchSize: "large", // Larger patch size for better EAN detection
+                patchSize: "x-large", // Even larger patch size for better EAN detection at range
                 showBoundingBox: true,
                 showPatches: false,
                 showFoundPatches: false,
@@ -283,7 +289,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                 showPatchLabels: false,
               },
               numOfWorkers: 0, // Use 0 workers for more reliable detection on mobile
-              frequency: 10, // Lower frequency for better accuracy
+              frequency: 10, // Lower frequency for better accuracy and range
               // Enable visual debugging - shows the red scanning line
               debug: {
                 drawBoundingBox: true,
@@ -565,24 +571,26 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.12 - Aggressive Debug + Better Config
+            Scanner v2.13 - Improved Range + x-large Patches
           </Text>
           {/* Debug messages displayed on screen - always show to verify it's rendering */}
-          <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.7)", padding: 8, borderRadius: 4, minHeight: 80 }}>
-            <Text style={{ color: "#fff", fontSize: 9, fontWeight: "bold", marginBottom: 4 }}>
+          <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.8)", padding: 10, borderRadius: 4, minHeight: 100, maxHeight: 200 }}>
+            <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold", marginBottom: 6 }}>
               Debug Log ({debugMessages.length} messages):
             </Text>
-            {debugMessages.length > 0 ? (
-              debugMessages.map((msg, idx) => (
-                <Text key={idx} style={{ color: "#0f0", fontSize: 9, marginTop: 2, fontFamily: "monospace" }}>
-                  {msg}
+            <View style={{ maxHeight: 150, overflow: "scroll" }}>
+              {debugMessages.length > 0 ? (
+                debugMessages.map((msg, idx) => (
+                  <Text key={idx} style={{ color: "#0f0", fontSize: 9, marginTop: 2, fontFamily: "monospace" }}>
+                    {msg}
+                  </Text>
+                ))
+              ) : (
+                <Text style={{ color: "#f90", fontSize: 9, fontStyle: "italic" }}>
+                  Waiting for Quagga to initialize... (Scanner is working even if messages don't show)
                 </Text>
-              ))
-            ) : (
-              <Text style={{ color: "#f90", fontSize: 9, fontStyle: "italic" }}>
-                Waiting for Quagga to initialize...
-              </Text>
-            )}
+              )}
+            </View>
           </View>
         </View>
         {/* Overlay is created as DOM element in useEffect above */}
