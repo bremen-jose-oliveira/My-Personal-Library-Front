@@ -328,30 +328,22 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
               },
               locate: true,
               locator: {
-                halfSample: false, // Use full sample for better accuracy
-                // Try multiple patch sizes to handle different barcode sizes
-                patchSize: "medium", // Start with medium, Quagga will try different sizes
-                showBoundingBox: true,
+                halfSample: true, // Use half sample for better performance (reduces processing load)
+                patchSize: "large", // Large patch size handles most barcode sizes well
+                showBoundingBox: false, // Disable visual debugging to improve performance
                 showPatches: false,
                 showFoundPatches: false,
                 showSkeleton: false,
                 showLabels: false,
                 showPatchLabels: false,
               },
-              numOfWorkers: 0, // Use 0 workers for more reliable detection on mobile
-              frequency: 10, // Lower frequency for better accuracy
-              // Add area configuration to detect smaller and larger barcodes
-              area: {
-                top: "0%",
-                right: "0%",
-                left: "0%",
-                bottom: "0%"
-              },
-              // Enable visual debugging - shows the red scanning line
+              numOfWorkers: 0, // Use 0 workers for better performance and consistency
+              frequency: 5, // Lower frequency (was 10) to reduce requestAnimationFrame load
+              // Disable visual debugging to improve performance
               debug: {
-                drawBoundingBox: true,
+                drawBoundingBox: false, // Disable to reduce render load
                 showFrequency: false,
-                drawScanline: true, // This shows the red scanning line
+                drawScanline: false, // We have our own red line overlay
                 showPattern: false,
               },
             },
@@ -460,8 +452,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                     setScanningStatus("Scanning... Point at barcode");
                   }
 
-                  // Log every 50 frames for debugging (more frequent)
-                  if (frameCount % 50 === 0) {
+                  // Log less frequently to reduce console spam (every 200 frames instead of 50)
+                  if (frameCount % 200 === 0) {
                     const msg = `🔄 Frames: ${frameCount}`;
                     console.log(msg);
                     if (isMounted) {
@@ -484,11 +476,11 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                     
                     const now = Date.now();
 
-                    // Debounce: only process if it's a different code or 2 seconds have passed
+                    // Debounce: only process if it's a different code or 1.5 seconds have passed (more responsive)
                     if (
                       code &&
                       (code !== lastDetectedCode ||
-                        now - lastDetectionTime > 2000)
+                        now - lastDetectionTime > 1500)
                     ) {
                       console.log("✅ Processing detected code:", code);
                       if (isMounted) {
@@ -683,7 +675,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.16 - Flashlight Fix + Better Barcode Detection
+            Scanner v2.17 - Performance Optimized + Always Show Flash
           </Text>
           {/* Debug messages displayed on screen - always show to verify it's rendering */}
           <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.8)", padding: 10, borderRadius: 4, minHeight: 100, maxHeight: 200 }}>
@@ -705,13 +697,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
             </View>
           </View>
         </View>
-        {/* Flashlight toggle button - only show if supported */}
-        {torchSupported && (
+        {/* Flashlight toggle button - always show on mobile, try to use if desktop */}
+        {(torchSupported || Platform.OS === "web") && (
           <View style={{ position: "absolute", bottom: 100, alignSelf: "center", zIndex: 10003 }}>
             <Button
-              title={flashlightOn ? "🔦 Flashlight ON" : "💡 Flashlight OFF"}
+              title={flashlightOn ? "🔦 Flash ON" : "💡 Flash OFF"}
               onPress={toggleFlashlight}
-              color={flashlightOn ? "#FFD700" : "#666"}
+              color={flashlightOn ? "#FFD700" : "#888"}
             />
           </View>
         )}
