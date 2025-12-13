@@ -156,8 +156,8 @@ export default function AddBookForm() {
       >
         <View style={{ flex: 1, padding: 20 }}>
           {/* Version indicator for debugging - remove after confirming deployment */}
-          <Text style={{ color: "#f0dcc7", fontSize: 10, marginBottom: 5, opacity: 0.5 }}>
-            Build: v2.1 (Clear Results Enabled)
+          <Text style={{ color: "#f0dcc7", fontSize: 12, marginBottom: 5, opacity: 0.8, fontWeight: "bold" }}>
+            🔍 Build: v2.4 (Clear Results + Web Scanner Line) 🔍
           </Text>
           <TextInput
             placeholder="Search for a book..."

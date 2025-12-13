@@ -433,6 +433,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
         {/* The Quagga2 scanner is rendered in a div appended to body */}
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
+          <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
+            Scanner v2.4 - Red line enabled
+          </Text>
         </View>
         {/* Visual scanning frame for web - shows scanning area */}
         {!scanned && hasPermission && (
