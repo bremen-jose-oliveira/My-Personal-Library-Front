@@ -33,63 +33,47 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
   const toggleFlashlight = async () => {
     if (!videoTrackRef.current) {
       console.warn("Cannot toggle flashlight - video track not available");
-      alert("Flashlight: Video track not available. Please ensure camera is active.");
       return;
     }
     
+    const newState = !flashlightOn;
+    const track = videoTrackRef.current;
+    
+    console.log(`Attempting to turn flashlight ${newState ? "ON" : "OFF"}... Current state: ${flashlightOn}`);
+    
     try {
-      const newState = !flashlightOn;
-      const track = videoTrackRef.current;
-      
-      console.log(`Attempting to turn flashlight ${newState ? "ON" : "OFF"}...`);
-      
-      // Check if torch is in capabilities
-      const capabilities = track.getCapabilities ? track.getCapabilities() : ({} as any);
-      console.log("Track capabilities:", capabilities);
-      
-      if (capabilities.torch === false || (capabilities.torch === undefined && !navigator.userAgent.includes("Mobile"))) {
-        alert("Flashlight/Torch is not supported on this device or browser. It typically only works on mobile devices with rear cameras.");
-        return;
-      }
-      
       // Try the standard way (works on Chrome/Edge Android)
+      await track.applyConstraints({
+        advanced: [{ torch: newState }] as any,
+      });
+      
+      // Update state immediately
+      setFlashlightOn(newState);
+      console.log(`✅ Flashlight ${newState ? "ON" : "OFF"}`);
+      
+      // Update button immediately
+      const flashBtn = document.getElementById("scanner-flash-button");
+      if (flashBtn) {
+        flashBtn.textContent = newState ? "🔦 ON" : "💡 OFF";
+        flashBtn.style.backgroundColor = newState ? "#FFD700" : "#666";
+      }
+    } catch (e1: any) {
+      console.log("Method 1 failed, trying method 2:", e1.message);
+      
+      // Try direct constraint
       try {
-        await track.applyConstraints({
-          advanced: [{ torch: newState }] as any,
-        });
+        await track.applyConstraints({ torch: newState } as any);
         setFlashlightOn(newState);
-        console.log(`✅ Flashlight ${newState ? "ON" : "OFF"}`);
+        console.log(`✅ Flashlight ${newState ? "ON" : "OFF"} (method 2)`);
         
-        // Update button if it exists
         const flashBtn = document.getElementById("scanner-flash-button");
         if (flashBtn) {
           flashBtn.textContent = newState ? "🔦 ON" : "💡 OFF";
           flashBtn.style.backgroundColor = newState ? "#FFD700" : "#666";
         }
-        return;
-      } catch (e1: any) {
-        console.log("Method 1 failed:", e1.message);
-        
-        // Try direct constraint
-        try {
-          await track.applyConstraints({ torch: newState } as any);
-          setFlashlightOn(newState);
-          console.log(`✅ Flashlight ${newState ? "ON" : "OFF"} (method 2)`);
-          
-          const flashBtn = document.getElementById("scanner-flash-button");
-          if (flashBtn) {
-            flashBtn.textContent = newState ? "🔦 ON" : "💡 OFF";
-            flashBtn.style.backgroundColor = newState ? "#FFD700" : "#666";
-          }
-          return;
-        } catch (e2: any) {
-          console.error("Flashlight toggle failed:", e2.message);
-          alert(`Flashlight not available: ${e2.message}. This feature typically only works on mobile devices with rear cameras.`);
-        }
+      } catch (e2: any) {
+        console.error("Flashlight toggle failed:", e2.message);
       }
-    } catch (e: any) {
-      console.error("Failed to toggle flashlight:", e);
-      alert(`Flashlight error: ${e.message}`);
     }
   };
 
@@ -331,19 +315,15 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
               },
               decoder: {
                 readers: [
-                  "ean_reader", // EAN-13 for ISBN (most common for books) - prioritize
-                  "ean_8_reader",
-                  "upc_reader", // UPC-A (common for books)
-                  "upc_e_reader", // UPC-E
-                  "code_128_reader", // Code 128
-                  "code_39_reader", // Code 39
+                  "ean_reader", // EAN-13 for ISBN - most important for books
+                  "upc_reader", // UPC-A - also common for books
                 ],
               },
               locate: true,
               locator: {
                 halfSample: false, // Use full sample for better accuracy
-                patchSize: "large", // Large patch size - better for standard EAN-13 barcodes
-                showBoundingBox: false, // Disable visual debugging to improve performance
+                patchSize: "medium", // Medium patch size - better for various barcode sizes
+                showBoundingBox: true, // Enable to help with detection
                 showPatches: false,
                 showFoundPatches: false,
                 showSkeleton: false,
@@ -351,7 +331,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 showPatchLabels: false,
               },
               numOfWorkers: 0, // Use 0 workers for better consistency
-              frequency: 10, // Back to 10 for better detection (balance between performance and accuracy)
+              frequency: 10, // Standard frequency for detection
               // Disable visual debugging to improve performance
               debug: {
                 drawBoundingBox: false, // Disable to reduce render load
@@ -481,8 +461,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                   flashButton.style.fontWeight = "bold";
                   flashButton.style.cursor = "pointer";
                   flashButton.style.boxShadow = "0 2px 8px rgba(0,0,0,0.5)";
-                  flashButton.onclick = () => {
-                    toggleFlashlight();
+                  flashButton.onclick = async () => {
+                    await toggleFlashlight();
                   };
                   document.body.appendChild(flashButton);
                 };
@@ -754,7 +734,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.20 - Improved Flashlight + Large Patches for EAN-13
+            Scanner v2.21 - Fixed Flashlight Toggle + Focused EAN Reader
           </Text>
           {/* Debug messages displayed on screen - always show to verify it's rendering */}
           <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.8)", padding: 10, borderRadius: 4, minHeight: 100, maxHeight: 200 }}>
