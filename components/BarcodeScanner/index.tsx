@@ -12,9 +12,10 @@ import { Camera, CameraView } from "expo-camera";
 
 interface BarcodeScannerProps {
   onISBNScanned?: (isbn: string) => void;
+  onClose?: () => void;
 }
 
-const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
+const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose }) => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
   const [scanningStatus, setScanningStatus] =
@@ -329,7 +330,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
               locate: true,
               locator: {
                 halfSample: false, // Use full sample for better accuracy
-                patchSize: "large", // Large patch size - balanced for different barcode sizes
+                patchSize: "medium", // Medium patch size to handle both compact and wider barcodes
                 showBoundingBox: false, // Disable visual debugging to improve performance
                 showPatches: false,
                 showFoundPatches: false,
@@ -421,6 +422,61 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                 text.style.zIndex = "10002";
                 text.style.textShadow = "2px 2px 4px rgba(0,0,0,0.8)";
                 text.textContent = "Point camera at barcode";
+                
+                // Create Close Scanner button as DOM element (above overlay)
+                const closeButton = document.createElement("button");
+                closeButton.id = "scanner-close-button";
+                closeButton.textContent = "Close Scanner";
+                closeButton.style.position = "fixed";
+                closeButton.style.top = "20px";
+                closeButton.style.left = "20px";
+                closeButton.style.zIndex = "10003"; // Above overlay (10001)
+                closeButton.style.padding = "10px 20px";
+                closeButton.style.backgroundColor = "#bf471b";
+                closeButton.style.color = "#fff";
+                closeButton.style.border = "none";
+                closeButton.style.borderRadius = "5px";
+                closeButton.style.fontSize = "16px";
+                closeButton.style.fontWeight = "bold";
+                closeButton.style.cursor = "pointer";
+                closeButton.style.boxShadow = "0 2px 8px rgba(0,0,0,0.5)";
+                closeButton.onclick = () => {
+                  if (onClose) {
+                    onClose();
+                  }
+                };
+                document.body.appendChild(closeButton);
+                
+                // Create Flashlight button as DOM element (above overlay)
+                if (torchSupported || Platform.OS === "web") {
+                  const flashButton = document.createElement("button");
+                  flashButton.id = "scanner-flash-button";
+                  flashButton.textContent = flashlightOn ? "🔦 ON" : "💡 OFF";
+                  flashButton.style.position = "fixed";
+                  flashButton.style.top = "20px";
+                  flashButton.style.right = "20px";
+                  flashButton.style.zIndex = "10003"; // Above overlay
+                  flashButton.style.padding = "10px 20px";
+                  flashButton.style.backgroundColor = flashlightOn ? "#FFD700" : "#666";
+                  flashButton.style.color = "#fff";
+                  flashButton.style.border = "none";
+                  flashButton.style.borderRadius = "5px";
+                  flashButton.style.fontSize = "16px";
+                  flashButton.style.fontWeight = "bold";
+                  flashButton.style.cursor = "pointer";
+                  flashButton.style.boxShadow = "0 2px 8px rgba(0,0,0,0.5)";
+                  flashButton.onclick = () => {
+                    toggleFlashlight();
+                    // Update button text after toggle
+                    setTimeout(() => {
+                      if (flashButton.parentNode) {
+                        flashButton.textContent = flashlightOn ? "🔦 ON" : "💡 OFF";
+                        flashButton.style.backgroundColor = flashlightOn ? "#FFD700" : "#666";
+                      }
+                    }, 100);
+                  };
+                  document.body.appendChild(flashButton);
+                }
                 
                 frame.appendChild(line);
                 frame.appendChild(text);
@@ -675,7 +731,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.18 - Reverted Detection Settings + Better Button Layout
+            Scanner v2.19 - DOM Buttons + Medium Patch Size
           </Text>
           {/* Debug messages displayed on screen - always show to verify it's rendering */}
           <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.8)", padding: 10, borderRadius: 4, minHeight: 100, maxHeight: 200 }}>
@@ -697,14 +753,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
             </View>
           </View>
         </View>
-        {/* Flashlight toggle button - position at top right to avoid blocking close button */}
+        {/* Flashlight toggle button as DOM element - position at top right */}
         {(torchSupported || Platform.OS === "web") && (
-          <View style={{ position: "absolute", top: 20, right: 20, zIndex: 10003, backgroundColor: "rgba(0,0,0,0.6)", padding: 5, borderRadius: 5 }}>
-            <Button
-              title={flashlightOn ? "🔦 ON" : "💡 OFF"}
-              onPress={toggleFlashlight}
-              color={flashlightOn ? "#FFD700" : "#888"}
-            />
+          <View style={{ display: "none" }}>
+            {/* Hidden View - actual button created as DOM element in useEffect */}
           </View>
         )}
         {/* Overlay is created as DOM element in useEffect above */}

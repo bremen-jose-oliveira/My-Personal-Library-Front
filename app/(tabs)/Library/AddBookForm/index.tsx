@@ -157,7 +157,7 @@ export default function AddBookForm() {
         <View style={{ flex: 1, padding: 20 }}>
           {/* Version indicator for debugging - remove after confirming deployment */}
           <Text style={{ color: "#f0dcc7", fontSize: 12, marginBottom: 5, opacity: 0.8, fontWeight: "bold" }}>
-            🔍 Build: v2.18 (Fixed Detection + Button Layout) 🔍
+            🔍 Build: v2.19 (DOM Buttons + Better Barcode Detection) 🔍
           </Text>
           <TextInput
             placeholder="Search for a book..."
@@ -418,17 +418,10 @@ export default function AddBookForm() {
 
           <Modal visible={Boolean(scannerVisible)} animationType="slide">
             <View style={{ flex: 1, position: "relative" }}>
-              <BarcodeScanner onISBNScanned={handleISBNScanned} />
-              <View style={{ position: "absolute", top: Platform.OS === "web" ? 20 : 10, left: Platform.OS === "web" ? 20 : 10, zIndex: 10004, backgroundColor: "rgba(0,0,0,0.7)", padding: 5, borderRadius: 5 }}>
-                <Button
-                  title="Close Scanner"
-                  onPress={() => {
-                    setScannerVisible(false);
-                    // Don't clear results when closing scanner - user might want to see them
-                  }}
-                  color="#bf471b"
-                />
-              </View>
+              <BarcodeScanner 
+                onISBNScanned={handleISBNScanned}
+                onClose={() => setScannerVisible(false)}
+              />
             </View>
           </Modal>
         </View>
