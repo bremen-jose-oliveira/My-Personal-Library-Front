@@ -434,27 +434,46 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.4 - Red line enabled
+            Scanner v2.5 - Red line visible
           </Text>
         </View>
         {/* Visual scanning frame for web - shows scanning area */}
         {!scanned && hasPermission && (
-          <View style={styles.scanningOverlay}>
-            <View style={styles.scanningFrame}>
+          <View 
+            style={{
+              ...StyleSheet.absoluteFillObject,
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              zIndex: 10002,
+              pointerEvents: "none",
+            }}
+          >
+            <View 
+              style={{
+                width: "80%",
+                aspectRatio: 1,
+                borderWidth: 3,
+                borderColor: "#fff",
+                borderRadius: 10,
+                position: "relative",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              {/* Red scanning line - visible in center */}
               <View
                 style={{
                   position: "absolute",
-                  top: "50%",
-                  left: 0,
-                  right: 0,
-                  height: 2,
+                  width: "100%",
+                  height: 3,
                   backgroundColor: "#FF0000",
-                  shadowColor: "#FF0000",
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 1,
-                  shadowRadius: 10,
+                  zIndex: 10003,
                 }}
               />
+              <Text style={{ color: "#FF0000", fontSize: 14, fontWeight: "bold", marginTop: 20, zIndex: 10003 }}>
+                Point camera at barcode
+              </Text>
             </View>
           </View>
         )}
