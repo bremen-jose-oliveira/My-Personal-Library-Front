@@ -125,6 +125,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
           return;
         }
 
+        // Add immediate debug message
+        setDebugMessages(["🔵 Starting scanner initialization..."]);
+        console.log("🔵 Starting scanner initialization...");
+
         try {
           // Dynamic import with better error handling - use a try-catch to prevent build failures
           let Quagga;
@@ -147,6 +151,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
             if (!Quagga) {
               throw new Error("Quagga2 default export not found");
             }
+            
+            // Debug: Quagga loaded
+            setDebugMessages((prev) => [...prev, "✅ Quagga2 module loaded"]);
+            console.log("✅ Quagga2 module loaded", Quagga);
           } catch (importError: any) {
             console.error("Failed to import Quagga2:", importError);
             if (isMounted) {
@@ -198,6 +206,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
 
           container.appendChild(scannerDiv);
           scannerElementRef.current = scannerDiv;
+          
+          // Debug: Container created
+          setDebugMessages((prev) => [...prev, "✅ Scanner container created"]);
+          console.log("✅ Scanner container created");
 
           // Set up detection callback BEFORE initialization
           const detectionHandler = (result: any) => {
@@ -270,8 +282,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                 showLabels: false,
                 showPatchLabels: false,
               },
-              numOfWorkers: 2, // Use workers for better performance
-              frequency: 30, // Higher frequency for faster detection
+              numOfWorkers: 0, // Use 0 workers for more reliable detection on mobile
+              frequency: 10, // Lower frequency for better accuracy
               // Enable visual debugging - shows the red scanning line
               debug: {
                 drawBoundingBox: true,
@@ -281,11 +293,14 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
               },
             },
             (err: Error | null) => {
+              console.log("🔵 Quagga.init callback called, err:", err);
+              
               if (err) {
                 console.error("Quagga initialization error:", err);
+                const errorMsg = "❌ Init error: " + (err.message || err.toString());
+                setDebugMessages((prev) => [...prev, errorMsg]);
                 if (isMounted) {
                   setHasPermission(false);
-                  setDebugMessages(["❌ Init error: " + (err.message || err.toString())]);
                   if (
                     err.name === "NotAllowedError" ||
                     err.name === "PermissionDeniedError"
@@ -305,9 +320,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
               }
               
               // Add initialization success message
-              if (isMounted) {
-                setDebugMessages(["✅ Quagga initialized successfully"]);
-              }
+              console.log("✅ Quagga initialized successfully");
+              setDebugMessages((prev) => [...prev, "✅ Quagga initialized successfully"]);
 
               if (isMounted) {
                 // Create overlay with scanning frame and red line
@@ -360,8 +374,12 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                 overlayElementRef.current = overlay;
 
                 // Set up callbacks BEFORE starting (more reliable)
+                console.log("🔵 Setting up callbacks...");
+                setDebugMessages((prev) => [...prev, "🔵 Setting up callbacks..."]);
+                
                 // Use the existing detectionHandler that was defined above
                 Quagga.onDetected(detectionHandler);
+                console.log("✅ onDetected callback registered");
 
                 // Track frame processing with debounce
                 let lastDetectedCode = "";
@@ -379,12 +397,15 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                     setScanningStatus("Scanning... Point at barcode");
                   }
 
-                  // Log every 100 frames for debugging
-                  if (frameCount % 100 === 0) {
+                  // Log every 50 frames for debugging (more frequent)
+                  if (frameCount % 50 === 0) {
                     const msg = `🔄 Frames: ${frameCount}`;
                     console.log(msg);
                     if (isMounted) {
-                      setDebugMessages((prev) => [...prev.slice(-4), msg]);
+                      setDebugMessages((prev) => {
+                        const newMsgs = [...prev.slice(-4), msg];
+                        return newMsgs;
+                      });
                     }
                   }
 
@@ -392,7 +413,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                   if (result && result.codeResult && result.codeResult.code) {
                     const codeResult = result.codeResult;
                     const code = codeResult.code;
-                    console.log("onProcessed found code:", code);
+                    console.log("🔍 onProcessed found code:", code);
                     
                     if (code && isMounted) {
                       setDebugMessages((prev) => [...prev.slice(-4), `🔍 Found: ${code}`]);
@@ -406,7 +427,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                       (code !== lastDetectedCode ||
                         now - lastDetectionTime > 2000)
                     ) {
-                      console.log("Processing detected code:", code);
+                      console.log("✅ Processing detected code:", code);
                       if (isMounted) {
                         setScanningStatus(`Found: ${code}`);
                         setDebugMessages((prev) => [...prev.slice(-4), `✅ Processing: ${code}`]);
@@ -423,17 +444,27 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                     }
                   }
                 });
+                
+                console.log("✅ onProcessed callback registered");
 
                 // Start Quagga AFTER setting up callbacks
+                console.log("🔵 Starting Quagga...");
+                setDebugMessages((prev) => [...prev, "🔵 Starting Quagga..."]);
                 Quagga.start();
+                console.log("✅ Quagga.start() called");
                 
                 // Set state after a short delay to ensure Quagga is started
                 setTimeout(() => {
+                  console.log("🔵 Setting final state after delay...");
                   if (isMounted) {
                     setHasPermission(true);
                     quaggaRef.current = Quagga;
                     setScanningStatus("Ready - Point at barcode");
-                    setDebugMessages((prev) => [...prev.slice(-4), "🚀 Quagga started - scanning..."]);
+                    setDebugMessages((prev) => {
+                      const newMsgs = [...prev.slice(-4), "🚀 Quagga started - scanning..."];
+                      console.log("✅ Final debug messages:", newMsgs);
+                      return newMsgs;
+                    });
                   }
                 }, 500);
               }
@@ -534,7 +565,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.11 - Autofocus + Debug
+            Scanner v2.12 - Aggressive Debug + Better Config
           </Text>
           {/* Debug messages displayed on screen - always show to verify it's rendering */}
           <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.7)", padding: 8, borderRadius: 4, minHeight: 80 }}>
