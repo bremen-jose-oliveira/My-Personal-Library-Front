@@ -448,16 +448,20 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 document.body.appendChild(closeButton);
                 
                 // Create Flashlight button as DOM element (above overlay)
-                if (torchSupported || Platform.OS === "web") {
+                const createFlashButton = () => {
+                  // Remove existing button if any
+                  const existing = document.getElementById("scanner-flash-button");
+                  if (existing) existing.remove();
+                  
                   const flashButton = document.createElement("button");
                   flashButton.id = "scanner-flash-button";
-                  flashButton.textContent = flashlightOn ? "🔦 ON" : "💡 OFF";
+                  flashButton.textContent = "💡 Flash";
                   flashButton.style.position = "fixed";
                   flashButton.style.top = "20px";
                   flashButton.style.right = "20px";
                   flashButton.style.zIndex = "10003"; // Above overlay
                   flashButton.style.padding = "10px 20px";
-                  flashButton.style.backgroundColor = flashlightOn ? "#FFD700" : "#666";
+                  flashButton.style.backgroundColor = "#666";
                   flashButton.style.color = "#fff";
                   flashButton.style.border = "none";
                   flashButton.style.borderRadius = "5px";
@@ -465,17 +469,17 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                   flashButton.style.fontWeight = "bold";
                   flashButton.style.cursor = "pointer";
                   flashButton.style.boxShadow = "0 2px 8px rgba(0,0,0,0.5)";
-                  flashButton.onclick = () => {
-                    toggleFlashlight();
+                  flashButton.onclick = async () => {
+                    await toggleFlashlight();
                     // Update button text after toggle
-                    setTimeout(() => {
-                      if (flashButton.parentNode) {
-                        flashButton.textContent = flashlightOn ? "🔦 ON" : "💡 OFF";
-                        flashButton.style.backgroundColor = flashlightOn ? "#FFD700" : "#666";
-                      }
-                    }, 100);
+                    flashButton.textContent = flashlightOn ? "🔦 ON" : "💡 OFF";
+                    flashButton.style.backgroundColor = flashlightOn ? "#FFD700" : "#666";
                   };
                   document.body.appendChild(flashButton);
+                };
+                
+                if (torchSupported || Platform.OS === "web") {
+                  createFlashButton();
                 }
                 
                 frame.appendChild(line);
@@ -680,6 +684,16 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
             scannerElementRef.current.parentNode.removeChild(
               scannerElementRef.current
             );
+          }
+          // Remove close button
+          const closeBtn = document.getElementById("scanner-close-button");
+          if (closeBtn) {
+            closeBtn.remove();
+          }
+          // Remove flashlight button
+          const flashBtn = document.getElementById("scanner-flash-button");
+          if (flashBtn) {
+            flashBtn.remove();
           }
           const container = document.getElementById("scanner-container");
           if (container) {
