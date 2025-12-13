@@ -310,16 +310,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                   // Store facingMode for torch detection
                 };
                 
-                // Store facingMode for torch detection
-                const facingMode = constraints.facingMode;
-                  // Enable autofocus - let browser handle it automatically
-                  focusMode: "continuous",
-                  advanced: [
-                    {
-                      focusMode: "continuous",
-                    },
-                  ],
-                } as any,
               },
               decoder: {
                 readers: [
