@@ -200,10 +200,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
 
           // Set up detection callback BEFORE initialization
           const detectionHandler = (result: any) => {
+            console.log("detectionHandler called with:", result);
             if (isMounted && result) {
               // Check different possible result structures
               const codeResult = result.codeResult || result;
+              console.log("Code result:", codeResult);
               if (codeResult && codeResult.code) {
+                console.log("Processing barcode:", codeResult.code);
                 if (isMounted) {
                   setScanningStatus(`Detected: ${codeResult.code}`);
                 }
@@ -211,7 +214,11 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                   type: codeResult.format || "unknown",
                   data: codeResult.code,
                 });
+              } else {
+                console.warn("No code found in result:", codeResult);
               }
+            } else {
+              console.warn("Handler called but isMounted:", isMounted, "result:", result);
             }
           };
 
@@ -357,9 +364,15 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                         setScanningStatus("Scanning... Point at barcode");
                       }
 
+                      // Log occasionally for debugging
+                      if (frameCount % 100 === 0) {
+                        console.log("Quagga processing frames...", frameCount);
+                      }
+
                       if (result && result.codeResult) {
                         const codeResult = result.codeResult;
                         const code = codeResult.code;
+                        console.log("onProcessed found code:", code);
                         const now = Date.now();
 
                         // Debounce: only process if it's a different code or 2 seconds have passed
@@ -368,6 +381,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                           (code !== lastDetectedCode ||
                             now - lastDetectionTime > 2000)
                         ) {
+                          console.log("Processing detected code:", code);
                           if (isMounted) {
                             setScanningStatus(`Found: ${code}`);
                           }
@@ -489,7 +503,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.8 - Using original handler
+            Scanner v2.9 - Check console for logs
           </Text>
         </View>
         {/* Overlay is created as DOM element in useEffect above */}
