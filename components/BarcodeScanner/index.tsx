@@ -338,24 +338,45 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                 let lastDetectedCode = "";
                 let lastDetectionTime = 0;
                 let frameCount = 0;
+                let isProcessingDetection = false;
 
                 // Set up onDetected callback (fires when barcode is successfully decoded)
                 Quagga.onDetected((result: any) => {
-                  if (isMounted && result) {
-                    const codeResult = result.codeResult || result;
-                    if (codeResult && codeResult.code) {
-                      console.log("Quagga detected:", codeResult.code);
+                  if (!isMounted || isProcessingDetection) return;
+                  
+                  const codeResult = result.codeResult || result;
+                  if (codeResult && codeResult.code) {
+                    const code = codeResult.code;
+                    const now = Date.now();
+                    
+                    // Debounce: only process if it's a different code or 2 seconds have passed
+                    if (
+                      code &&
+                      (code !== lastDetectedCode || now - lastDetectionTime > 2000)
+                    ) {
+                      isProcessingDetection = true;
+                      lastDetectedCode = code;
+                      lastDetectionTime = now;
+                      
+                      console.log("Quagga detected:", code);
+                      setScanningStatus(`Detected: ${code}`);
+                      
                       handleBarcodeScanned({
                         type: codeResult.format || "unknown",
-                        data: codeResult.code,
+                        data: code,
                       });
+                      
+                      // Reset flag after a delay
+                      setTimeout(() => {
+                        isProcessingDetection = false;
+                      }, 1000);
                     }
                   }
                 });
 
                 // Set up onProcessed callback (fires on every frame - use for status updates)
                 Quagga.onProcessed((result: any) => {
-                  if (!isMounted) return;
+                  if (!isMounted || isProcessingDetection) return;
                   
                   frameCount++;
                   // Update status every 30 frames to show it's working
@@ -363,7 +384,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                     setScanningStatus("Scanning... Point at barcode");
                   }
 
-                  // Also check for detections here (backup in case onDetected doesn't fire)
+                  // Also check for detections here as backup (in case onDetected doesn't fire)
                   if (result && result.codeResult && result.codeResult.code) {
                     const code = result.codeResult.code;
                     const now = Date.now();
@@ -371,21 +392,11 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                     // Debounce: only process if it's a different code or 2 seconds have passed
                     if (
                       code &&
-                      (code !== lastDetectedCode ||
-                        now - lastDetectionTime > 2000)
+                      (code !== lastDetectedCode || now - lastDetectionTime > 2000)
                     ) {
-                      setScanningStatus(`Found: ${code}`);
-                      lastDetectedCode = code;
-                      lastDetectionTime = now;
-
-                      // Only call handler if onDetected didn't already handle it
-                      // (to avoid double-processing)
-                      if (now - lastDetectionTime < 100) {
-                        handleBarcodeScanned({
-                          type: result.codeResult.format || "unknown",
-                          data: code,
-                        });
-                      }
+                      // Only use this as backup if onDetected hasn't already handled it
+                      // (onDetected usually fires, but this is a safety net)
+                      setScanningStatus(`Found: ${code} (processing...)`);
                     }
                   }
                 });
