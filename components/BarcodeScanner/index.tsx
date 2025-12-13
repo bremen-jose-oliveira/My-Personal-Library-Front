@@ -318,18 +318,18 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
               },
               decoder: {
                 readers: [
-                  "ean_reader", // EAN-13 for ISBN (most common for books)
+                  "ean_reader", // EAN-13 for ISBN (most common for books) - prioritize
                   "ean_8_reader",
-                  "code_128_reader",
-                  "code_39_reader",
-                  "upc_reader",
-                  "upc_e_reader",
+                  "upc_reader", // UPC-A (common for books)
+                  "upc_e_reader", // UPC-E
+                  "code_128_reader", // Code 128
+                  "code_39_reader", // Code 39
                 ],
               },
               locate: true,
               locator: {
                 halfSample: true, // Use half sample for better performance (reduces processing load)
-                patchSize: "large", // Large patch size handles most barcode sizes well
+                patchSize: "x-large", // x-large patch size helps detect both compact and larger barcodes
                 showBoundingBox: false, // Disable visual debugging to improve performance
                 showPatches: false,
                 showFoundPatches: false,
