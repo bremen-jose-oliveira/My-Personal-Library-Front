@@ -307,9 +307,14 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                   width: { ideal: 1280, min: 640 },
                   height: { ideal: 720, min: 480 },
                   facingMode: "environment", // Use back camera by default
-                  // Store facingMode for torch detection
-                };
-                
+                  // Enable autofocus - let browser handle it automatically
+                  focusMode: "continuous",
+                  advanced: [
+                    {
+                      focusMode: "continuous",
+                    },
+                  ],
+                } as any,
               },
               decoder: {
                 readers: [
