@@ -237,10 +237,17 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                 target: scannerDiv,
                 constraints: {
                   // Use reasonable constraints for mobile devices
-                  width: 640,
-                  height: 480,
+                  width: { ideal: 1280, min: 640 },
+                  height: { ideal: 720, min: 480 },
                   facingMode: "environment", // Use back camera by default
-                },
+                  // Enable autofocus to prevent blur when getting close
+                  focusMode: "continuous",
+                  advanced: [
+                    {
+                      focusMode: "continuous",
+                    },
+                  ],
+                } as any,
               },
               decoder: {
                 readers: [
@@ -278,6 +285,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                 console.error("Quagga initialization error:", err);
                 if (isMounted) {
                   setHasPermission(false);
+                  setDebugMessages(["❌ Init error: " + (err.message || err.toString())]);
                   if (
                     err.name === "NotAllowedError" ||
                     err.name === "PermissionDeniedError"
@@ -294,6 +302,11 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                   }
                 }
                 return;
+              }
+              
+              // Add initialization success message
+              if (isMounted) {
+                setDebugMessages(["✅ Quagga initialized successfully"]);
               }
 
               if (isMounted) {
@@ -346,81 +359,83 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                 document.body.appendChild(overlay);
                 overlayElementRef.current = overlay;
 
-                // Start Quagga first
-                Quagga.start();
+                // Set up callbacks BEFORE starting (more reliable)
+                // Use the existing detectionHandler that was defined above
+                Quagga.onDetected(detectionHandler);
 
-                // Set up callbacks after start (some versions need this)
-                setTimeout(() => {
-                  if (isMounted) {
-                    // Use the existing detectionHandler that was defined above
-                    Quagga.onDetected(detectionHandler);
+                // Track frame processing with debounce
+                let lastDetectedCode = "";
+                let lastDetectionTime = 0;
+                let frameCount = 0;
 
-                    // Also listen for processed frames - this fires more reliably than onDetected
-                    // Use a debounce mechanism to avoid multiple detections
-                    let lastDetectedCode = "";
-                    let lastDetectionTime = 0;
-                    let frameCount = 0;
+                // Also listen for processed frames - this fires more reliably than onDetected
+                Quagga.onProcessed((result: any) => {
+                  if (!isMounted) return;
+                  
+                  frameCount++;
+                  
+                  // Update status every 30 frames to show it's working
+                  if (frameCount % 30 === 0 && isMounted) {
+                    setScanningStatus("Scanning... Point at barcode");
+                  }
 
-                    Quagga.onProcessed((result: any) => {
-                      if (!isMounted) return;
-                      
-                      frameCount++;
-                      // Update status every 30 frames to show it's working
-                      if (frameCount % 30 === 0) {
-                        setScanningStatus("Scanning... Point at barcode");
-                      }
-
-                      // Log occasionally for debugging
-                      if (frameCount % 100 === 0) {
-                        const msg = `Frames: ${frameCount}`;
-                        console.log(msg);
-                        if (isMounted) {
-                          setDebugMessages((prev) => [...prev.slice(-4), msg]);
-                        }
-                      }
-
-                      if (result && result.codeResult) {
-                        const codeResult = result.codeResult;
-                        const code = codeResult.code;
-                        console.log("onProcessed found code:", code);
-                        
-                        if (code && isMounted) {
-                          setDebugMessages((prev) => [...prev.slice(-4), `🔍 Found: ${code}`]);
-                        }
-                        
-                        const now = Date.now();
-
-                        // Debounce: only process if it's a different code or 2 seconds have passed
-                        if (
-                          code &&
-                          (code !== lastDetectedCode ||
-                            now - lastDetectionTime > 2000)
-                        ) {
-                          console.log("Processing detected code:", code);
-                          if (isMounted) {
-                            setScanningStatus(`Found: ${code}`);
-                            setDebugMessages((prev) => [...prev.slice(-4), `✅ Processing: ${code}`]);
-                          }
-
-                          lastDetectedCode = code;
-                          lastDetectionTime = now;
-
-                          // Use the same handler as onDetected
-                          handleBarcodeScanned({
-                            type: codeResult.format || "unknown",
-                            data: code,
-                          });
-                        }
-                      }
-                    });
-
-                    setHasPermission(true);
-                    quaggaRef.current = Quagga;
+                  // Log every 100 frames for debugging
+                  if (frameCount % 100 === 0) {
+                    const msg = `🔄 Frames: ${frameCount}`;
+                    console.log(msg);
                     if (isMounted) {
-                      setScanningStatus("Ready - Point at barcode");
+                      setDebugMessages((prev) => [...prev.slice(-4), msg]);
                     }
                   }
-                }, 1000); // Delay to ensure Quagga is fully started
+
+                  // Check for detected codes in processed frames
+                  if (result && result.codeResult && result.codeResult.code) {
+                    const codeResult = result.codeResult;
+                    const code = codeResult.code;
+                    console.log("onProcessed found code:", code);
+                    
+                    if (code && isMounted) {
+                      setDebugMessages((prev) => [...prev.slice(-4), `🔍 Found: ${code}`]);
+                    }
+                    
+                    const now = Date.now();
+
+                    // Debounce: only process if it's a different code or 2 seconds have passed
+                    if (
+                      code &&
+                      (code !== lastDetectedCode ||
+                        now - lastDetectionTime > 2000)
+                    ) {
+                      console.log("Processing detected code:", code);
+                      if (isMounted) {
+                        setScanningStatus(`Found: ${code}`);
+                        setDebugMessages((prev) => [...prev.slice(-4), `✅ Processing: ${code}`]);
+                      }
+
+                      lastDetectedCode = code;
+                      lastDetectionTime = now;
+
+                      // Use the same handler as onDetected
+                      handleBarcodeScanned({
+                        type: codeResult.format || "unknown",
+                        data: code,
+                      });
+                    }
+                  }
+                });
+
+                // Start Quagga AFTER setting up callbacks
+                Quagga.start();
+                
+                // Set state after a short delay to ensure Quagga is started
+                setTimeout(() => {
+                  if (isMounted) {
+                    setHasPermission(true);
+                    quaggaRef.current = Quagga;
+                    setScanningStatus("Ready - Point at barcode");
+                    setDebugMessages((prev) => [...prev.slice(-4), "🚀 Quagga started - scanning..."]);
+                  }
+                }, 500);
               }
             }
           );
@@ -519,21 +534,25 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.10 - Debug mode
+            Scanner v2.11 - Autofocus + Debug
           </Text>
-          {/* Debug messages displayed on screen */}
-          {debugMessages.length > 0 && (
-            <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.5)", padding: 8, borderRadius: 4 }}>
-              <Text style={{ color: "#fff", fontSize: 9, fontWeight: "bold", marginBottom: 4 }}>
-                Debug Log:
-              </Text>
-              {debugMessages.map((msg, idx) => (
-                <Text key={idx} style={{ color: "#fff", fontSize: 8, marginTop: 2 }}>
+          {/* Debug messages displayed on screen - always show to verify it's rendering */}
+          <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.7)", padding: 8, borderRadius: 4, minHeight: 80 }}>
+            <Text style={{ color: "#fff", fontSize: 9, fontWeight: "bold", marginBottom: 4 }}>
+              Debug Log ({debugMessages.length} messages):
+            </Text>
+            {debugMessages.length > 0 ? (
+              debugMessages.map((msg, idx) => (
+                <Text key={idx} style={{ color: "#0f0", fontSize: 9, marginTop: 2, fontFamily: "monospace" }}>
                   {msg}
                 </Text>
-              ))}
-            </View>
-          )}
+              ))
+            ) : (
+              <Text style={{ color: "#f90", fontSize: 9, fontStyle: "italic" }}>
+                Waiting for Quagga to initialize...
+              </Text>
+            )}
+          </View>
         </View>
         {/* Overlay is created as DOM element in useEffect above */}
         {scanned && (
