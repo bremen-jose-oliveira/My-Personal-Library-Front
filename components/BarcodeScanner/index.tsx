@@ -30,27 +30,53 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
 
   // Toggle flashlight/torch for web scanner
   const toggleFlashlight = async () => {
-    if (!videoTrackRef.current || !torchSupported) return;
+    if (!videoTrackRef.current || !torchSupported) {
+      console.warn("Cannot toggle flashlight - track or support missing");
+      return;
+    }
     
     try {
       const newState = !flashlightOn;
-      await videoTrackRef.current.applyConstraints({
-        advanced: [{ torch: newState }] as any,
-      });
-      setFlashlightOn(newState);
-      console.log(`Flashlight ${newState ? "ON" : "OFF"}`);
+      const track = videoTrackRef.current;
+      
+      // Try multiple methods to enable torch
+      try {
+        // Method 1: Standard applyConstraints with advanced
+        await track.applyConstraints({
+          advanced: [{ torch: newState }] as any,
+        });
+        setFlashlightOn(newState);
+        console.log(`✅ Flashlight ${newState ? "ON" : "OFF"} (method 1)`);
+        return;
+      } catch (e1) {
+        console.log("Method 1 failed, trying method 2:", e1);
+      }
+      
+      try {
+        // Method 2: Direct torch constraint
+        await track.applyConstraints({ torch: newState } as any);
+        setFlashlightOn(newState);
+        console.log(`✅ Flashlight ${newState ? "ON" : "OFF"} (method 2)`);
+        return;
+      } catch (e2) {
+        console.log("Method 2 failed, trying method 3:", e2);
+      }
+      
+      try {
+        // Method 3: Use getSettings and apply
+        const settings = track.getSettings();
+        await track.applyConstraints({
+          ...settings,
+          torch: newState
+        } as any);
+        setFlashlightOn(newState);
+        console.log(`✅ Flashlight ${newState ? "ON" : "OFF"} (method 3)`);
+      } catch (e3) {
+        console.error("All torch methods failed:", e3);
+        alert(`Flashlight not supported or failed: ${e3.message}`);
+      }
     } catch (e) {
       console.error("Failed to toggle flashlight:", e);
-      // Try alternative method
-      try {
-        const track = videoTrackRef.current as any;
-        if (track.applyConstraints) {
-          await track.applyConstraints({ torch: !flashlightOn });
-          setFlashlightOn(!flashlightOn);
-        }
-      } catch (e2) {
-        console.error("Alternative torch method also failed:", e2);
-      }
     }
   };
 
@@ -281,6 +307,11 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                   width: { ideal: 1280, min: 640 },
                   height: { ideal: 720, min: 480 },
                   facingMode: "environment", // Use back camera by default
+                  // Store facingMode for torch detection
+                };
+                
+                // Store facingMode for torch detection
+                const facingMode = constraints.facingMode;
                   // Enable autofocus - let browser handle it automatically
                   focusMode: "continuous",
                   advanced: [
@@ -303,7 +334,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
               locate: true,
               locator: {
                 halfSample: false, // Use full sample for better accuracy
-                patchSize: "large", // Large patch size for EAN detection - balanced for close and far
+                // Try multiple patch sizes to handle different barcode sizes
+                patchSize: "medium", // Start with medium, Quagga will try different sizes
                 showBoundingBox: true,
                 showPatches: false,
                 showFoundPatches: false,
@@ -312,7 +344,14 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                 showPatchLabels: false,
               },
               numOfWorkers: 0, // Use 0 workers for more reliable detection on mobile
-              frequency: 10, // Lower frequency for better accuracy and range
+              frequency: 10, // Lower frequency for better accuracy
+              // Add area configuration to detect smaller and larger barcodes
+              area: {
+                top: "0%",
+                right: "0%",
+                left: "0%",
+                bottom: "0%"
+              },
               // Enable visual debugging - shows the red scanning line
               debug: {
                 drawBoundingBox: true,
@@ -493,18 +532,47 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                       if (videoTrack) {
                         videoTrackRef.current = videoTrack;
                         
-                        // Check if torch is supported
-                        const capabilities = videoTrack.getCapabilities ? videoTrack.getCapabilities() : {};
-                        if (capabilities.torch || (capabilities as any).advanced?.some((adv: any) => adv.torch)) {
-                          setTorchSupported(true);
-                          console.log("✅ Torch/flashlight supported");
-                        } else {
-                          console.log("ℹ️ Torch not supported on this device");
+                        // Check if torch is supported - try multiple methods
+                        try {
+                          const capabilities = videoTrack.getCapabilities ? videoTrack.getCapabilities() : ({} as any);
+                          const settings = videoTrack.getSettings ? videoTrack.getSettings() : ({} as any);
+                          
+                          // Check for torch in capabilities or try applying it to detect support
+                          if (capabilities.torch !== undefined || settings.torch !== undefined || 
+                              (capabilities as any).advanced?.some((adv: any) => adv.torch)) {
+                            setTorchSupported(true);
+                            console.log("✅ Torch/flashlight supported (via capabilities)");
+                          } else {
+                            // On mobile browsers, torch might be supported even if not in capabilities
+                            // Try to detect if we're on a mobile device
+                            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                            if (isMobile) {
+                              // Assume torch is available on mobile devices
+                              setTorchSupported(true);
+                              console.log("✅ Assuming torch supported on mobile device");
+                            } else {
+                              console.log("ℹ️ Torch not detected - may not be supported");
+                            }
+                          }
+                        } catch (capError) {
+                          console.warn("Error checking torch capabilities:", capError);
+                          // On mobile, assume torch might work anyway
+                          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                          if (isMobile) {
+                            setTorchSupported(true);
+                            console.log("✅ Assuming torch supported on mobile (fallback)");
+                          }
                         }
                       }
                     }
                   } catch (e) {
                     console.warn("Could not access video track for torch:", e);
+                    // Fallback: if mobile device, show button anyway
+                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                    if (isMobile) {
+                      setTorchSupported(true);
+                      console.log("✅ Showing torch button on mobile (fallback)");
+                    }
                   }
                 }, 1000);
                 
@@ -620,7 +688,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.15 - Flashlight Toggle Added
+            Scanner v2.16 - Flashlight Fix + Better Barcode Detection
           </Text>
           {/* Debug messages displayed on screen - always show to verify it's rendering */}
           <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.8)", padding: 10, borderRadius: 4, minHeight: 100, maxHeight: 200 }}>
