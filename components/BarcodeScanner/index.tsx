@@ -20,10 +20,39 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
   const [scanningStatus, setScanningStatus] =
     useState<string>("Initializing...");
   const [debugMessages, setDebugMessages] = useState<string[]>([]);
+  const [flashlightOn, setFlashlightOn] = useState(false);
+  const [torchSupported, setTorchSupported] = useState(false);
   const quaggaRef = useRef<any>(null);
   const scannerElementRef = useRef<HTMLDivElement | null>(null);
   const overlayElementRef = useRef<HTMLDivElement | null>(null);
+  const videoTrackRef = useRef<MediaStreamTrack | null>(null);
   const scanningLineAnim = useRef(new Animated.Value(0)).current;
+
+  // Toggle flashlight/torch for web scanner
+  const toggleFlashlight = async () => {
+    if (!videoTrackRef.current || !torchSupported) return;
+    
+    try {
+      const newState = !flashlightOn;
+      await videoTrackRef.current.applyConstraints({
+        advanced: [{ torch: newState }] as any,
+      });
+      setFlashlightOn(newState);
+      console.log(`Flashlight ${newState ? "ON" : "OFF"}`);
+    } catch (e) {
+      console.error("Failed to toggle flashlight:", e);
+      // Try alternative method
+      try {
+        const track = videoTrackRef.current as any;
+        if (track.applyConstraints) {
+          await track.applyConstraints({ torch: !flashlightOn });
+          setFlashlightOn(!flashlightOn);
+        }
+      } catch (e2) {
+        console.error("Alternative torch method also failed:", e2);
+      }
+    }
+  };
 
   const handleBarcodeScanned = ({
     type,
@@ -353,10 +382,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                 const line = document.createElement("div");
                 line.style.position = "absolute";
                 line.style.width = "100%";
-                line.style.height = "4px";
+                line.style.height = "2px";
                 line.style.backgroundColor = "#FF0000";
                 line.style.zIndex = "10002";
-                line.style.boxShadow = "0 0 15px #FF0000, 0 0 30px #FF0000";
+                line.style.boxShadow = "0 0 10px #FF0000, 0 0 20px #FF0000";
                 
                 const text = document.createElement("div");
                 text.style.color = "#FF0000";
@@ -452,6 +481,32 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
                 setDebugMessages((prev) => [...prev, "🔵 Starting Quagga..."]);
                 Quagga.start();
                 console.log("✅ Quagga.start() called");
+                
+                // Try to get video track for flashlight control
+                setTimeout(async () => {
+                  try {
+                    // Get video element created by Quagga
+                    const videoElement = scannerDiv.querySelector('video') as HTMLVideoElement;
+                    if (videoElement && videoElement.srcObject) {
+                      const stream = videoElement.srcObject as MediaStream;
+                      const videoTrack = stream.getVideoTracks()[0];
+                      if (videoTrack) {
+                        videoTrackRef.current = videoTrack;
+                        
+                        // Check if torch is supported
+                        const capabilities = videoTrack.getCapabilities ? videoTrack.getCapabilities() : {};
+                        if (capabilities.torch || (capabilities as any).advanced?.some((adv: any) => adv.torch)) {
+                          setTorchSupported(true);
+                          console.log("✅ Torch/flashlight supported");
+                        } else {
+                          console.log("ℹ️ Torch not supported on this device");
+                        }
+                      }
+                    }
+                  } catch (e) {
+                    console.warn("Could not access video track for torch:", e);
+                  }
+                }, 1000);
                 
                 // Set state after a short delay to ensure Quagga is started
                 setTimeout(() => {
@@ -565,7 +620,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.14 - Reverted to Better Close-Range Config
+            Scanner v2.15 - Flashlight Toggle Added
           </Text>
           {/* Debug messages displayed on screen - always show to verify it's rendering */}
           <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.8)", padding: 10, borderRadius: 4, minHeight: 100, maxHeight: 200 }}>
@@ -587,6 +642,16 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
             </View>
           </View>
         </View>
+        {/* Flashlight toggle button - only show if supported */}
+        {torchSupported && (
+          <View style={{ position: "absolute", bottom: 100, alignSelf: "center", zIndex: 10003 }}>
+            <Button
+              title={flashlightOn ? "🔦 Flashlight ON" : "💡 Flashlight OFF"}
+              onPress={toggleFlashlight}
+              color={flashlightOn ? "#FFD700" : "#666"}
+            />
+          </View>
+        )}
         {/* Overlay is created as DOM element in useEffect above */}
         {scanned && (
           <View style={styles.buttonContainer}>
