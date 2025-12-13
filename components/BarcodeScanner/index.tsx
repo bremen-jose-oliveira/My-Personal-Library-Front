@@ -31,8 +31,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
 
   // Toggle flashlight/torch for web scanner
   const toggleFlashlight = async () => {
-    if (!videoTrackRef.current || !torchSupported) {
-      console.warn("Cannot toggle flashlight - track or support missing");
+    if (!videoTrackRef.current) {
+      console.warn("Cannot toggle flashlight - video track not available");
+      alert("Flashlight: Video track not available. Please ensure camera is active.");
       return;
     }
     
@@ -40,44 +41,55 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
       const newState = !flashlightOn;
       const track = videoTrackRef.current;
       
-      // Try multiple methods to enable torch
+      console.log(`Attempting to turn flashlight ${newState ? "ON" : "OFF"}...`);
+      
+      // Check if torch is in capabilities
+      const capabilities = track.getCapabilities ? track.getCapabilities() : ({} as any);
+      console.log("Track capabilities:", capabilities);
+      
+      if (capabilities.torch === false || (capabilities.torch === undefined && !navigator.userAgent.includes("Mobile"))) {
+        alert("Flashlight/Torch is not supported on this device or browser. It typically only works on mobile devices with rear cameras.");
+        return;
+      }
+      
+      // Try the standard way (works on Chrome/Edge Android)
       try {
-        // Method 1: Standard applyConstraints with advanced
         await track.applyConstraints({
           advanced: [{ torch: newState }] as any,
         });
         setFlashlightOn(newState);
-        console.log(`✅ Flashlight ${newState ? "ON" : "OFF"} (method 1)`);
+        console.log(`✅ Flashlight ${newState ? "ON" : "OFF"}`);
+        
+        // Update button if it exists
+        const flashBtn = document.getElementById("scanner-flash-button");
+        if (flashBtn) {
+          flashBtn.textContent = newState ? "🔦 ON" : "💡 OFF";
+          flashBtn.style.backgroundColor = newState ? "#FFD700" : "#666";
+        }
         return;
-      } catch (e1) {
-        console.log("Method 1 failed, trying method 2:", e1);
+      } catch (e1: any) {
+        console.log("Method 1 failed:", e1.message);
+        
+        // Try direct constraint
+        try {
+          await track.applyConstraints({ torch: newState } as any);
+          setFlashlightOn(newState);
+          console.log(`✅ Flashlight ${newState ? "ON" : "OFF"} (method 2)`);
+          
+          const flashBtn = document.getElementById("scanner-flash-button");
+          if (flashBtn) {
+            flashBtn.textContent = newState ? "🔦 ON" : "💡 OFF";
+            flashBtn.style.backgroundColor = newState ? "#FFD700" : "#666";
+          }
+          return;
+        } catch (e2: any) {
+          console.error("Flashlight toggle failed:", e2.message);
+          alert(`Flashlight not available: ${e2.message}. This feature typically only works on mobile devices with rear cameras.`);
+        }
       }
-      
-      try {
-        // Method 2: Direct torch constraint
-        await track.applyConstraints({ torch: newState } as any);
-        setFlashlightOn(newState);
-        console.log(`✅ Flashlight ${newState ? "ON" : "OFF"} (method 2)`);
-        return;
-      } catch (e2) {
-        console.log("Method 2 failed, trying method 3:", e2);
-      }
-      
-      try {
-        // Method 3: Use getSettings and apply
-        const settings = track.getSettings();
-        await track.applyConstraints({
-          ...settings,
-          torch: newState
-        } as any);
-        setFlashlightOn(newState);
-        console.log(`✅ Flashlight ${newState ? "ON" : "OFF"} (method 3)`);
-      } catch (e3) {
-        console.error("All torch methods failed:", e3);
-        alert(`Flashlight not supported or failed: ${e3.message}`);
-      }
-    } catch (e) {
+    } catch (e: any) {
       console.error("Failed to toggle flashlight:", e);
+      alert(`Flashlight error: ${e.message}`);
     }
   };
 
@@ -330,7 +342,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
               locate: true,
               locator: {
                 halfSample: false, // Use full sample for better accuracy
-                patchSize: "medium", // Medium patch size to handle both compact and wider barcodes
+                patchSize: "large", // Large patch size - better for standard EAN-13 barcodes
                 showBoundingBox: false, // Disable visual debugging to improve performance
                 showPatches: false,
                 showFoundPatches: false,
@@ -469,11 +481,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                   flashButton.style.fontWeight = "bold";
                   flashButton.style.cursor = "pointer";
                   flashButton.style.boxShadow = "0 2px 8px rgba(0,0,0,0.5)";
-                  flashButton.onclick = async () => {
-                    await toggleFlashlight();
-                    // Update button text after toggle
-                    flashButton.textContent = flashlightOn ? "🔦 ON" : "💡 OFF";
-                    flashButton.style.backgroundColor = flashlightOn ? "#FFD700" : "#666";
+                  flashButton.onclick = () => {
+                    toggleFlashlight();
                   };
                   document.body.appendChild(flashButton);
                 };
@@ -745,7 +754,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.19 - DOM Buttons + Medium Patch Size
+            Scanner v2.20 - Improved Flashlight + Large Patches for EAN-13
           </Text>
           {/* Debug messages displayed on screen - always show to verify it's rendering */}
           <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.8)", padding: 10, borderRadius: 4, minHeight: 100, maxHeight: 200 }}>
