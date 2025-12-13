@@ -21,6 +21,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
     useState<string>("Initializing...");
   const quaggaRef = useRef<any>(null);
   const scannerElementRef = useRef<HTMLDivElement | null>(null);
+  const overlayElementRef = useRef<HTMLDivElement | null>(null);
   const scanningLineAnim = useRef(new Animated.Value(0)).current;
 
   const handleBarcodeScanned = ({
@@ -172,7 +173,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
           scannerDiv.style.position = "fixed";
           scannerDiv.style.top = "0";
           scannerDiv.style.left = "0";
-          scannerDiv.style.zIndex = "10000";
+          scannerDiv.style.zIndex = "9999"; // Lower z-index so overlay can be above
           scannerDiv.style.backgroundColor = "#000";
           scannerDiv.style.overflow = "hidden";
 
@@ -283,6 +284,55 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
               }
 
               if (isMounted) {
+                // Create overlay with scanning frame and red line
+                const overlay = document.createElement("div");
+                overlay.id = "scanner-overlay-web";
+                overlay.style.position = "fixed";
+                overlay.style.top = "0";
+                overlay.style.left = "0";
+                overlay.style.width = "100vw";
+                overlay.style.height = "100vh";
+                overlay.style.zIndex = "10001"; // Above Quagga scanner (z-index 10000)
+                overlay.style.pointerEvents = "none";
+                overlay.style.display = "flex";
+                overlay.style.justifyContent = "center";
+                overlay.style.alignItems = "center";
+                overlay.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+                
+                const frame = document.createElement("div");
+                frame.style.width = "80%";
+                frame.style.maxWidth = "400px";
+                frame.style.aspectRatio = "1";
+                frame.style.border = "3px solid white";
+                frame.style.borderRadius = "10px";
+                frame.style.position = "relative";
+                frame.style.display = "flex";
+                frame.style.justifyContent = "center";
+                frame.style.alignItems = "center";
+                
+                const line = document.createElement("div");
+                line.style.position = "absolute";
+                line.style.width = "100%";
+                line.style.height = "4px";
+                line.style.backgroundColor = "#FF0000";
+                line.style.zIndex = "10002";
+                line.style.boxShadow = "0 0 15px #FF0000, 0 0 30px #FF0000";
+                
+                const text = document.createElement("div");
+                text.style.color = "#FF0000";
+                text.style.fontSize = "16px";
+                text.style.fontWeight = "bold";
+                text.style.marginTop = "100px";
+                text.style.zIndex = "10002";
+                text.style.textShadow = "2px 2px 4px rgba(0,0,0,0.8)";
+                text.textContent = "Point camera at barcode";
+                
+                frame.appendChild(line);
+                frame.appendChild(text);
+                overlay.appendChild(frame);
+                document.body.appendChild(overlay);
+                overlayElementRef.current = overlay;
+
                 // Start Quagga first
                 Quagga.start();
 
@@ -379,6 +429,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
               console.error("Error stopping Quagga:", e);
             }
           }
+          if (overlayElementRef.current?.parentNode) {
+            overlayElementRef.current.parentNode.removeChild(overlayElementRef.current);
+          }
           if (scannerElementRef.current?.parentNode) {
             scannerElementRef.current.parentNode.removeChild(
               scannerElementRef.current
@@ -434,49 +487,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.5 - Red line visible
+            Scanner v2.6 - Red line as DOM overlay
           </Text>
         </View>
-        {/* Visual scanning frame for web - shows scanning area */}
-        {!scanned && hasPermission && (
-          <View 
-            style={{
-              ...StyleSheet.absoluteFillObject,
-              justifyContent: "center",
-              alignItems: "center",
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-              zIndex: 10002,
-              pointerEvents: "none",
-            }}
-          >
-            <View 
-              style={{
-                width: "80%",
-                aspectRatio: 1,
-                borderWidth: 3,
-                borderColor: "#fff",
-                borderRadius: 10,
-                position: "relative",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              {/* Red scanning line - visible in center */}
-              <View
-                style={{
-                  position: "absolute",
-                  width: "100%",
-                  height: 3,
-                  backgroundColor: "#FF0000",
-                  zIndex: 10003,
-                }}
-              />
-              <Text style={{ color: "#FF0000", fontSize: 14, fontWeight: "bold", marginTop: 20, zIndex: 10003 }}>
-                Point camera at barcode
-              </Text>
-            </View>
-          </View>
-        )}
+        {/* Overlay is created as DOM element in useEffect above */}
         {scanned && (
           <View style={styles.buttonContainer}>
             <Button
