@@ -434,6 +434,27 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned }) => {
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
         </View>
+        {/* Visual scanning frame for web - shows scanning area */}
+        {!scanned && hasPermission && (
+          <View style={styles.scanningOverlay}>
+            <View style={styles.scanningFrame}>
+              <View
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: 0,
+                  right: 0,
+                  height: 2,
+                  backgroundColor: "#FF0000",
+                  shadowColor: "#FF0000",
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 1,
+                  shadowRadius: 10,
+                }}
+              />
+            </View>
+          </View>
+        )}
         {scanned && (
           <View style={styles.buttonContainer}>
             <Button

@@ -192,6 +192,32 @@ npx expo prebuild
 3. **Fix TypeScript errors first** - They're usually the most critical
 4. **Review expo-doctor warnings** - They indicate potential issues
 
+## About Native Build Warnings
+
+After running `prebuild`, you may see warnings in Xcode about deprecated iOS APIs:
+
+### Common Warnings (Non-Critical)
+
+**Deprecated API Warnings:**
+
+- `SFAuthenticationSession` is deprecated (used by AppAuth/GoogleSignIn)
+- `openURL:` is deprecated (used by OAuth libraries)
+
+**Why These Appear:**
+
+- These warnings come from third-party OAuth libraries (AppAuth, GoogleSignIn, GTMAppAuth)
+- They use older iOS APIs that Apple has deprecated
+- The libraries still work, but Apple recommends updating to newer APIs
+
+**Should You Worry?**
+
+- ⚠️ These are **warnings**, not errors - your app will still build and run
+- ⚠️ However, they **can** cause social login issues (like Apple login redirecting to Google)
+- ✅ The libraries will eventually be updated by their maintainers
+- ✅ For now, the app should still function, but login flows may be less reliable
+
+**Note:** The validation script checks JavaScript/TypeScript errors **before** prebuild. These native warnings only appear **after** prebuild when building in Xcode. They're expected and won't prevent your app from working.
+
 ## Troubleshooting
 
 ### Script not found

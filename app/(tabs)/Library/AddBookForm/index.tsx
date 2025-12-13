@@ -173,16 +173,20 @@ export default function AddBookForm() {
               color: "#f0dcc7",
             }}
           />
-          <Button
-            title="Search"
-            onPress={() => {
-              setStartIndex(0);
-              fetchBooks(searchQuery, true);
-            }}
-            color="#bf471b"
-          />
-          {/* Render "Open Barcode Scanner" only if not on iOS Web */}
+          <View style={{ flexDirection: "row", marginBottom: 10 }}>
+            <View style={{ flex: 1, marginRight: 5 }}>
+              <Button
+                title="Search"
+                onPress={() => {
+                  setStartIndex(0);
+                  fetchBooks(searchQuery, true);
+                }}
+                color="#bf471b"
+              />
+            </View>
+          </View>
 
+          {/* Render "Open Barcode Scanner" only if not on iOS Web */}
           <View style={{ flexDirection: "row", marginBottom: 10 }}>
             <View style={{ flex: 1, marginRight: searchResults.length > 0 ? 5 : 0 }}>
               <Button
