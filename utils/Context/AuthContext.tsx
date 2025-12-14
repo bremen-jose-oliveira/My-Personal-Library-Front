@@ -268,18 +268,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       ios: process.env.EXPO_PUBLIC_IOS_URL_SCHEME
         ? makeRedirectUri({
             scheme: process.env.EXPO_PUBLIC_IOS_URL_SCHEME,
-            path: "oauthredirect",
+            path: "oauth2redirect/google",
           })
         : makeRedirectUri({
             scheme:
               "com.googleusercontent.apps.958080376950-ov7dgq16sggjncpa7u5p4edesradrr0g",
-            path: "oauthredirect",
+            path: "oauth2redirect/google",
           }),
       default: makeRedirectUri({
         scheme:
           process.env.EXPO_PUBLIC_IOS_URL_SCHEME ||
           "com.googleusercontent.apps.958080376950-ov7dgq16sggjncpa7u5p4edesradrr0g",
-        path: "oauthredirect",
+        path: "oauth2redirect/google",
       }),
     }),
   });
