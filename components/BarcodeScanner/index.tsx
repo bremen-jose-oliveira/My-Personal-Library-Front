@@ -318,17 +318,12 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 type: "LiveStream",
                 target: scannerDiv,
                 constraints: {
-                  // Balance between quality and compatibility
-                  width: { ideal: 1280, min: 640 }, // Try 1280, fallback to 640
-                  height: { ideal: 720, min: 480 }, // Try 720, fallback to 480
+                  // Higher quality for iPhone 15 - use best available
+                  width: { ideal: 1920, min: 1280 }, // Higher for better quality on modern phones
+                  height: { ideal: 1080, min: 720 }, // Higher for better quality
                   facingMode: "environment", // Use back camera by default
-                  // Enable autofocus - let browser handle it automatically
-                  focusMode: "continuous",
-                  advanced: [
-                    {
-                      focusMode: "continuous",
-                    },
-                  ],
+                  // Don't set focusMode - let device handle autofocus naturally for close-up
+                  // Setting focusMode can interfere with close-up autofocus on some devices
                 } as any,
               },
               decoder: {
@@ -552,8 +547,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                       setScanningStatus("Scanning... Point at barcode");
                     }
 
-                    // Log less frequently to reduce console spam (every 200 frames)
-                    if (frameCount % 200 === 0) {
+                    // Log frame count more frequently to verify it's working (every 50 frames)
+                    if (frameCount % 50 === 0) {
                       const msg = `🔄 Frames: ${frameCount}`;
                       console.log(msg);
                       if (isMounted) {
@@ -564,15 +559,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                       }
                     }
 
-                    // Check for detected codes in processed frames
+                    // Check for detected codes in processed frames - log ALL detections
                     if (result && result.codeResult && result.codeResult.code) {
                       const codeResult = result.codeResult;
                       const code = codeResult.code;
                       
-                      // Only log occasionally to reduce spam
-                      if (frameCount % 100 === 0) {
-                        console.log("🔍 onProcessed found code:", code);
-                      }
+                      // Log ALL code detections to debug
+                      console.log(`🔍 onProcessed detected code: ${code} (format: ${codeResult.format || "unknown"})`);
                       
                       if (code && isMounted && !scanned) {
                         const now = Date.now();
@@ -580,11 +573,11 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                         // More lenient debouncing: process if different code OR if enough time passed
                         const timeSinceLastDetection = now - lastDetectionTime;
                         const isDifferentCode = code !== lastDetectedCode;
-                        const enoughTimePassed = timeSinceLastDetection > 1000;
+                        const enoughTimePassed = timeSinceLastDetection > 800; // Reduced to 800ms for faster response
                         
                         // Process if: different code, enough time passed, OR we haven't detected anything in a while
-                        if (isDifferentCode || enoughTimePassed || timeSinceLastDetection > 3000) {
-                          console.log(`✅ Processing detected code: ${code} (different: ${isDifferentCode}, time: ${timeSinceLastDetection}ms)`);
+                        if (isDifferentCode || enoughTimePassed || timeSinceLastDetection > 2500) {
+                          console.log(`✅✅✅ PROCESSING CODE: ${code} (different: ${isDifferentCode}, time: ${timeSinceLastDetection}ms, scanned: ${scanned})`);
                           if (isMounted && !scanned) {
                             setScanningStatus(`Found: ${code}`);
                             setDebugMessages((prev) => [...prev.slice(-4), `✅ Processing: ${code}`]);
@@ -597,7 +590,11 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                               type: codeResult.format || "unknown",
                               data: code,
                             });
+                          } else {
+                            console.warn(`❌ Not processing - isMounted: ${isMounted}, scanned: ${scanned}`);
                           }
+                        } else {
+                          console.log(`⏸️ Skipping duplicate detection: ${code} (last: ${lastDetectedCode}, time: ${timeSinceLastDetection}ms)`);
                         }
                       }
                     }
@@ -783,7 +780,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.26 - Fixed Callback Setup + Balanced Resolution
+            Scanner v2.27 - Higher Res + Better Autofocus + More Debug
           </Text>
           {/* Debug messages displayed on screen - always show to verify it's rendering */}
           <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.8)", padding: 10, borderRadius: 4, minHeight: 100, maxHeight: 200 }}>
