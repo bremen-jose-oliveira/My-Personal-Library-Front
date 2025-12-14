@@ -22,6 +22,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
     useState<string>("Initializing...");
   const [flashlightOn, setFlashlightOn] = useState(false);
   const [torchSupported, setTorchSupported] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(true); // Allow toggling overlay on/off
   const flashlightStateRef = useRef(false); // Use ref to track flashlight state for button handlers
   const quaggaRef = useRef<any>(null);
   const scannerElementRef = useRef<HTMLDivElement | null>(null);
@@ -358,7 +359,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
               // Quagga initialized successfully
 
               if (isMounted) {
-                // Create overlay with scanning frame and red line - properly centered
+                // Create overlay with scanning frame and red line - properly centered (optional, doesn't affect detection)
                 const overlay = document.createElement("div");
                 overlay.id = "scanner-overlay-web";
                 overlay.style.position = "fixed";
@@ -367,11 +368,15 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 overlay.style.width = "100vw";
                 overlay.style.height = "100vh";
                 overlay.style.zIndex = "10001"; // Above Quagga scanner (z-index 10000)
-                overlay.style.pointerEvents = "none";
+                overlay.style.pointerEvents = "none"; // Doesn't block events - purely visual
                 overlay.style.display = "flex";
                 overlay.style.justifyContent = "center";
                 overlay.style.alignItems = "center"; // Center vertically and horizontally
                 overlay.style.backgroundColor = "rgba(0, 0, 0, 0.3)"; // Lighter overlay - less gray filter effect
+                // Make overlay toggleable - hide it if showOverlay is false
+                if (!showOverlay) {
+                  overlay.style.display = "none";
+                }
                 
                 const frame = document.createElement("div");
                 frame.style.width = "80%";
@@ -470,6 +475,33 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 overlay.appendChild(frame);
                 document.body.appendChild(overlay);
                 overlayElementRef.current = overlay;
+                
+                // Create Toggle Overlay button (bottom left) - allows hiding the visual guide
+                const toggleOverlayButton = document.createElement("button");
+                toggleOverlayButton.id = "scanner-toggle-overlay-button";
+                toggleOverlayButton.textContent = showOverlay ? "👁️ Hide Frame" : "👁️ Show Frame";
+                toggleOverlayButton.style.position = "fixed";
+                toggleOverlayButton.style.bottom = "20px";
+                toggleOverlayButton.style.left = "20px";
+                toggleOverlayButton.style.zIndex = "10003";
+                toggleOverlayButton.style.padding = "12px 16px";
+                toggleOverlayButton.style.backgroundColor = "#444";
+                toggleOverlayButton.style.color = "#fff";
+                toggleOverlayButton.style.border = "2px solid #fff";
+                toggleOverlayButton.style.borderRadius = "8px";
+                toggleOverlayButton.style.fontSize = "14px";
+                toggleOverlayButton.style.fontWeight = "bold";
+                toggleOverlayButton.style.cursor = "pointer";
+                toggleOverlayButton.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
+                toggleOverlayButton.onclick = () => {
+                  const newState = !showOverlay;
+                  setShowOverlay(newState);
+                  if (overlay) {
+                    overlay.style.display = newState ? "flex" : "none";
+                  }
+                  toggleOverlayButton.textContent = newState ? "👁️ Hide Frame" : "👁️ Show Frame";
+                };
+                document.body.appendChild(toggleOverlayButton);
 
                 // Start Quagga first
                 Quagga.start();
@@ -628,6 +660,11 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
           if (overlayElementRef.current?.parentNode) {
             overlayElementRef.current.parentNode.removeChild(overlayElementRef.current);
           }
+          // Remove toggle overlay button
+          const toggleBtn = document.getElementById("scanner-toggle-overlay-button");
+          if (toggleBtn?.parentNode) {
+            toggleBtn.parentNode.removeChild(toggleBtn);
+          }
           if (scannerElementRef.current?.parentNode) {
             scannerElementRef.current.parentNode.removeChild(
               scannerElementRef.current
@@ -642,6 +679,11 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
           const flashBtn = document.getElementById("scanner-flash-button");
           if (flashBtn) {
             flashBtn.remove();
+          }
+          // Remove toggle overlay button
+          const toggleBtn = document.getElementById("scanner-toggle-overlay-button");
+          if (toggleBtn) {
+            toggleBtn.remove();
           }
           const container = document.getElementById("scanner-container");
           if (container) {
@@ -693,7 +735,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.30 - Restored v2.24 Settings (Large Patch + 800ms Debounce)
+            Scanner v2.31 - Toggleable Overlay (Doesn't Affect Detection)
           </Text>
         </View>
         {/* Flashlight toggle button as DOM element - position at top right */}
