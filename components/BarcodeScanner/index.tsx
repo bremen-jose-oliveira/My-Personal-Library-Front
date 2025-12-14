@@ -318,9 +318,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 type: "LiveStream",
                 target: scannerDiv,
                 constraints: {
-                  // Higher resolution for better close-range scanning
-                  width: { ideal: 1280, min: 640 },
-                  height: { ideal: 720, min: 480 },
+                  // Higher resolution for sharper image and better barcode detection
+                  width: { ideal: 1920, min: 1280 }, // Increased from 1280 to 1920 for sharper image
+                  height: { ideal: 1080, min: 720 }, // Increased from 720 to 1080 for sharper image
                   facingMode: "environment", // Use back camera by default
                   // Enable autofocus - let browser handle it automatically
                   focusMode: "continuous",
@@ -401,7 +401,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
               setDebugMessages((prev) => [...prev, "✅ Quagga initialized successfully"]);
 
               if (isMounted) {
-                // Create overlay with scanning frame and red line
+                // Create overlay with scanning frame and red line - properly centered
                 const overlay = document.createElement("div");
                 overlay.id = "scanner-overlay-web";
                 overlay.style.position = "fixed";
@@ -413,7 +413,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 overlay.style.pointerEvents = "none";
                 overlay.style.display = "flex";
                 overlay.style.justifyContent = "center";
-                overlay.style.alignItems = "center";
+                overlay.style.alignItems = "center"; // Center vertically and horizontally
                 overlay.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
                 
                 const frame = document.createElement("div");
@@ -426,6 +426,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 frame.style.display = "flex";
                 frame.style.justifyContent = "center";
                 frame.style.alignItems = "center";
+                frame.style.margin = "0 auto"; // Ensure centered
                 
                 const line = document.createElement("div");
                 line.style.position = "absolute";
@@ -434,14 +435,20 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 line.style.backgroundColor = "#FF0000";
                 line.style.zIndex = "10002";
                 line.style.boxShadow = "0 0 10px #FF0000, 0 0 20px #FF0000";
+                line.style.top = "50%"; // Center the red line vertically in the frame
+                line.style.transform = "translateY(-50%)"; // Perfectly center it
                 
                 const text = document.createElement("div");
                 text.style.color = "#FF0000";
                 text.style.fontSize = "16px";
                 text.style.fontWeight = "bold";
-                text.style.marginTop = "100px";
+                text.style.position = "absolute";
+                text.style.bottom = "20px"; // Position text at bottom of frame, not below it
+                text.style.left = "50%";
+                text.style.transform = "translateX(-50%)"; // Center horizontally
                 text.style.zIndex = "10002";
                 text.style.textShadow = "2px 2px 4px rgba(0,0,0,0.8)";
+                text.style.whiteSpace = "nowrap";
                 text.textContent = "Point camera at barcode";
                 
                 // Create Close Scanner button as DOM element (above overlay)
@@ -774,7 +781,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.24 - More Lenient Detection + Full Area Scan
+            Scanner v2.25 - Higher Resolution + Centered Frame
           </Text>
           {/* Debug messages displayed on screen - always show to verify it's rendering */}
           <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.8)", padding: 10, borderRadius: 4, minHeight: 100, maxHeight: 200 }}>
