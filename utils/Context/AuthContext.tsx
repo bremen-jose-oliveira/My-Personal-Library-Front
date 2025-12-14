@@ -184,10 +184,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }),
     redirectUri: Platform.select({
       web: `${process.env.EXPO_PUBLIC_API_URL}/login/oauth2/code/google`,
-
+      ios: process.env.EXPO_PUBLIC_IOS_URL_SCHEME
+        ? makeRedirectUri({
+            scheme: process.env.EXPO_PUBLIC_IOS_URL_SCHEME,
+            path: "oauthredirect",
+          })
+        : makeRedirectUri({
+            scheme:
+              "com.googleusercontent.apps.958080376950-ov7dgq16sggjncpa7u5p4edesradrr0g",
+            path: "oauthredirect",
+          }),
       default: makeRedirectUri({
-        native: `com.googleusercontent.apps.${process.env.EXPO_PUBLIC_IOS_CLIENT_ID}:'/oauthredirect'`,
-        ///  native: `${process.env.EXPO_PUBLIC_REDIRECT_URI}`,
+        scheme:
+          process.env.EXPO_PUBLIC_IOS_URL_SCHEME ||
+          "com.googleusercontent.apps.958080376950-ov7dgq16sggjncpa7u5p4edesradrr0g",
+        path: "oauthredirect",
       }),
     }),
   });
@@ -195,24 +206,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchGoogleUser = async (accessToken: string) => {
     if (!accessToken) return;
     try {
-      const response = await fetch(
-        "https://www.googleapis.com/oauth2/v2/userinfo",
+      // Send Google access token to backend to exchange for JWT
+      const backendResponse = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/auth/google`,
         {
+          method: "POST",
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            accessToken: accessToken,
+          }),
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch user info");
+      if (!backendResponse.ok) {
+        const errorText = await backendResponse.text();
+        throw new Error(errorText || "Failed to authenticate with backend");
       }
 
-      const data = await response.json();
-      await storeToken(data.token);
-      setIsLoggedIn(true);
-    } catch (error) {
-      console.error("Error fetching user info:", error);
+      const data = await backendResponse.json();
+      if (data.token) {
+        await storeToken(data.token);
+        setIsLoggedIn(true);
+      } else {
+        throw new Error("No token received from backend");
+      }
+    } catch (error: any) {
+      console.error("Error authenticating with Google:", error);
+      Alert.alert(
+        "Authentication Failed",
+        error.message || "Failed to authenticate with Google. Please try again."
+      );
     }
   };
 
