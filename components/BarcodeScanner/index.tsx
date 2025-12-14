@@ -514,95 +514,97 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 document.body.appendChild(overlay);
                 overlayElementRef.current = overlay;
 
-                // Set up callbacks BEFORE starting (more reliable)
-                console.log("🔵 Setting up callbacks...");
-                setDebugMessages((prev) => [...prev, "🔵 Setting up callbacks..."]);
-                
-                // Use the existing detectionHandler that was defined above
-                Quagga.onDetected(detectionHandler);
-                console.log("✅ onDetected callback registered");
-
-                // Track frame processing with debounce - reset these when component remounts or scanner restarts
-                let lastDetectedCode = "";
-                let lastDetectionTime = 0;
-                let frameCount = 0;
-                
-                // Expose function to reset detection tracking (for "Scan Again")
-                (window as any).__resetScannerTracking = () => {
-                  lastDetectedCode = "";
-                  lastDetectionTime = 0;
-                  frameCount = 0;
-                };
-
-                // Also listen for processed frames - this fires more reliably than onDetected
-                Quagga.onProcessed((result: any) => {
-                  if (!isMounted) return;
-                  
-                  frameCount++;
-                  
-                  // Update status every 30 frames to show it's working
-                  if (frameCount % 30 === 0 && isMounted) {
-                    setScanningStatus("Scanning... Point at barcode");
-                  }
-
-                  // Log less frequently to reduce console spam (every 200 frames instead of 50)
-                  if (frameCount % 200 === 0) {
-                    const msg = `🔄 Frames: ${frameCount}`;
-                    console.log(msg);
-                    if (isMounted) {
-                      setDebugMessages((prev) => {
-                        const newMsgs = [...prev.slice(-4), msg];
-                        return newMsgs;
-                      });
-                    }
-                  }
-
-                  // Check for detected codes in processed frames
-                  if (result && result.codeResult && result.codeResult.code) {
-                    const codeResult = result.codeResult;
-                    const code = codeResult.code;
-                    
-                    // Only log occasionally to reduce spam
-                    if (frameCount % 100 === 0) {
-                      console.log("🔍 onProcessed found code:", code);
-                    }
-                    
-                    if (code && isMounted && !scanned) {
-                      const now = Date.now();
-
-                      // More lenient debouncing: process if different code OR if enough time passed OR if confidence is high
-                      const timeSinceLastDetection = now - lastDetectionTime;
-                      const isDifferentCode = code !== lastDetectedCode;
-                      const enoughTimePassed = timeSinceLastDetection > 1000; // Reduced from 2000ms
-                      
-                      // Process if: different code, enough time passed, OR we haven't detected anything in a while
-                      if (isDifferentCode || enoughTimePassed || timeSinceLastDetection > 3000) {
-                        console.log(`✅ Processing detected code: ${code} (different: ${isDifferentCode}, time: ${timeSinceLastDetection}ms)`);
-                        if (isMounted && !scanned) {
-                          setScanningStatus(`Found: ${code}`);
-                          setDebugMessages((prev) => [...prev.slice(-4), `✅ Processing: ${code}`]);
-
-                          lastDetectedCode = code;
-                          lastDetectionTime = now;
-
-                          // Use the same handler as onDetected
-                          handleBarcodeScanned({
-                            type: codeResult.format || "unknown",
-                            data: code,
-                          });
-                        }
-                      }
-                    }
-                  }
-                });
-                
-                console.log("✅ onProcessed callback registered");
-
-                // Start Quagga AFTER setting up callbacks
+                // Start Quagga first
                 console.log("🔵 Starting Quagga...");
                 setDebugMessages((prev) => [...prev, "🔵 Starting Quagga..."]);
                 Quagga.start();
                 console.log("✅ Quagga.start() called");
+
+                // Set up callbacks AFTER starting (some Quagga versions need this)
+                setTimeout(() => {
+                  console.log("🔵 Setting up callbacks...");
+                  setDebugMessages((prev) => [...prev, "🔵 Setting up callbacks..."]);
+                  
+                  // Use the existing detectionHandler that was defined above
+                  Quagga.onDetected(detectionHandler);
+                  console.log("✅ onDetected callback registered");
+
+                  // Track frame processing with debounce - reset these when component remounts or scanner restarts
+                  let lastDetectedCode = "";
+                  let lastDetectionTime = 0;
+                  let frameCount = 0;
+                  
+                  // Expose function to reset detection tracking (for "Scan Again")
+                  (window as any).__resetScannerTracking = () => {
+                    lastDetectedCode = "";
+                    lastDetectionTime = 0;
+                    frameCount = 0;
+                  };
+
+                  // Also listen for processed frames - this fires more reliably than onDetected
+                  Quagga.onProcessed((result: any) => {
+                    if (!isMounted) return;
+                    
+                    frameCount++;
+                    
+                    // Update status every 30 frames to show it's working
+                    if (frameCount % 30 === 0 && isMounted) {
+                      setScanningStatus("Scanning... Point at barcode");
+                    }
+
+                    // Log less frequently to reduce console spam (every 200 frames)
+                    if (frameCount % 200 === 0) {
+                      const msg = `🔄 Frames: ${frameCount}`;
+                      console.log(msg);
+                      if (isMounted) {
+                        setDebugMessages((prev) => {
+                          const newMsgs = [...prev.slice(-4), msg];
+                          return newMsgs;
+                        });
+                      }
+                    }
+
+                    // Check for detected codes in processed frames
+                    if (result && result.codeResult && result.codeResult.code) {
+                      const codeResult = result.codeResult;
+                      const code = codeResult.code;
+                      
+                      // Only log occasionally to reduce spam
+                      if (frameCount % 100 === 0) {
+                        console.log("🔍 onProcessed found code:", code);
+                      }
+                      
+                      if (code && isMounted && !scanned) {
+                        const now = Date.now();
+
+                        // More lenient debouncing: process if different code OR if enough time passed
+                        const timeSinceLastDetection = now - lastDetectionTime;
+                        const isDifferentCode = code !== lastDetectedCode;
+                        const enoughTimePassed = timeSinceLastDetection > 1000;
+                        
+                        // Process if: different code, enough time passed, OR we haven't detected anything in a while
+                        if (isDifferentCode || enoughTimePassed || timeSinceLastDetection > 3000) {
+                          console.log(`✅ Processing detected code: ${code} (different: ${isDifferentCode}, time: ${timeSinceLastDetection}ms)`);
+                          if (isMounted && !scanned) {
+                            setScanningStatus(`Found: ${code}`);
+                            setDebugMessages((prev) => [...prev.slice(-4), `✅ Processing: ${code}`]);
+
+                            lastDetectedCode = code;
+                            lastDetectionTime = now;
+
+                            // Use the same handler as onDetected
+                            handleBarcodeScanned({
+                              type: codeResult.format || "unknown",
+                              data: code,
+                            });
+                          }
+                        }
+                      }
+                    }
+                  });
+                  
+                  console.log("✅ onProcessed callback registered");
+                }, 500); // Wait 500ms after start to set up callbacks
                 
                 // Try to get video track for flashlight control
                 setTimeout(async () => {
