@@ -278,30 +278,35 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
 
           // Set up detection callback BEFORE initialization
           const detectionHandler = (result: any) => {
-            const msg = `onDetected called: ${JSON.stringify(result?.codeResult?.code || "no code")}`;
+            // Prevent processing if already scanned
+            if (scanned) {
+              console.log("Already scanned, ignoring onDetected");
+              return;
+            }
+            
+            const msg = `onDetected: ${JSON.stringify(result?.codeResult?.code || "no code")}`;
             console.log(msg);
             setDebugMessages((prev) => [...prev.slice(-4), msg]); // Keep last 5 messages
             
-            if (isMounted && result) {
+            if (isMounted && result && !scanned) {
               // Check different possible result structures
               const codeResult = result.codeResult || result;
-              console.log("Code result:", codeResult);
               if (codeResult && codeResult.code) {
-                console.log("Processing barcode:", codeResult.code);
-                if (isMounted) {
-                  setScanningStatus(`Detected: ${codeResult.code}`);
-                  setDebugMessages((prev) => [...prev.slice(-4), `✅ Processing: ${codeResult.code}`]);
+                const code = codeResult.code;
+                console.log("✅ onDetected processing barcode:", code);
+                if (isMounted && !scanned) {
+                  setScanningStatus(`Detected: ${code}`);
+                  setDebugMessages((prev) => [...prev.slice(-4), `✅ Processing: ${code}`]);
+                  
+                  // Call handler directly
+                  handleBarcodeScanned({
+                    type: codeResult.format || "unknown",
+                    data: code,
+                  });
                 }
-                handleBarcodeScanned({
-                  type: codeResult.format || "unknown",
-                  data: codeResult.code,
-                });
               } else {
                 console.warn("No code found in result:", codeResult);
-                setDebugMessages((prev) => [...prev.slice(-4), "⚠️ No code in result"]);
               }
-            } else {
-              console.warn("Handler called but isMounted:", isMounted, "result:", result);
             }
           };
 
@@ -339,7 +344,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
               locate: true,
               locator: {
                 halfSample: false, // Use full sample for better accuracy
-                patchSize: "large", // Large patch size - was working before
+                patchSize: "large", // Large patch size - balanced for most barcodes
                 showBoundingBox: false, // Disable for performance
                 showPatches: false,
                 showFoundPatches: false,
@@ -349,6 +354,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
               },
               numOfWorkers: 0, // Use 0 workers for better consistency
               frequency: 10, // Standard frequency for detection
+              // Increase area to scan entire view, not just center
+              area: {
+                top: "0%",
+                right: "0%",
+                left: "0%",
+                bottom: "0%"
+              },
               // Disable visual debugging to improve performance
               debug: {
                 drawBoundingBox: false, // Disable to reduce render load
@@ -542,34 +554,37 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                   if (result && result.codeResult && result.codeResult.code) {
                     const codeResult = result.codeResult;
                     const code = codeResult.code;
-                    console.log("🔍 onProcessed found code:", code);
                     
-                    if (code && isMounted) {
-                      setDebugMessages((prev) => [...prev.slice(-4), `🔍 Found: ${code}`]);
+                    // Only log occasionally to reduce spam
+                    if (frameCount % 100 === 0) {
+                      console.log("🔍 onProcessed found code:", code);
                     }
                     
-                    const now = Date.now();
+                    if (code && isMounted && !scanned) {
+                      const now = Date.now();
 
-                      // Debounce: only process if it's a different code or 2 seconds have passed
-                      if (
-                        code &&
-                        (code !== lastDetectedCode ||
-                          now - lastDetectionTime > 2000)
-                      ) {
-                      console.log("✅ Processing detected code:", code);
-                      if (isMounted) {
-                        setScanningStatus(`Found: ${code}`);
-                        setDebugMessages((prev) => [...prev.slice(-4), `✅ Processing: ${code}`]);
+                      // More lenient debouncing: process if different code OR if enough time passed OR if confidence is high
+                      const timeSinceLastDetection = now - lastDetectionTime;
+                      const isDifferentCode = code !== lastDetectedCode;
+                      const enoughTimePassed = timeSinceLastDetection > 1000; // Reduced from 2000ms
+                      
+                      // Process if: different code, enough time passed, OR we haven't detected anything in a while
+                      if (isDifferentCode || enoughTimePassed || timeSinceLastDetection > 3000) {
+                        console.log(`✅ Processing detected code: ${code} (different: ${isDifferentCode}, time: ${timeSinceLastDetection}ms)`);
+                        if (isMounted && !scanned) {
+                          setScanningStatus(`Found: ${code}`);
+                          setDebugMessages((prev) => [...prev.slice(-4), `✅ Processing: ${code}`]);
+
+                          lastDetectedCode = code;
+                          lastDetectionTime = now;
+
+                          // Use the same handler as onDetected
+                          handleBarcodeScanned({
+                            type: codeResult.format || "unknown",
+                            data: code,
+                          });
+                        }
                       }
-
-                      lastDetectedCode = code;
-                      lastDetectionTime = now;
-
-                      // Use the same handler as onDetected
-                      handleBarcodeScanned({
-                        type: codeResult.format || "unknown",
-                        data: code,
-                      });
                     }
                   }
                 });
@@ -759,7 +774,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.23 - Reverted to Large Patches + Better Reset Logic
+            Scanner v2.24 - More Lenient Detection + Full Area Scan
           </Text>
           {/* Debug messages displayed on screen - always show to verify it's rendering */}
           <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.8)", padding: 10, borderRadius: 4, minHeight: 100, maxHeight: 200 }}>
