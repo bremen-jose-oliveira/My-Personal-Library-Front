@@ -681,9 +681,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
             flashBtn.remove();
           }
           // Remove toggle overlay button
-          const toggleBtn = document.getElementById("scanner-toggle-overlay-button");
-          if (toggleBtn) {
-            toggleBtn.remove();
+          const toggleOverlayBtn = document.getElementById("scanner-toggle-overlay-button");
+          if (toggleOverlayBtn) {
+            toggleOverlayBtn.remove();
           }
           const container = document.getElementById("scanner-container");
           if (container) {
