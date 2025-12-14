@@ -27,7 +27,9 @@ export default function ReadingListScreen() {
   const [bookStatuses, setBookStatuses] = useState<UserBookStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState<BookStatus | "ALL">("ALL");
+  const [selectedFilter, setSelectedFilter] = useState<BookStatus | "ALL">(
+    "ALL"
+  );
 
   const fetchReadingList = async () => {
     try {
@@ -36,25 +38,31 @@ export default function ReadingListScreen() {
         throw new Error("Token is missing or expired");
       }
 
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/user-book-status/my`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/user-book-status/my`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to fetch reading list: ${response.statusText}`);
       }
 
       const data: UserBookStatus[] = await response.json();
-      
+
       // Enrich books with cover images
       const enrichedData = await Promise.all(
         data.map(async (item) => {
           if (item.book && !item.book.cover) {
-            const coverUrl = await fetchCoverImage(item.book.title, item.book.author);
+            const coverUrl = await fetchCoverImage(
+              item.book.title,
+              item.book.author
+            );
             return {
               ...item,
               book: { ...item.book, cover: coverUrl },
@@ -90,6 +98,8 @@ export default function ReadingListScreen() {
   const renderBookItem = ({ item }: { item: UserBookStatus }) => {
     if (!item.book) return null;
 
+    const bookTitle = item.book.title || "Unknown";
+
     return (
       <TouchableOpacity
         onPress={() => router.push(`/BookDetails/${item.book!.id}`)}
@@ -106,6 +116,15 @@ export default function ReadingListScreen() {
             source={{ uri: item.book.cover }}
             style={{ width: 60, height: 90, borderRadius: 8, marginRight: 12 }}
             resizeMode="cover"
+            onError={(error) => {
+              console.error(
+                `Failed to load cover image for "${bookTitle}":`,
+                error.nativeEvent.error
+              );
+            }}
+            onLoad={() => {
+              console.log(`✅ Successfully loaded cover for: ${bookTitle}`);
+            }}
           />
         ) : (
           <View
@@ -119,11 +138,20 @@ export default function ReadingListScreen() {
               marginRight: 12,
             }}
           >
-            <Text style={{ color: "#666", fontSize: 10, textAlign: "center" }}>No Cover</Text>
+            <Text style={{ color: "#666", fontSize: 10, textAlign: "center" }}>
+              No Cover
+            </Text>
           </View>
         )}
         <View style={{ flex: 1 }}>
-          <Text style={{ color: "#f0dcc7", fontSize: 16, fontWeight: "600", marginBottom: 4 }}>
+          <Text
+            style={{
+              color: "#f0dcc7",
+              fontSize: 16,
+              fontWeight: "600",
+              marginBottom: 4,
+            }}
+          >
             {item.book.title}
           </Text>
           <Text style={{ color: "#f0dcc7", fontSize: 14, marginBottom: 4 }}>
@@ -193,7 +221,8 @@ export default function ReadingListScreen() {
                   paddingHorizontal: 12,
                   paddingVertical: 6,
                   borderRadius: 8,
-                  backgroundColor: selectedFilter === "ALL" ? "#bf471b" : "rgba(0,0,0,0.4)",
+                  backgroundColor:
+                    selectedFilter === "ALL" ? "#bf471b" : "rgba(0,0,0,0.4)",
                 }}
               >
                 <Text style={{ color: "#fff", fontSize: 12 }}>All</Text>
@@ -219,14 +248,22 @@ export default function ReadingListScreen() {
           </View>
 
           {loading ? (
-            <ActivityIndicator size="large" color="#bf471b" style={{ marginTop: 40 }} />
+            <ActivityIndicator
+              size="large"
+              color="#bf471b"
+              style={{ marginTop: 40 }}
+            />
           ) : (
             <FlatList
               contentContainerStyle={{ padding: 16, paddingTop: 0 }}
               data={filteredStatuses}
               keyExtractor={(item) => item.id.toString()}
               refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#bf471b" />
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  tintColor="#bf471b"
+                />
               }
               renderItem={renderBookItem}
               ListEmptyComponent={
@@ -242,7 +279,9 @@ export default function ReadingListScreen() {
                   <Text style={{ color: "#f0dcc7", fontSize: 16 }}>
                     {selectedFilter === "ALL"
                       ? "No books in your reading list yet."
-                      : `No books with status "${statusLabels[selectedFilter as BookStatus]}".`}
+                      : `No books with status "${
+                          statusLabels[selectedFilter as BookStatus]
+                        }".`}
                   </Text>
                 </View>
               }
@@ -253,4 +292,3 @@ export default function ReadingListScreen() {
     </ImageBackground>
   );
 }
-

@@ -39,15 +39,77 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Validate token with backend by making a lightweight authenticated request
+  const validateToken = async (token: string): Promise<boolean> => {
+    try {
+      // Use /api/books endpoint to validate token (any authenticated endpoint works)
+      // This endpoint requires authentication, so it will return 401 if token is invalid
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/books`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // If token is valid, backend will return 200 (even if empty array)
+      // If token is invalid/expired, backend will return 401
+      if (response.ok) {
+        console.log("✅ Token is valid");
+        return true;
+      } else if (response.status === 401) {
+        console.log("❌ Token is invalid or expired");
+        await removeToken();
+        return false;
+      } else {
+        console.warn(
+          "⚠️ Unexpected response when validating token:",
+          response.status
+        );
+        // On unexpected errors, don't automatically log out
+        // But don't set logged in if we can't verify
+        return false;
+      }
+    } catch (error: any) {
+      console.error("❌ Error validating token:", error.message || error);
+      // On network errors, don't automatically log out (might be offline)
+      // But don't set logged in if we can't verify
+      return false;
+    }
+  };
+
   // On web, the OAuth handler below will handle everything
-  // On mobile, check stored token
+  // On mobile, check stored token and validate it
   useEffect(() => {
     if (Platform.OS !== "web") {
       const checkLoginStatus = async () => {
         try {
           const token = await getToken();
           console.log("🔍 [Mobile] Checking stored token - found:", !!token);
-          setIsLoggedIn(!!token);
+
+          if (!token) {
+            console.log("❌ [Mobile] No token found");
+            setIsLoggedIn(false);
+            setLoading(false);
+            return;
+          }
+
+          // Validate token format (JWT has 3 parts)
+          const tokenParts = token.split(".");
+          if (tokenParts.length !== 3) {
+            console.log("❌ [Mobile] Invalid token format");
+            await removeToken();
+            setIsLoggedIn(false);
+            setLoading(false);
+            return;
+          }
+
+          // Validate token with backend
+          const isValid = await validateToken(token);
+          setIsLoggedIn(isValid);
           setLoading(false);
         } catch (error) {
           console.error("Error checking login status:", error);
@@ -111,15 +173,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         );
 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.token) {
-            await storeToken(data.token);
-            setIsLoggedIn(true);
-          }
-        } else {
-          throw new Error("Failed to authenticate with backend");
+        if (!response.ok) {
+          const errorText = await response.text();
+          // Clear any existing token
+          await removeToken();
+          setIsLoggedIn(false);
+          throw new Error(errorText || "Failed to authenticate with backend");
         }
+
+        const data = await response.json();
+        if (!data.token) {
+          await removeToken();
+          setIsLoggedIn(false);
+          throw new Error("No token received from backend");
+        }
+
+        // Validate token format
+        const tokenParts = data.token.split(".");
+        if (tokenParts.length !== 3) {
+          await removeToken();
+          setIsLoggedIn(false);
+          throw new Error("Invalid token format received from backend");
+        }
+
+        await storeToken(data.token);
+        setIsLoggedIn(true);
+        console.log("✅ Apple authentication successful");
+      } else {
+        throw new Error("No identity token received from Apple");
       }
     } catch (e: any) {
       console.log("Error during Apple sign-in:", e);
@@ -204,7 +285,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const fetchGoogleUser = async (accessToken: string) => {
-    if (!accessToken) return;
+    if (!accessToken) {
+      console.error("❌ No access token provided");
+      return;
+    }
     try {
       // Send Google access token to backend to exchange for JWT
       const backendResponse = await fetch(
@@ -222,18 +306,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (!backendResponse.ok) {
         const errorText = await backendResponse.text();
+        // Clear any existing token
+        await removeToken();
+        setIsLoggedIn(false);
         throw new Error(errorText || "Failed to authenticate with backend");
       }
 
       const data = await backendResponse.json();
-      if (data.token) {
-        await storeToken(data.token);
-        setIsLoggedIn(true);
-      } else {
+      if (!data.token) {
+        await removeToken();
+        setIsLoggedIn(false);
         throw new Error("No token received from backend");
       }
+
+      // Validate token format
+      const tokenParts = data.token.split(".");
+      if (tokenParts.length !== 3) {
+        await removeToken();
+        setIsLoggedIn(false);
+        throw new Error("Invalid token format received from backend");
+      }
+
+      await storeToken(data.token);
+      setIsLoggedIn(true);
+      console.log("✅ Google authentication successful");
     } catch (error: any) {
-      console.error("Error authenticating with Google:", error);
+      console.error("❌ Error authenticating with Google:", error);
+      // Ensure we're logged out on error
+      await removeToken();
+      setIsLoggedIn(false);
       Alert.alert(
         "Authentication Failed",
         error.message || "Failed to authenticate with Google. Please try again."
@@ -278,14 +379,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       );
 
-      if (!response.ok) throw new Error("Invalid credentials");
+      if (!response.ok) {
+        // Clear any existing invalid token
+        await removeToken();
+        setIsLoggedIn(false);
+        const errorText = await response.text();
+        throw new Error(errorText || "Invalid credentials");
+      }
 
       const data = await response.json();
+
+      // Validate token format before storing
+      if (!data.token) {
+        throw new Error("No token received from server");
+      }
+
+      const tokenParts = data.token.split(".");
+      if (tokenParts.length !== 3) {
+        throw new Error("Invalid token format received from server");
+      }
+
       await storeToken(data.token);
       setIsLoggedIn(true);
+      console.log("✅ Login successful");
     } catch (error: any) {
-      console.error("Login error:", error);
+      console.error("❌ Login error:", error);
+      // Ensure we're logged out on error
+      await removeToken();
+      setIsLoggedIn(false);
       Alert.alert("Login Failed", error.message || "An error occurred");
+      // Re-throw so calling code knows login failed
+      throw error;
     }
   };
 

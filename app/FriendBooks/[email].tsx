@@ -233,6 +233,17 @@ export default function FriendBooksScreen() {
                           resizeMode: "contain",
                         }}
                         source={{ uri: book.cover }}
+                        onError={(error) => {
+                          console.error(
+                            `Failed to load cover image for "${book.title}":`,
+                            error.nativeEvent.error
+                          );
+                        }}
+                        onLoad={() => {
+                          console.log(
+                            `✅ Successfully loaded cover for: ${book.title}`
+                          );
+                        }}
                       />
                     ) : (
                       <View

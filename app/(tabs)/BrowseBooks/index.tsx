@@ -65,12 +65,16 @@ export default function BrowseBooksScreen() {
         }}
       >
         {loading ? (
-          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
             <ActivityIndicator size="large" color="#bf471b" />
           </View>
         ) : (
           <>
-            <View style={{ paddingTop: 60, paddingHorizontal: 16, marginBottom: 8 }}>
+            <View
+              style={{ paddingTop: 60, paddingHorizontal: 16, marginBottom: 8 }}
+            >
               <Text
                 style={{
                   fontSize: 24,
@@ -113,6 +117,17 @@ export default function BrowseBooksScreen() {
                           resizeMode: "contain",
                         }}
                         source={{ uri: book.cover }}
+                        onError={(error) => {
+                          console.error(
+                            `Failed to load cover image for "${book.title}":`,
+                            error.nativeEvent.error
+                          );
+                        }}
+                        onLoad={() => {
+                          console.log(
+                            `✅ Successfully loaded cover for: ${book.title}`
+                          );
+                        }}
                       />
                     ) : (
                       <View
@@ -148,7 +163,13 @@ export default function BrowseBooksScreen() {
                         {book.title}
                       </Text>
                       {book.ownerUsername && (
-                        <Text style={{ color: "#bf471b", fontSize: 10, marginTop: 2 }}>
+                        <Text
+                          style={{
+                            color: "#bf471b",
+                            fontSize: 10,
+                            marginTop: 2,
+                          }}
+                        >
                           by {book.ownerUsername}
                         </Text>
                       )}
@@ -157,7 +178,11 @@ export default function BrowseBooksScreen() {
                 </Link>
               )}
               refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#bf471b" />
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  tintColor="#bf471b"
+                />
               }
               keyboardShouldPersistTaps="handled"
             />
@@ -167,4 +192,3 @@ export default function BrowseBooksScreen() {
     </ImageBackground>
   );
 }
-

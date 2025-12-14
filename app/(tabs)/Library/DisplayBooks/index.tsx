@@ -58,80 +58,100 @@ export default function DisplayBooks() {
           right: 0,
         }}
       >
-       <FlatList
-  contentContainerStyle={{
-    flex: 1,
-    width: "100%", // Make sure it spans full width
-    height: "100%", // Make sure it spans full height
-  }}
-  data={books}
-  numColumns={Platform.OS === "web" ? 8 : 4}
-  keyExtractor={(book: { id?: number }) =>
-    book.id ? book.id.toString() : Math.random().toString()
-  }
-  renderItem={({ item: book }) => (
-    <Link href={`/BookDetails/${book.id}`} asChild>
-      <TouchableOpacity
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          margin: 4,
-          backgroundColor: "rgba(0,0,0,0.4)",
-          borderRadius: 10,
-          overflow: "hidden",
-          padding: 8,
-          gap: 8,
-        }}
-      >
-        {book.cover ? (
-          <Image
-            style={{
-              width: 100,
-              height: 144,
-              resizeMode: "contain",
-            }}
-            source={{ uri: book.cover }}
-          />
-        ) : (
-          <View
-            style={{
-              width: 100,
-              height: 144,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "#d1d5db",
-              borderRadius: 8,
-            }}
-          >
-            <Text
-              style={{
-                color: "#f0dcc7",
-                fontSize: 12,
-                lineHeight: 16,
-                textAlign: "center",
-              }}
-            >
-              No Image Available
-            </Text>
-          </View>
-        )}
-        <View style={{ alignItems: "center" }}>
-          <Text style={{ color: "#f8f0e5", fontWeight: "600", textAlign: "center" }}>
-            {book.title}
-          </Text>
-          {book.readingStatus && (
-            <Text style={{ color: "#cbd5f5", fontSize: 12 }}>
-              Status: {statusMap[book.readingStatus] ?? book.readingStatus}
-            </Text>
+        <FlatList
+          contentContainerStyle={{
+            flex: 1,
+            width: "100%", // Make sure it spans full width
+            height: "100%", // Make sure it spans full height
+          }}
+          data={books}
+          numColumns={Platform.OS === "web" ? 8 : 4}
+          keyExtractor={(book: { id?: number }) =>
+            book.id ? book.id.toString() : Math.random().toString()
+          }
+          renderItem={({ item: book }) => (
+            <Link href={`/BookDetails/${book.id}`} asChild>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  margin: 4,
+                  backgroundColor: "rgba(0,0,0,0.4)",
+                  borderRadius: 10,
+                  overflow: "hidden",
+                  padding: 8,
+                  gap: 8,
+                }}
+              >
+                {book.cover ? (
+                  <Image
+                    style={{
+                      width: 100,
+                      height: 144,
+                      resizeMode: "contain",
+                    }}
+                    source={{ uri: book.cover }}
+                    onError={(error) => {
+                      console.error(
+                        `Failed to load cover image for "${book.title}":`,
+                        error.nativeEvent.error
+                      );
+                    }}
+                    onLoad={() => {
+                      console.log(
+                        `✅ Successfully loaded cover for: ${book.title}`
+                      );
+                    }}
+                  />
+                ) : (
+                  <View
+                    style={{
+                      width: 100,
+                      height: 144,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: "#d1d5db",
+                      borderRadius: 8,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#f0dcc7",
+                        fontSize: 12,
+                        lineHeight: 16,
+                        textAlign: "center",
+                      }}
+                    >
+                      No Image Available
+                    </Text>
+                  </View>
+                )}
+                <View style={{ alignItems: "center" }}>
+                  <Text
+                    style={{
+                      color: "#f8f0e5",
+                      fontWeight: "600",
+                      textAlign: "center",
+                    }}
+                  >
+                    {book.title}
+                  </Text>
+                  {book.readingStatus && (
+                    <Text style={{ color: "#cbd5f5", fontSize: 12 }}>
+                      Status:{" "}
+                      {statusMap[book.readingStatus] ?? book.readingStatus}
+                    </Text>
+                  )}
+                </View>
+              </TouchableOpacity>
+            </Link>
           )}
-        </View>
-      </TouchableOpacity>
-    </Link>
-  )}
-  refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-  keyboardShouldPersistTaps="handled"
-/>
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          keyboardShouldPersistTaps="handled"
+        />
       </LinearGradient>
     </ImageBackground>
   );

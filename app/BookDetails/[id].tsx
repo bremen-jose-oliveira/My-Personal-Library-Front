@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 import {
@@ -98,7 +97,10 @@ export default function BookDetails() {
       await requestExchange(selectedBook.id);
       Alert.alert("Exchange requested", "The owner has been notified.");
     } catch (error: any) {
-      Alert.alert("Exchange failed", error?.message ?? "Unable to request exchange");
+      Alert.alert(
+        "Exchange failed",
+        error?.message ?? "Unable to request exchange"
+      );
     }
   };
 
@@ -108,7 +110,10 @@ export default function BookDetails() {
       await updateReadingStatus(selectedBook.id, status);
       Alert.alert("Success", "Reading status updated successfully");
     } catch (error: any) {
-      Alert.alert("Update failed", error?.message ?? "Unable to update reading status");
+      Alert.alert(
+        "Update failed",
+        error?.message ?? "Unable to update reading status"
+      );
     }
   };
 
@@ -121,7 +126,7 @@ export default function BookDetails() {
         rating: Number(reviewRating),
         comment: reviewComment.trim(),
       });
-      
+
       setReviewComment("");
       setReviewRating("5");
       await fetchReviewsForBook(selectedBook.id);
@@ -153,7 +158,11 @@ export default function BookDetails() {
       <ScrollView
         contentContainerStyle={{ paddingBottom: 120 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#fff" />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#fff"
+          />
         }
       >
         <View
@@ -169,6 +178,17 @@ export default function BookDetails() {
             <Image
               source={{ uri: selectedBook.cover }}
               style={{ width: 120, height: 180, borderRadius: 8 }}
+              onError={(error) => {
+                console.error(
+                  `Failed to load cover image for "${selectedBook.title}":`,
+                  error.nativeEvent.error
+                );
+              }}
+              onLoad={() => {
+                console.log(
+                  `✅ Successfully loaded cover for: ${selectedBook.title}`
+                );
+              }}
             />
           ) : (
             <View
@@ -185,15 +205,22 @@ export default function BookDetails() {
             </View>
           )}
           <View style={{ flex: 1 }}>
-            <Text style={{ color: "#f0dcc7", fontSize: 22, fontWeight: "bold" }}>
+            <Text
+              style={{ color: "#f0dcc7", fontSize: 22, fontWeight: "bold" }}
+            >
               {selectedBook.title}
             </Text>
-            <Text style={{ color: "#f0dcc7", marginTop: 4 }}>Author: {selectedBook.author}</Text>
+            <Text style={{ color: "#f0dcc7", marginTop: 4 }}>
+              Author: {selectedBook.author}
+            </Text>
             <Text style={{ color: "#f0dcc7" }}>Year: {selectedBook.year}</Text>
-            <Text style={{ color: "#f0dcc7" }}>Publisher: {selectedBook.publisher}</Text>
+            <Text style={{ color: "#f0dcc7" }}>
+              Publisher: {selectedBook.publisher}
+            </Text>
             <Text style={{ color: "#f0dcc7" }}>ISBN: {selectedBook.isbn}</Text>
             <Text style={{ color: "#f0dcc7", fontWeight: "600" }}>
-              Owner: {selectedBook.ownerUsername || selectedBook.owner || "Unknown"}
+              Owner:{" "}
+              {selectedBook.ownerUsername || selectedBook.owner || "Unknown"}
             </Text>
             <Text style={{ color: "#f0dcc7" }}>
               Reading Status:{" "}
@@ -221,7 +248,9 @@ export default function BookDetails() {
                   paddingHorizontal: 12,
                   borderRadius: 8,
                   backgroundColor:
-                    selectedBook.readingStatus === status ? "#bf471b" : "rgba(255,255,255,0.1)",
+                    selectedBook.readingStatus === status
+                      ? "#bf471b"
+                      : "rgba(255,255,255,0.1)",
                 }}
                 onPress={() => handleUpdateReadingStatus(status)}
               >
@@ -232,7 +261,9 @@ export default function BookDetails() {
         </View>
 
         <View style={{ marginTop: 24, gap: 12 }}>
-          <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "600" }}>Actions</Text>
+          <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "600" }}>
+            Actions
+          </Text>
           {!isOwner && (
             <TouchableOpacity
               style={{
@@ -243,7 +274,9 @@ export default function BookDetails() {
               }}
               onPress={handleRequestExchange}
             >
-              <Text style={{ color: "#fff", fontWeight: "600" }}>Request Exchange</Text>
+              <Text style={{ color: "#fff", fontWeight: "600" }}>
+                Request Exchange
+              </Text>
             </TouchableOpacity>
           )}
 
@@ -258,14 +291,23 @@ export default function BookDetails() {
                 }}
                 onPress={handleDeleteBook}
               >
-                <Text style={{ color: "#fff", fontWeight: "600" }}>Delete Book</Text>
+                <Text style={{ color: "#fff", fontWeight: "600" }}>
+                  Delete Book
+                </Text>
               </TouchableOpacity>
             </>
           )}
         </View>
 
         <View style={{ marginTop: 32 }}>
-          <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "600", marginBottom: 12 }}>
+          <Text
+            style={{
+              color: "#f0dcc7",
+              fontSize: 18,
+              fontWeight: "600",
+              marginBottom: 12,
+            }}
+          >
             Reviews
           </Text>
           {reviewsLoading ? (
@@ -284,7 +326,9 @@ export default function BookDetails() {
                 <Text style={{ color: "#f0dcc7", fontWeight: "600" }}>
                   {review.user?.username ?? "Anonymous"} • {review.rating}/5
                 </Text>
-                <Text style={{ color: "#f0dcc7", marginTop: 4 }}>{review.comment}</Text>
+                <Text style={{ color: "#f0dcc7", marginTop: 4 }}>
+                  {review.comment}
+                </Text>
                 {review.user?.email === currentUser?.email && (
                   <View style={{ flexDirection: "row", gap: 10, marginTop: 8 }}>
                     <TouchableOpacity
@@ -300,7 +344,9 @@ export default function BookDetails() {
                         borderRadius: 6,
                       }}
                     >
-                      <Text style={{ color: "#fff", fontWeight: "600" }}>Edit</Text>
+                      <Text style={{ color: "#fff", fontWeight: "600" }}>
+                        Edit
+                      </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => deleteReview(review.id)}
@@ -311,7 +357,9 @@ export default function BookDetails() {
                         borderRadius: 6,
                       }}
                     >
-                      <Text style={{ color: "#fff", fontWeight: "600" }}>Delete</Text>
+                      <Text style={{ color: "#fff", fontWeight: "600" }}>
+                        Delete
+                      </Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -321,7 +369,14 @@ export default function BookDetails() {
         </View>
 
         <View style={{ marginTop: 24 }}>
-          <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "600", marginBottom: 12 }}>
+          <Text
+            style={{
+              color: "#f0dcc7",
+              fontSize: 18,
+              fontWeight: "600",
+              marginBottom: 12,
+            }}
+          >
             Add a Review
           </Text>
           <View style={{ flexDirection: "row", gap: 8 }}>
@@ -420,7 +475,10 @@ export default function BookDetails() {
                     setEditingReview(null);
                     await fetchReviewsForBook(bookId);
                   } catch (error: any) {
-                    Alert.alert("Error", error.message || "Failed to update review");
+                    Alert.alert(
+                      "Error",
+                      error.message || "Failed to update review"
+                    );
                   }
                 }}
               >

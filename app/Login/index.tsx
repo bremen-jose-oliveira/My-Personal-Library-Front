@@ -9,11 +9,10 @@ import React from "react";
 
 export default function Login() {
   const { login } = useContext(AuthContext);
-    const [secureText, setSecureText] = useState(true);
+  const [secureText, setSecureText] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
-  
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -23,10 +22,14 @@ export default function Login() {
 
     try {
       await login(email, password);
+      // Only navigate if login was successful (no exception thrown)
+      // The AuthContext will set isLoggedIn=true, and the app will redirect automatically
       router.dismissAll();
       router.push("/(tabs)");
     } catch (error: any) {
-      Alert.alert("Login Error", error.message || "Failed to log in");
+      // Login failed - don't navigate, stay on login screen
+      // Alert is already shown in AuthContext.login()
+      console.error("Login failed, staying on login screen");
     }
   };
 
@@ -57,13 +60,13 @@ export default function Login() {
         />
 
         <InputField
-           secureTextEntry={secureText}
+          secureTextEntry={secureText}
           value={password}
           onChangeText={setPassword}
           placeholder="Enter Password..."
           placeholderTextColor="gray"
         />
-   <TouchableOpacity onPress={() => setSecureText(!secureText)}>
+        <TouchableOpacity onPress={() => setSecureText(!secureText)}>
           <Text
             style={{
               color: "#bf471b",
@@ -73,11 +76,18 @@ export default function Login() {
           >
             {secureText ? "Show Password" : "Hide Password"}
           </Text>
-          
         </TouchableOpacity>
         <TouchableOpacity
           onPress={handleLogin}
-          style={{  backgroundColor: "#bf471b", alignItems:"center", borderRadius: 5, alignSelf: "stretch",   paddingVertical: 14,paddingHorizontal: 18,  marginBottom: 30,}}
+          style={{
+            backgroundColor: "#bf471b",
+            alignItems: "center",
+            borderRadius: 5,
+            alignSelf: "stretch",
+            paddingVertical: 14,
+            paddingHorizontal: 18,
+            marginBottom: 30,
+          }}
         >
           <Text className="text-white text-lg font-semibold">Sign In</Text>
         </TouchableOpacity>
@@ -86,7 +96,7 @@ export default function Login() {
           Don't have an Account?{" "}
           <Link href="/Register" asChild>
             <TouchableOpacity>
-               <Text  style={{  color: "#bf471b"}}>Sign Up</Text>
+              <Text style={{ color: "#bf471b" }}>Sign Up</Text>
             </TouchableOpacity>
           </Link>
         </Text>
@@ -97,4 +107,3 @@ export default function Login() {
     </>
   );
 }
-
