@@ -23,6 +23,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
   const [debugMessages, setDebugMessages] = useState<string[]>([]);
   const [flashlightOn, setFlashlightOn] = useState(false);
   const [torchSupported, setTorchSupported] = useState(false);
+  const flashlightStateRef = useRef(false); // Use ref to track flashlight state for button handlers
   const quaggaRef = useRef<any>(null);
   const scannerElementRef = useRef<HTMLDivElement | null>(null);
   const overlayElementRef = useRef<HTMLDivElement | null>(null);
@@ -36,10 +37,12 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
       return;
     }
     
-    const newState = !flashlightOn;
+    // Use ref to get current state (more reliable than state variable in closure)
+    const currentState = flashlightStateRef.current;
+    const newState = !currentState;
     const track = videoTrackRef.current;
     
-    console.log(`Attempting to turn flashlight ${newState ? "ON" : "OFF"}... Current state: ${flashlightOn}`);
+    console.log(`Attempting to turn flashlight ${newState ? "ON" : "OFF"}... Current state: ${currentState}`);
     
     try {
       // Try the standard way (works on Chrome/Edge Android)
@@ -47,7 +50,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
         advanced: [{ torch: newState }] as any,
       });
       
-      // Update state immediately
+      // Update ref and state
+      flashlightStateRef.current = newState;
       setFlashlightOn(newState);
       console.log(`✅ Flashlight ${newState ? "ON" : "OFF"}`);
       
@@ -63,6 +67,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
       // Try direct constraint
       try {
         await track.applyConstraints({ torch: newState } as any);
+        flashlightStateRef.current = newState;
         setFlashlightOn(newState);
         console.log(`✅ Flashlight ${newState ? "ON" : "OFF"} (method 2)`);
         
@@ -123,7 +128,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
 
     if (isISBN(cleanedData)) {
       console.log(`Valid ISBN/EAN detected: ${cleanedData} (Type: ${type})`);
+      // IMPORTANT: Scanning happens FIRST, Google API is called AFTER
+      // If Google API fails, scanning still succeeded - we have the ISBN
       if (onISBNScanned) {
+        // Pass the ISBN immediately - don't wait for Google API
         onISBNScanned(cleanedData);
       } else {
         Alert.alert("ISBN Scanned", `ISBN: ${cleanedData}`);
@@ -315,15 +323,19 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
               },
               decoder: {
                 readers: [
-                  "ean_reader", // EAN-13 for ISBN - most important for books
-                  "upc_reader", // UPC-A - also common for books
+                  "ean_reader", // EAN-13 for ISBN (most common for books)
+                  "ean_8_reader", // EAN-8 (shorter variant)
+                  "upc_reader", // UPC-A (common for books)
+                  "upc_e_reader", // UPC-E (compressed UPC)
+                  "code_128_reader", // Code 128 (sometimes used for ISBN)
+                  "code_39_reader", // Code 39 (less common but sometimes used)
                 ],
               },
               locate: true,
               locator: {
                 halfSample: false, // Use full sample for better accuracy
-                patchSize: "medium", // Medium patch size - better for various barcode sizes
-                showBoundingBox: true, // Enable to help with detection
+                patchSize: "x-large", // x-large patch size - helps detect various barcode sizes including wider ones
+                showBoundingBox: false, // Disable for performance
                 showPatches: false,
                 showFoundPatches: false,
                 showSkeleton: false,
@@ -447,13 +459,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                   
                   const flashButton = document.createElement("button");
                   flashButton.id = "scanner-flash-button";
-                  flashButton.textContent = "💡 Flash";
+                  flashButton.textContent = flashlightOn ? "🔦 ON" : "💡 OFF";
                   flashButton.style.position = "fixed";
                   flashButton.style.top = "20px";
                   flashButton.style.right = "20px";
                   flashButton.style.zIndex = "10003"; // Above overlay
                   flashButton.style.padding = "10px 20px";
-                  flashButton.style.backgroundColor = "#666";
+                  flashButton.style.backgroundColor = flashlightOn ? "#FFD700" : "#666";
                   flashButton.style.color = "#fff";
                   flashButton.style.border = "none";
                   flashButton.style.borderRadius = "5px";
@@ -461,8 +473,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                   flashButton.style.fontWeight = "bold";
                   flashButton.style.cursor = "pointer";
                   flashButton.style.boxShadow = "0 2px 8px rgba(0,0,0,0.5)";
-                  flashButton.onclick = async () => {
-                    await toggleFlashlight();
+                  // Store reference to toggle function in a way that works with closures
+                  flashButton.onclick = () => {
+                    toggleFlashlight();
                   };
                   document.body.appendChild(flashButton);
                 };
@@ -734,7 +747,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.21 - Fixed Flashlight Toggle + Focused EAN Reader
+            Scanner v2.22 - Fixed Flashlight Ref + All ISBN Readers + x-large Patches
           </Text>
           {/* Debug messages displayed on screen - always show to verify it's rendering */}
           <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.8)", padding: 10, borderRadius: 4, minHeight: 100, maxHeight: 200 }}>
