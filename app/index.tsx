@@ -12,11 +12,11 @@ import { useEffect } from 'react';
 import * as Linking from 'expo-linking';
 import { AuthContext } from "@/utils/Context/AuthContext";
 import 'react-native-reanimated';
+import { NavigationContainer } from '@react-navigation/native';
 // Only import dev-client in development builds (prevents TestFlight crashes)
 if (__DEV__) {
   require('expo-dev-client');
 }
-import { NavigationContainer } from '@react-navigation/native';
 
 
 

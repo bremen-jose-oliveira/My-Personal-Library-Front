@@ -1,12 +1,9 @@
 import InputField from "@/components/inputField";
-import SocialLoginButtons from "@/components/SocialLoginButtons";
 import { AuthContext } from "@/utils/Context/AuthContext";
 import { useUserContext } from "@/utils/Context/UserContext";
-import { Link, router, Stack } from "expo-router";
-import React, { useState, useContext, useEffect } from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router, Stack } from "expo-router";
+import React, { useState, useContext } from "react";
 import { Alert, TouchableOpacity, View, Text, Platform, ScrollView } from "react-native";
-import Ioicons from "react-native-vector-icons/Ionicons";
 import { getToken, removeToken } from "@/utils/Context/storageUtils";
 
 const AccountSettings = () => {
@@ -16,7 +13,6 @@ const AccountSettings = () => {
   const [secureText, setSecureText] = useState(true);
 
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
   const [oldPassword, setOldPassword] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
