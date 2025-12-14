@@ -32,6 +32,12 @@ declare module "@ericblade/quagga2" {
     };
     numOfWorkers?: number;
     frequency?: number;
+    area?: {
+      top?: string;
+      right?: string;
+      left?: string;
+      bottom?: string;
+    };
     debug?: {
       drawBoundingBox?: boolean;
       showFrequency?: boolean;
