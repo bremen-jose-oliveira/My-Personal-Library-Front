@@ -1,18 +1,16 @@
 // app//index.tsx
 import 'react-native-reanimated';        // Reanimated
 
-import { Link, Stack, Redirect } from "expo-router";
+import { Redirect } from "expo-router";
 import "../global.css";
-import { TouchableOpacity, View, Text, ImageBackground, ActivityIndicator } from "react-native";
+import { View, Text, ImageBackground, ActivityIndicator } from "react-native";
 import Animated, { FadeInRight } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
 import { useEffect } from 'react';
-import * as Linking from 'expo-linking';
 import { AuthContext } from "@/utils/Context/AuthContext";
 import 'react-native-reanimated';
-import { NavigationContainer } from '@react-navigation/native';
 // Only import dev-client in development builds (prevents TestFlight crashes)
 if (__DEV__) {
   require('expo-dev-client');
