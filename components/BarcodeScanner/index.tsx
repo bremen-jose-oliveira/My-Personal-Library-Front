@@ -32,10 +32,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
 
   // Toggle flashlight/torch for web scanner
   const toggleFlashlight = async () => {
-    if (!videoTrackRef.current) {
-      console.warn("Cannot toggle flashlight - video track not available");
-      return;
-    }
+    if (!videoTrackRef.current) return;
     
     // Use ref to get current state (more reliable than state variable in closure)
     const currentState = flashlightStateRef.current;
@@ -90,19 +87,15 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
     data: string;
   }) => {
     // Prevent multiple detections of the same barcode
-    if (scanned) {
-      console.log("Already scanned, ignoring duplicate detection");
-      return;
-    }
+    if (scanned) return;
     setScanned(true);
-    console.log("Barcode scanned, setting scanned=true:", data);
 
     // Pause scanning when a barcode is detected
     if (Platform.OS === "web" && quaggaRef.current) {
       try {
         quaggaRef.current.pause();
       } catch (e) {
-        console.error("Error pausing Quagga:", e);
+        // Error pausing Quagga - ignore
       }
     }
 
@@ -132,7 +125,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
     const cleanedData = data.replace(/[^0-9X]/g, "");
 
     if (isISBN(cleanedData)) {
-      console.log(`Valid ISBN/EAN detected: ${cleanedData} (Type: ${type})`);
       // IMPORTANT: Scanning happens FIRST, Google API is called AFTER
       // If Google API fails, scanning still succeeded - we have the ISBN
       if (onISBNScanned) {
@@ -142,10 +134,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
         Alert.alert("ISBN Scanned", `ISBN: ${cleanedData}`);
       }
     } else {
-      // Show what was scanned to help debug
-      console.warn(
-        `Unrecognized barcode - Type: ${type}, Data: ${data}, Cleaned: ${cleanedData}`
-      );
       Alert.alert(
         "Unrecognized Barcode",
         `Type: ${type}\nData: ${data}\n\nThis doesn't appear to be a valid ISBN. Please try scanning again or enter manually.`,
@@ -271,41 +259,26 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
 
           container.appendChild(scannerDiv);
           scannerElementRef.current = scannerDiv;
-          
-          // Debug: Container created
-          setDebugMessages((prev) => [...prev, "✅ Scanner container created"]);
-          console.log("✅ Scanner container created");
 
           // Set up detection callback BEFORE initialization
           const detectionHandler = (result: any) => {
             // Prevent processing if already scanned
-            if (scanned) {
-              console.log("Already scanned, ignoring onDetected");
-              return;
-            }
+            if (scanned || !isMounted) return;
             
-            const msg = `onDetected: ${JSON.stringify(result?.codeResult?.code || "no code")}`;
-            console.log(msg);
-            setDebugMessages((prev) => [...prev.slice(-4), msg]); // Keep last 5 messages
-            
-            if (isMounted && result && !scanned) {
+            if (result) {
               // Check different possible result structures
               const codeResult = result.codeResult || result;
               if (codeResult && codeResult.code) {
                 const code = codeResult.code;
-                console.log("✅ onDetected processing barcode:", code);
                 if (isMounted && !scanned) {
                   setScanningStatus(`Detected: ${code}`);
-                  setDebugMessages((prev) => [...prev.slice(-4), `✅ Processing: ${code}`]);
                   
-                  // Call handler directly
+                  // Call handler directly - no debug logging
                   handleBarcodeScanned({
                     type: codeResult.format || "unknown",
                     data: code,
                   });
                 }
-              } else {
-                console.warn("No code found in result:", codeResult);
               }
             }
           };
@@ -340,7 +313,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
               locate: true,
               locator: {
                 halfSample: false, // Use full sample for better accuracy
-                patchSize: "large", // Large patch size - balanced for most barcodes
+                patchSize: "medium", // Medium patch size - better detection for various sizes
                 showBoundingBox: false, // Disable for performance
                 showPatches: false,
                 showFoundPatches: false,
@@ -350,13 +323,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
               },
               numOfWorkers: 0, // Use 0 workers for better consistency
               frequency: 10, // Standard frequency for detection
-              // Increase area to scan entire view, not just center
-              area: {
-                top: "0%",
-                right: "0%",
-                left: "0%",
-                bottom: "0%"
-              },
               // Disable visual debugging to improve performance
               debug: {
                 drawBoundingBox: false, // Disable to reduce render load
@@ -392,9 +358,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 return;
               }
               
-              // Add initialization success message
-              console.log("✅ Quagga initialized successfully");
-              setDebugMessages((prev) => [...prev, "✅ Quagga initialized successfully"]);
+              // Quagga initialized successfully
 
               if (isMounted) {
                 // Create overlay with scanning frame and red line - properly centered
@@ -410,7 +374,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 overlay.style.display = "flex";
                 overlay.style.justifyContent = "center";
                 overlay.style.alignItems = "center"; // Center vertically and horizontally
-                overlay.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+                overlay.style.backgroundColor = "rgba(0, 0, 0, 0.3)"; // Lighter overlay - less gray filter effect
                 
                 const frame = document.createElement("div");
                 frame.style.width = "80%";
@@ -511,19 +475,12 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 overlayElementRef.current = overlay;
 
                 // Start Quagga first
-                console.log("🔵 Starting Quagga...");
-                setDebugMessages((prev) => [...prev, "🔵 Starting Quagga..."]);
                 Quagga.start();
-                console.log("✅ Quagga.start() called");
 
                 // Set up callbacks AFTER starting (some Quagga versions need this)
                 setTimeout(() => {
-                  console.log("🔵 Setting up callbacks...");
-                  setDebugMessages((prev) => [...prev, "🔵 Setting up callbacks..."]);
-                  
                   // Use the existing detectionHandler that was defined above
                   Quagga.onDetected(detectionHandler);
-                  console.log("✅ onDetected callback registered");
 
                   // Track frame processing with debounce - reset these when component remounts or scanner restarts
                   let lastDetectedCode = "";
@@ -539,7 +496,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
 
                   // Also listen for processed frames - this fires more reliably than onDetected
                   Quagga.onProcessed((result: any) => {
-                    if (!isMounted) return;
+                    if (!isMounted || scanned) return;
                     
                     frameCount++;
                     
@@ -548,25 +505,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                       setScanningStatus("Scanning... Point at barcode");
                     }
 
-                    // Log frame count more frequently to verify it's working (every 50 frames)
-                    if (frameCount % 50 === 0) {
-                      const msg = `🔄 Frames: ${frameCount}`;
-                      console.log(msg);
-                      if (isMounted) {
-                        setDebugMessages((prev) => {
-                          const newMsgs = [...prev.slice(-4), msg];
-                          return newMsgs;
-                        });
-                      }
-                    }
-
-                    // Check for detected codes in processed frames - log ALL detections
+                    // Check for detected codes in processed frames - NO DEBUG LOGGING (removed for performance)
                     if (result && result.codeResult && result.codeResult.code) {
                       const codeResult = result.codeResult;
                       const code = codeResult.code;
-                      
-                      // Log ALL code detections to debug
-                      console.log(`🔍 onProcessed detected code: ${code} (format: ${codeResult.format || "unknown"})`);
                       
                       if (code && isMounted && !scanned) {
                         const now = Date.now();
@@ -574,14 +516,12 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                         // More lenient debouncing: process if different code OR if enough time passed
                         const timeSinceLastDetection = now - lastDetectionTime;
                         const isDifferentCode = code !== lastDetectedCode;
-                        const enoughTimePassed = timeSinceLastDetection > 800; // Reduced to 800ms for faster response
+                        const enoughTimePassed = timeSinceLastDetection > 500; // Reduced to 500ms for faster detection
                         
                         // Process if: different code, enough time passed, OR we haven't detected anything in a while
-                        if (isDifferentCode || enoughTimePassed || timeSinceLastDetection > 2500) {
-                          console.log(`✅✅✅ PROCESSING CODE: ${code} (different: ${isDifferentCode}, time: ${timeSinceLastDetection}ms, scanned: ${scanned})`);
+                        if (isDifferentCode || enoughTimePassed || timeSinceLastDetection > 2000) {
                           if (isMounted && !scanned) {
                             setScanningStatus(`Found: ${code}`);
-                            setDebugMessages((prev) => [...prev.slice(-4), `✅ Processing: ${code}`]);
 
                             lastDetectedCode = code;
                             lastDetectionTime = now;
@@ -591,17 +531,11 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                               type: codeResult.format || "unknown",
                               data: code,
                             });
-                          } else {
-                            console.warn(`❌ Not processing - isMounted: ${isMounted}, scanned: ${scanned}`);
                           }
-                        } else {
-                          console.log(`⏸️ Skipping duplicate detection: ${code} (last: ${lastDetectedCode}, time: ${timeSinceLastDetection}ms)`);
                         }
                       }
                     }
                   });
-                  
-                  console.log("✅ onProcessed callback registered");
                 }, 500); // Wait 500ms after start to set up callbacks
                 
                 // Try to get video track for flashlight control and focus adjustment
@@ -615,56 +549,36 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                       if (videoTrack) {
                         videoTrackRef.current = videoTrack;
                         
-                        // Try to improve focus for close-up barcode scanning
-                        try {
-                          const capabilities = videoTrack.getCapabilities ? videoTrack.getCapabilities() : ({} as any);
-                          // If focusDistance is supported, we could set it, but most phones handle this automatically
-                          // The key is to use continuous autofocus which we set in constraints
-                          console.log("Video track capabilities:", capabilities);
-                        } catch (focusError) {
-                          console.log("Could not check focus capabilities:", focusError);
-                        }
-                        
-                        // Check if torch is supported - try multiple methods
+                        // Check if torch is supported - minimal logging
                         try {
                           const capabilities = videoTrack.getCapabilities ? videoTrack.getCapabilities() : ({} as any);
                           const settings = videoTrack.getSettings ? videoTrack.getSettings() : ({} as any);
                           
-                          // Check for torch in capabilities or try applying it to detect support
+                          // Check for torch in capabilities
                           if (capabilities.torch !== undefined || settings.torch !== undefined || 
                               (capabilities as any).advanced?.some((adv: any) => adv.torch)) {
                             setTorchSupported(true);
-                            console.log("✅ Torch/flashlight supported (via capabilities)");
                           } else {
-                            // On mobile browsers, torch might be supported even if not in capabilities
-                            // Try to detect if we're on a mobile device
+                            // On mobile browsers, assume torch might be supported
                             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                             if (isMobile) {
-                              // Assume torch is available on mobile devices
                               setTorchSupported(true);
-                              console.log("✅ Assuming torch supported on mobile device");
-                            } else {
-                              console.log("ℹ️ Torch not detected - may not be supported");
                             }
                           }
                         } catch (capError) {
-                          console.warn("Error checking torch capabilities:", capError);
                           // On mobile, assume torch might work anyway
                           const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                           if (isMobile) {
                             setTorchSupported(true);
-                            console.log("✅ Assuming torch supported on mobile (fallback)");
                           }
                         }
                       }
                     }
                   } catch (e) {
-                    console.warn("Could not access video track for torch:", e);
                     // Fallback: if mobile device, show button anyway
                     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                     if (isMobile) {
                       setTorchSupported(true);
-                      console.log("✅ Showing torch button on mobile (fallback)");
                     }
                   }
                 }, 1000);
@@ -791,27 +705,8 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.28 - Continuous Focus Mode for Close-Up
+            Scanner v2.29 - Removed Debug + Faster Detection
           </Text>
-          {/* Debug messages displayed on screen - always show to verify it's rendering */}
-          <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.8)", padding: 10, borderRadius: 4, minHeight: 100, maxHeight: 200 }}>
-            <Text style={{ color: "#fff", fontSize: 10, fontWeight: "bold", marginBottom: 6 }}>
-              Debug Log ({debugMessages.length} messages):
-            </Text>
-            <View style={{ maxHeight: 150, overflow: "scroll" }}>
-              {debugMessages.length > 0 ? (
-                debugMessages.map((msg, idx) => (
-                  <Text key={idx} style={{ color: "#0f0", fontSize: 9, marginTop: 2, fontFamily: "monospace" }}>
-                    {msg}
-                  </Text>
-                ))
-              ) : (
-                <Text style={{ color: "#f90", fontSize: 9, fontStyle: "italic" }}>
-                  Waiting for Quagga to initialize... (Scanner is working even if messages don't show)
-                </Text>
-              )}
-            </View>
-          </View>
         </View>
         {/* Flashlight toggle button as DOM element - position at top right */}
         {(torchSupported || Platform.OS === "web") && (
@@ -825,7 +720,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
             <Button
               title="Tap to Scan Again"
               onPress={() => {
-                console.log("Resetting scanner for new scan...");
                 setScanned(false);
                 setScanningStatus("Ready - Point at barcode");
                 // Reset detection tracking
