@@ -7,6 +7,7 @@ import {
   Alert,
   Platform,
   Animated,
+  TouchableOpacity,
 } from "react-native";
 import { Camera, CameraView } from "expo-camera";
 
@@ -15,7 +16,10 @@ interface BarcodeScannerProps {
   onClose?: () => void;
 }
 
-const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose }) => {
+const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
+  onISBNScanned,
+  onClose,
+}) => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
   const [scanningStatus, setScanningStatus] =
@@ -33,25 +37,29 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
   // Toggle flashlight/torch for web scanner
   const toggleFlashlight = async () => {
     if (!videoTrackRef.current) return;
-    
+
     // Use ref to get current state (more reliable than state variable in closure)
     const currentState = flashlightStateRef.current;
     const newState = !currentState;
     const track = videoTrackRef.current;
-    
-    console.log(`Attempting to turn flashlight ${newState ? "ON" : "OFF"}... Current state: ${currentState}`);
-    
+
+    console.log(
+      `Attempting to turn flashlight ${
+        newState ? "ON" : "OFF"
+      }... Current state: ${currentState}`
+    );
+
     try {
       // Try the standard way (works on Chrome/Edge Android)
       await track.applyConstraints({
         advanced: [{ torch: newState }] as any,
       });
-      
+
       // Update ref and state
       flashlightStateRef.current = newState;
       setFlashlightOn(newState);
       console.log(`✅ Flashlight ${newState ? "ON" : "OFF"}`);
-      
+
       // Update button immediately
       const flashBtn = document.getElementById("scanner-flash-button");
       if (flashBtn) {
@@ -60,14 +68,14 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
       }
     } catch (e1: any) {
       console.log("Method 1 failed, trying method 2:", e1.message);
-      
+
       // Try direct constraint
       try {
         await track.applyConstraints({ torch: newState } as any);
         flashlightStateRef.current = newState;
         setFlashlightOn(newState);
         console.log(`✅ Flashlight ${newState ? "ON" : "OFF"} (method 2)`);
-        
+
         const flashBtn = document.getElementById("scanner-flash-button");
         if (flashBtn) {
           flashBtn.textContent = newState ? "🔦 ON" : "💡 OFF";
@@ -202,7 +210,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
             if (!Quagga) {
               throw new Error("Quagga2 default export not found");
             }
-            
+
             // Quagga2 module loaded
           } catch (importError: any) {
             console.error("Failed to import Quagga2:", importError);
@@ -260,7 +268,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
           const detectionHandler = (result: any) => {
             // Prevent processing if already scanned
             if (scanned || !isMounted) return;
-            
+
             if (result) {
               // Check different possible result structures
               const codeResult = result.codeResult || result;
@@ -268,7 +276,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 const code = codeResult.code;
                 if (isMounted && !scanned) {
                   setScanningStatus(`Detected: ${code}`);
-                  
+
                   // Call handler directly - no debug logging
                   handleBarcodeScanned({
                     type: codeResult.format || "unknown",
@@ -328,7 +336,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 top: "0%",
                 right: "0%",
                 left: "0%",
-                bottom: "0%"
+                bottom: "0%",
               },
               // Disable visual debugging to improve performance
               debug: {
@@ -359,7 +367,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 }
                 return;
               }
-              
+
               // Quagga initialized successfully
 
               if (isMounted) {
@@ -381,7 +389,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 if (!showOverlay) {
                   overlay.style.display = "none";
                 }
-                
+
                 const frame = document.createElement("div");
                 frame.style.width = "80%";
                 frame.style.maxWidth = "400px";
@@ -393,7 +401,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 frame.style.justifyContent = "center";
                 frame.style.alignItems = "center";
                 frame.style.margin = "0 auto"; // Ensure centered
-                
+
                 const line = document.createElement("div");
                 line.style.position = "absolute";
                 line.style.width = "100%";
@@ -403,7 +411,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 line.style.boxShadow = "0 0 10px #FF0000, 0 0 20px #FF0000";
                 line.style.top = "50%"; // Center the red line vertically in the frame
                 line.style.transform = "translateY(-50%)"; // Perfectly center it
-                
+
                 const text = document.createElement("div");
                 text.style.color = "#FF0000";
                 text.style.fontSize = "16px";
@@ -416,7 +424,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 text.style.textShadow = "2px 2px 4px rgba(0,0,0,0.8)";
                 text.style.whiteSpace = "nowrap";
                 text.textContent = "Point camera at barcode";
-                
+
                 // Create Close Scanner button as DOM element (above overlay)
                 const closeButton = document.createElement("button");
                 closeButton.id = "scanner-close-button";
@@ -440,13 +448,15 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                   }
                 };
                 document.body.appendChild(closeButton);
-                
+
                 // Create Flashlight button as DOM element (above overlay)
                 const createFlashButton = () => {
                   // Remove existing button if any
-                  const existing = document.getElementById("scanner-flash-button");
+                  const existing = document.getElementById(
+                    "scanner-flash-button"
+                  );
                   if (existing) existing.remove();
-                  
+
                   const flashButton = document.createElement("button");
                   flashButton.id = "scanner-flash-button";
                   flashButton.textContent = flashlightOn ? "🔦 ON" : "💡 OFF";
@@ -455,7 +465,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                   flashButton.style.right = "20px";
                   flashButton.style.zIndex = "10003"; // Above overlay
                   flashButton.style.padding = "10px 20px";
-                  flashButton.style.backgroundColor = flashlightOn ? "#FFD700" : "#666";
+                  flashButton.style.backgroundColor = flashlightOn
+                    ? "#FFD700"
+                    : "#666";
                   flashButton.style.color = "#fff";
                   flashButton.style.border = "none";
                   flashButton.style.borderRadius = "5px";
@@ -469,21 +481,23 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                   };
                   document.body.appendChild(flashButton);
                 };
-                
+
                 if (torchSupported || Platform.OS === "web") {
                   createFlashButton();
                 }
-                
+
                 frame.appendChild(line);
                 frame.appendChild(text);
                 overlay.appendChild(frame);
                 document.body.appendChild(overlay);
                 overlayElementRef.current = overlay;
-                
+
                 // Create Toggle Overlay button (bottom left) - allows hiding the visual guide
                 const toggleOverlayButton = document.createElement("button");
                 toggleOverlayButton.id = "scanner-toggle-overlay-button";
-                toggleOverlayButton.textContent = showOverlay ? "👁️ Hide Frame" : "👁️ Show Frame";
+                toggleOverlayButton.textContent = showOverlay
+                  ? "👁️ Hide Frame"
+                  : "👁️ Show Frame";
                 toggleOverlayButton.style.position = "fixed";
                 toggleOverlayButton.style.bottom = "20px";
                 toggleOverlayButton.style.left = "20px";
@@ -496,14 +510,17 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 toggleOverlayButton.style.fontSize = "14px";
                 toggleOverlayButton.style.fontWeight = "bold";
                 toggleOverlayButton.style.cursor = "pointer";
-                toggleOverlayButton.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
+                toggleOverlayButton.style.boxShadow =
+                  "0 4px 8px rgba(0,0,0,0.3)";
                 toggleOverlayButton.onclick = () => {
                   const newState = !showOverlay;
                   setShowOverlay(newState);
                   if (overlay) {
                     overlay.style.display = newState ? "flex" : "none";
                   }
-                  toggleOverlayButton.textContent = newState ? "👁️ Hide Frame" : "👁️ Show Frame";
+                  toggleOverlayButton.textContent = newState
+                    ? "👁️ Hide Frame"
+                    : "👁️ Show Frame";
                 };
                 document.body.appendChild(toggleOverlayButton);
 
@@ -519,7 +536,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                   let lastDetectedCode = "";
                   let lastDetectionTime = 0;
                   let frameCount = 0;
-                  
+
                   // Expose function to reset detection tracking (for "Scan Again")
                   (window as any).__resetScannerTracking = () => {
                     lastDetectedCode = "";
@@ -530,9 +547,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                   // Also listen for processed frames - this fires more reliably than onDetected
                   Quagga.onProcessed((result: any) => {
                     if (!isMounted || scanned) return;
-                    
+
                     frameCount++;
-                    
+
                     // Update status every 30 frames to show it's working
                     if (frameCount % 30 === 0 && isMounted) {
                       setScanningStatus("Scanning... Point at barcode");
@@ -542,7 +559,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                     if (result && result.codeResult && result.codeResult.code) {
                       const codeResult = result.codeResult;
                       const code = codeResult.code;
-                      
+
                       if (code && isMounted && !scanned) {
                         const now = Date.now();
 
@@ -550,9 +567,14 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                         const timeSinceLastDetection = now - lastDetectionTime;
                         const isDifferentCode = code !== lastDetectedCode;
                         const enoughTimePassed = timeSinceLastDetection > 1000; // v2.24 had 1000ms
-                        
+
                         // Process if: different code, enough time passed, OR we haven't detected anything in a while
-                        if (isDifferentCode || enoughTimePassed || timeSinceLastDetection > 3000) { // v2.24 had 3000ms
+                        if (
+                          isDifferentCode ||
+                          enoughTimePassed ||
+                          timeSinceLastDetection > 3000
+                        ) {
+                          // v2.24 had 3000ms
                           if (isMounted && !scanned) {
                             setScanningStatus(`Found: ${code}`);
 
@@ -570,37 +592,54 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                     }
                   });
                 }, 500); // Wait 500ms after start to set up callbacks
-                
+
                 // Try to get video track for flashlight control and focus adjustment
                 setTimeout(async () => {
                   try {
                     // Get video element created by Quagga
-                    const videoElement = scannerDiv.querySelector('video') as HTMLVideoElement;
+                    const videoElement = scannerDiv.querySelector(
+                      "video"
+                    ) as HTMLVideoElement;
                     if (videoElement && videoElement.srcObject) {
                       const stream = videoElement.srcObject as MediaStream;
                       const videoTrack = stream.getVideoTracks()[0];
                       if (videoTrack) {
                         videoTrackRef.current = videoTrack;
-                        
+
                         // Check if torch is supported - minimal logging
                         try {
-                          const capabilities = videoTrack.getCapabilities ? videoTrack.getCapabilities() : ({} as any);
-                          const settings = videoTrack.getSettings ? videoTrack.getSettings() : ({} as any);
-                          
+                          const capabilities = videoTrack.getCapabilities
+                            ? videoTrack.getCapabilities()
+                            : ({} as any);
+                          const settings = videoTrack.getSettings
+                            ? videoTrack.getSettings()
+                            : ({} as any);
+
                           // Check for torch in capabilities
-                          if (capabilities.torch !== undefined || settings.torch !== undefined || 
-                              (capabilities as any).advanced?.some((adv: any) => adv.torch)) {
+                          if (
+                            capabilities.torch !== undefined ||
+                            settings.torch !== undefined ||
+                            (capabilities as any).advanced?.some(
+                              (adv: any) => adv.torch
+                            )
+                          ) {
                             setTorchSupported(true);
                           } else {
                             // On mobile browsers, assume torch might be supported
-                            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                            const isMobile =
+                              /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                                navigator.userAgent
+                              );
                             if (isMobile) {
                               setTorchSupported(true);
                             }
                           }
                         } catch (capError) {
                           // On mobile, assume torch might work anyway
-                          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                          const isMobile =
+                            /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                              navigator.userAgent
+                            );
                           if (isMobile) {
                             setTorchSupported(true);
                           }
@@ -609,13 +648,16 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                     }
                   } catch (e) {
                     // Fallback: if mobile device, show button anyway
-                    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                    const isMobile =
+                      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                        navigator.userAgent
+                      );
                     if (isMobile) {
                       setTorchSupported(true);
                     }
                   }
                 }, 1000);
-                
+
                 // Set state after a short delay to ensure Quagga is started
                 setTimeout(() => {
                   if (isMounted) {
@@ -662,10 +704,14 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
             }
           }
           if (overlayElementRef.current?.parentNode) {
-            overlayElementRef.current.parentNode.removeChild(overlayElementRef.current);
+            overlayElementRef.current.parentNode.removeChild(
+              overlayElementRef.current
+            );
           }
           // Remove toggle overlay button
-          const toggleBtn = document.getElementById("scanner-toggle-overlay-button");
+          const toggleBtn = document.getElementById(
+            "scanner-toggle-overlay-button"
+          );
           if (toggleBtn?.parentNode) {
             toggleBtn.parentNode.removeChild(toggleBtn);
           }
@@ -733,7 +779,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
         {/* The Quagga2 scanner is rendered in a div appended to body */}
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
-          <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
+          <Text
+            style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}
+          >
             Scanner v2.32 - Exact v2.24 Camera Constraints Restored
           </Text>
         </View>
@@ -783,11 +831,17 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
     );
   }
 
+  // Toggle torch for mobile
+  const toggleTorch = () => {
+    setFlashlightOn(!flashlightOn);
+  };
+
   return (
     <View style={styles.container}>
       <CameraView
         style={StyleSheet.absoluteFillObject}
         onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
+        enableTorch={flashlightOn}
         barcodeScannerSettings={{
           barcodeTypes: [
             "ean13",
@@ -801,6 +855,29 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
           ],
         }}
       />
+
+      {/* Close Scanner Button - Top Left */}
+      {onClose && (
+        <TouchableOpacity
+          style={styles.closeButton}
+          onPress={onClose}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.closeButtonText}>✕ Close Scanner</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Torch/Flashlight Button - Top Right */}
+      <TouchableOpacity
+        style={[styles.torchButton, flashlightOn && styles.torchButtonActive]}
+        onPress={toggleTorch}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.torchButtonText}>
+          {flashlightOn ? "🔦 ON" : "💡 OFF"}
+        </Text>
+      </TouchableOpacity>
+
       {/* Scanning line overlay */}
       {!scanned && (
         <View style={styles.scanningOverlay}>
@@ -868,6 +945,49 @@ const styles = StyleSheet.create({
     bottom: 20,
     alignSelf: "center",
     zIndex: 10001,
+  },
+  closeButton: {
+    position: "absolute",
+    top: 50,
+    left: 20,
+    zIndex: 10001,
+    backgroundColor: "#bf471b",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  closeButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  torchButton: {
+    position: "absolute",
+    top: 50,
+    right: 20,
+    zIndex: 10001,
+    backgroundColor: "#666",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  torchButtonActive: {
+    backgroundColor: "#FFD700",
+  },
+  torchButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
   scanningOverlay: {
     ...StyleSheet.absoluteFillObject,
