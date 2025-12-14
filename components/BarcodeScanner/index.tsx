@@ -318,9 +318,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 type: "LiveStream",
                 target: scannerDiv,
                 constraints: {
-                  // Higher resolution for sharper image and better barcode detection
-                  width: { ideal: 1920, min: 1280 }, // Increased from 1280 to 1920 for sharper image
-                  height: { ideal: 1080, min: 720 }, // Increased from 720 to 1080 for sharper image
+                  // Balance between quality and compatibility
+                  width: { ideal: 1280, min: 640 }, // Try 1280, fallback to 640
+                  height: { ideal: 720, min: 480 }, // Try 720, fallback to 480
                   facingMode: "environment", // Use back camera by default
                   // Enable autofocus - let browser handle it automatically
                   focusMode: "continuous",
@@ -781,7 +781,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.25 - Higher Resolution + Centered Frame
+            Scanner v2.26 - Fixed Callback Setup + Balanced Resolution
           </Text>
           {/* Debug messages displayed on screen - always show to verify it's rendering */}
           <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.8)", padding: 10, borderRadius: 4, minHeight: 100, maxHeight: 200 }}>
