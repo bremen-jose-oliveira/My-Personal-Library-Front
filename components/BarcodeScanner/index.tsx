@@ -20,7 +20,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
   const [scanned, setScanned] = useState(false);
   const [scanningStatus, setScanningStatus] =
     useState<string>("Initializing...");
-  const [debugMessages, setDebugMessages] = useState<string[]>([]);
   const [flashlightOn, setFlashlightOn] = useState(false);
   const [torchSupported, setTorchSupported] = useState(false);
   const flashlightStateRef = useRef(false); // Use ref to track flashlight state for button handlers
@@ -178,9 +177,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
           return;
         }
 
-        // Add immediate debug message
-        setDebugMessages(["🔵 Starting scanner initialization..."]);
-        console.log("🔵 Starting scanner initialization...");
+        // Start scanner initialization
 
         try {
           // Dynamic import with better error handling - use a try-catch to prevent build failures
@@ -205,9 +202,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
               throw new Error("Quagga2 default export not found");
             }
             
-            // Debug: Quagga loaded
-            setDebugMessages((prev) => [...prev, "✅ Quagga2 module loaded"]);
-            console.log("✅ Quagga2 module loaded", Quagga);
+            // Quagga2 module loaded
           } catch (importError: any) {
             console.error("Failed to import Quagga2:", importError);
             if (isMounted) {
@@ -332,12 +327,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
               },
             },
             (err: Error | null) => {
-              console.log("🔵 Quagga.init callback called, err:", err);
-              
               if (err) {
-                console.error("Quagga initialization error:", err);
-                const errorMsg = "❌ Init error: " + (err.message || err.toString());
-                setDebugMessages((prev) => [...prev, errorMsg]);
                 if (isMounted) {
                   setHasPermission(false);
                   if (
@@ -585,28 +575,20 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 
                 // Set state after a short delay to ensure Quagga is started
                 setTimeout(() => {
-                  console.log("🔵 Setting final state after delay...");
                   if (isMounted) {
                     setHasPermission(true);
                     quaggaRef.current = Quagga;
                     setScanningStatus("Ready - Point at barcode");
-                    setDebugMessages((prev) => {
-                      const newMsgs = [...prev.slice(-4), "🚀 Quagga started - scanning..."];
-                      console.log("✅ Final debug messages:", newMsgs);
-                      return newMsgs;
-                    });
                   }
                 }, 500);
               }
             }
           );
         } catch (err: any) {
-          console.error("Scanner error:", err);
           if (isMounted) {
             setHasPermission(false);
             const errorMessage =
               err?.message || err?.toString() || "Failed to initialize scanner";
-            console.error("Full error details:", err);
             Alert.alert(
               "Camera Error",
               `Scanner initialization failed: ${errorMessage}. Please ensure you're using HTTPS or localhost.`
@@ -619,7 +601,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
       if (typeof window !== "undefined") {
         const timer = setTimeout(() => {
           initScanner().catch((err) => {
-            console.error("Scanner initialization error:", err);
             if (isMounted) {
               setHasPermission(false);
             }
@@ -634,7 +615,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
               quaggaRef.current.offDetected();
               quaggaRef.current.stop();
             } catch (e) {
-              console.error("Error stopping Quagga:", e);
+              // Error stopping Quagga - ignore
             }
           }
           if (overlayElementRef.current?.parentNode) {
@@ -742,7 +723,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                         }
                       }, 100);
                     } catch (e2) {
-                      console.error("Error restarting scanner:", e2);
+                      // Error restarting scanner - ignore
                     }
                   }
                 }
