@@ -287,13 +287,17 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 type: "LiveStream",
                 target: scannerDiv,
                 constraints: {
-                  // Higher quality for iPhone 15 - use best available
-                  width: { ideal: 1920, min: 1280 }, // Higher for better quality on modern phones
-                  height: { ideal: 1080, min: 720 }, // Higher for better quality
+                  // Higher resolution for better close-range scanning (v2.24 settings)
+                  width: { ideal: 1280, min: 640 },
+                  height: { ideal: 720, min: 480 },
                   facingMode: "environment", // Use back camera by default
-                  // Enable continuous autofocus for better close-up scanning
-                  // Without this, some devices struggle with macro/close-up focus
+                  // Enable autofocus - let browser handle it automatically
                   focusMode: "continuous",
+                  advanced: [
+                    {
+                      focusMode: "continuous",
+                    },
+                  ],
                 } as any,
               },
               decoder: {
@@ -730,7 +734,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.31 - Toggleable Overlay (Doesn't Affect Detection)
+            Scanner v2.32 - Exact v2.24 Camera Constraints Restored
           </Text>
         </View>
         {/* Flashlight toggle button as DOM element - position at top right */}
