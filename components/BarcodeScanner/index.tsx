@@ -308,7 +308,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
               locate: true,
               locator: {
                 halfSample: false, // Use full sample for better accuracy
-                patchSize: "medium", // Medium patch size - better detection for various sizes
+                patchSize: "large", // Large patch size - better for book barcodes (like v2.24)
                 showBoundingBox: false, // Disable for performance
                 showPatches: false,
                 showFoundPatches: false,
@@ -318,6 +318,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
               },
               numOfWorkers: 0, // Use 0 workers for better consistency
               frequency: 10, // Standard frequency for detection
+              // Increase area to scan entire view, not just center (helps with various barcode positions)
+              area: {
+                top: "0%",
+                right: "0%",
+                left: "0%",
+                bottom: "0%"
+              },
               // Disable visual debugging to improve performance
               debug: {
                 drawBoundingBox: false, // Disable to reduce render load
@@ -506,10 +513,10 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                         // More lenient debouncing: process if different code OR if enough time passed
                         const timeSinceLastDetection = now - lastDetectionTime;
                         const isDifferentCode = code !== lastDetectedCode;
-                        const enoughTimePassed = timeSinceLastDetection > 500; // Reduced to 500ms for faster detection
+                        const enoughTimePassed = timeSinceLastDetection > 800; // Restore 800ms debounce (like v2.24)
                         
                         // Process if: different code, enough time passed, OR we haven't detected anything in a while
-                        if (isDifferentCode || enoughTimePassed || timeSinceLastDetection > 2000) {
+                        if (isDifferentCode || enoughTimePassed || timeSinceLastDetection > 2500) {
                           if (isMounted && !scanned) {
                             setScanningStatus(`Found: ${code}`);
 
@@ -686,7 +693,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.29 - Removed Debug + Faster Detection
+            Scanner v2.30 - Restored v2.24 Settings (Large Patch + 800ms Debounce)
           </Text>
         </View>
         {/* Flashlight toggle button as DOM element - position at top right */}
