@@ -89,8 +89,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
     type: string;
     data: string;
   }) => {
-    if (scanned) return;
+    // Prevent multiple detections of the same barcode
+    if (scanned) {
+      console.log("Already scanned, ignoring duplicate detection");
+      return;
+    }
     setScanned(true);
+    console.log("Barcode scanned, setting scanned=true:", data);
 
     // Pause scanning when a barcode is detected
     if (Platform.OS === "web" && quaggaRef.current) {
@@ -334,7 +339,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
               locate: true,
               locator: {
                 halfSample: false, // Use full sample for better accuracy
-                patchSize: "x-large", // x-large patch size - helps detect various barcode sizes including wider ones
+                patchSize: "large", // Large patch size - was working before
                 showBoundingBox: false, // Disable for performance
                 showPatches: false,
                 showFoundPatches: false,
@@ -498,10 +503,17 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                 Quagga.onDetected(detectionHandler);
                 console.log("✅ onDetected callback registered");
 
-                // Track frame processing with debounce
+                // Track frame processing with debounce - reset these when component remounts or scanner restarts
                 let lastDetectedCode = "";
                 let lastDetectionTime = 0;
                 let frameCount = 0;
+                
+                // Expose function to reset detection tracking (for "Scan Again")
+                (window as any).__resetScannerTracking = () => {
+                  lastDetectedCode = "";
+                  lastDetectionTime = 0;
+                  frameCount = 0;
+                };
 
                 // Also listen for processed frames - this fires more reliably than onDetected
                 Quagga.onProcessed((result: any) => {
@@ -538,12 +550,12 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                     
                     const now = Date.now();
 
-                    // Debounce: only process if it's a different code or 1.5 seconds have passed (more responsive)
-                    if (
-                      code &&
-                      (code !== lastDetectedCode ||
-                        now - lastDetectionTime > 1500)
-                    ) {
+                      // Debounce: only process if it's a different code or 2 seconds have passed
+                      if (
+                        code &&
+                        (code !== lastDetectedCode ||
+                          now - lastDetectionTime > 2000)
+                      ) {
                       console.log("✅ Processing detected code:", code);
                       if (isMounted) {
                         setScanningStatus(`Found: ${code}`);
@@ -747,7 +759,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.22 - Fixed Flashlight Ref + All ISBN Readers + x-large Patches
+            Scanner v2.23 - Reverted to Large Patches + Better Reset Logic
           </Text>
           {/* Debug messages displayed on screen - always show to verify it's rendering */}
           <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.8)", padding: 10, borderRadius: 4, minHeight: 100, maxHeight: 200 }}>
@@ -781,18 +793,30 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
             <Button
               title="Tap to Scan Again"
               onPress={() => {
+                console.log("Resetting scanner for new scan...");
                 setScanned(false);
                 setScanningStatus("Ready - Point at barcode");
+                // Reset detection tracking
+                if ((window as any).__resetScannerTracking) {
+                  (window as any).__resetScannerTracking();
+                }
                 if (quaggaRef.current) {
                   try {
                     quaggaRef.current.resume();
                   } catch (e) {
                     // If resume fails, try restarting
-                    if (quaggaRef.current.stop) {
-                      quaggaRef.current.stop();
-                    }
-                    if (quaggaRef.current.start) {
-                      quaggaRef.current.start();
+                    try {
+                      if (quaggaRef.current.stop) {
+                        quaggaRef.current.stop();
+                      }
+                      // Small delay before restart
+                      setTimeout(() => {
+                        if (quaggaRef.current && quaggaRef.current.start) {
+                          quaggaRef.current.start();
+                        }
+                      }, 100);
+                    } catch (e2) {
+                      console.error("Error restarting scanner:", e2);
                     }
                   }
                 }
