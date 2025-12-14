@@ -1,9 +1,9 @@
 // app//index.tsx
 import 'react-native-reanimated';        // Reanimated
 
-import { Redirect } from "expo-router";
+import { Link, Stack, Redirect } from "expo-router";
 import "../global.css";
-import { View, Text, ImageBackground, ActivityIndicator } from "react-native";
+import { TouchableOpacity, View, Text, ImageBackground, ActivityIndicator } from "react-native";
 import Animated, { FadeInRight } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useContext } from "react";
