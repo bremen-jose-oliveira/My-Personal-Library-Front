@@ -322,8 +322,9 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                   width: { ideal: 1920, min: 1280 }, // Higher for better quality on modern phones
                   height: { ideal: 1080, min: 720 }, // Higher for better quality
                   facingMode: "environment", // Use back camera by default
-                  // Don't set focusMode - let device handle autofocus naturally for close-up
-                  // Setting focusMode can interfere with close-up autofocus on some devices
+                  // Enable continuous autofocus for better close-up scanning
+                  // Without this, some devices struggle with macro/close-up focus
+                  focusMode: "continuous",
                 } as any,
               },
               decoder: {
@@ -603,7 +604,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                   console.log("✅ onProcessed callback registered");
                 }, 500); // Wait 500ms after start to set up callbacks
                 
-                // Try to get video track for flashlight control
+                // Try to get video track for flashlight control and focus adjustment
                 setTimeout(async () => {
                   try {
                     // Get video element created by Quagga
@@ -613,6 +614,16 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                       const videoTrack = stream.getVideoTracks()[0];
                       if (videoTrack) {
                         videoTrackRef.current = videoTrack;
+                        
+                        // Try to improve focus for close-up barcode scanning
+                        try {
+                          const capabilities = videoTrack.getCapabilities ? videoTrack.getCapabilities() : ({} as any);
+                          // If focusDistance is supported, we could set it, but most phones handle this automatically
+                          // The key is to use continuous autofocus which we set in constraints
+                          console.log("Video track capabilities:", capabilities);
+                        } catch (focusError) {
+                          console.log("Could not check focus capabilities:", focusError);
+                        }
                         
                         // Check if torch is supported - try multiple methods
                         try {
@@ -780,7 +791,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
           <Text style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}>
-            Scanner v2.27 - Higher Res + Better Autofocus + More Debug
+            Scanner v2.28 - Continuous Focus Mode for Close-Up
           </Text>
           {/* Debug messages displayed on screen - always show to verify it's rendering */}
           <View style={{ marginTop: 10, backgroundColor: "rgba(0,0,0,0.8)", padding: 10, borderRadius: 4, minHeight: 100, maxHeight: 200 }}>
