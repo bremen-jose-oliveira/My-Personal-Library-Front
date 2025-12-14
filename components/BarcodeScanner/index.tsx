@@ -510,13 +510,13 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onISBNScanned, onClose 
                       if (code && isMounted && !scanned) {
                         const now = Date.now();
 
-                        // More lenient debouncing: process if different code OR if enough time passed
+                        // More lenient debouncing: process if different code OR if enough time passed (v2.24 settings)
                         const timeSinceLastDetection = now - lastDetectionTime;
                         const isDifferentCode = code !== lastDetectedCode;
-                        const enoughTimePassed = timeSinceLastDetection > 800; // Restore 800ms debounce (like v2.24)
+                        const enoughTimePassed = timeSinceLastDetection > 1000; // v2.24 had 1000ms
                         
                         // Process if: different code, enough time passed, OR we haven't detected anything in a while
-                        if (isDifferentCode || enoughTimePassed || timeSinceLastDetection > 2500) {
+                        if (isDifferentCode || enoughTimePassed || timeSinceLastDetection > 3000) { // v2.24 had 3000ms
                           if (isMounted && !scanned) {
                             setScanningStatus(`Found: ${code}`);
 
