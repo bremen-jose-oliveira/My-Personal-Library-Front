@@ -137,7 +137,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       // Check if Apple Authentication is available (iOS only)
-      if (!AppleAuthentication.isAvailableAsync()) {
+      const isAvailable = await AppleAuthentication.isAvailableAsync();
+      if (!isAvailable) {
         Alert.alert(
           "Apple Sign In Not Available",
           "Apple Sign In is only available on iOS devices."
@@ -145,7 +146,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      console.log("Attempting to sign in with Apple...");
+      console.log("✅ Apple Sign-In is available, attempting sign in...");
 
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
@@ -154,31 +155,59 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         ],
       });
 
-      console.log("Apple sign-in successful:", credential);
+      console.log("✅ Apple sign-in successful, credential received");
+      console.log("🔍 Credential details:", {
+        hasIdentityToken: !!credential.identityToken,
+        hasAuthorizationCode: !!credential.authorizationCode,
+        hasUser: !!credential.user,
+        email: credential.email || "not provided",
+      });
 
       // Send credential to backend for token exchange
       if (credential.identityToken) {
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_API_URL}/api/auth/apple`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              identityToken: credential.identityToken,
-              authorizationCode: credential.authorizationCode,
-              user: credential.user,
-            }),
-          }
+        const apiUrl = `${process.env.EXPO_PUBLIC_API_URL}/api/auth/apple`;
+        console.log("📤 Sending Apple credential to backend:", apiUrl);
+
+        const requestBody = {
+          identityToken: credential.identityToken,
+          authorizationCode: credential.authorizationCode,
+          user: credential.user,
+        };
+
+        console.log("📤 Request body:", {
+          hasIdentityToken: !!requestBody.identityToken,
+          hasAuthorizationCode: !!requestBody.authorizationCode,
+          hasUser: !!requestBody.user,
+        });
+
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        console.log(
+          "📥 Backend response status:",
+          response.status,
+          response.statusText
         );
 
         if (!response.ok) {
           const errorText = await response.text();
+          console.error("❌ Backend authentication failed:", {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorText,
+          });
           // Clear any existing token
           await removeToken();
           setIsLoggedIn(false);
-          throw new Error(errorText || "Failed to authenticate with backend");
+          throw new Error(
+            errorText ||
+              `Failed to authenticate with backend (${response.status})`
+          );
         }
 
         const data = await response.json();
@@ -203,16 +232,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error("No identity token received from Apple");
       }
     } catch (e: any) {
-      console.log("Error during Apple sign-in:", e);
+      console.error("❌ Error during Apple sign-in:", {
+        code: e.code,
+        message: e.message,
+        error: e,
+      });
+
       if (e.code === "ERR_CANCELED") {
-        console.log("User cancelled Apple Sign in");
+        console.log("ℹ️ User cancelled Apple Sign in");
         // Don't show alert for user cancellation
-      } else {
+        return;
+      } else if (e.code === "ERR_INVALID_RESPONSE") {
+        console.error("❌ Invalid response from Apple");
         Alert.alert(
           "Apple Sign In Error",
-          e.message || "An error occurred during Apple login."
+          "Invalid response from Apple. Please try again."
         );
+      } else if (e.code === "ERR_REQUEST_FAILED") {
+        console.error("❌ Request failed - check network connection");
+        Alert.alert(
+          "Network Error",
+          "Failed to connect to server. Please check your internet connection and try again."
+        );
+      } else {
+        const errorMessage =
+          e.message || "An error occurred during Apple login.";
+        console.error("❌ Apple Sign In Error:", errorMessage);
+        Alert.alert("Apple Sign In Error", errorMessage);
       }
+
+      // Ensure we're logged out on any error
+      await removeToken();
+      setIsLoggedIn(false);
     }
   };
 
