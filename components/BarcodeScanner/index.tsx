@@ -779,11 +779,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
         {/* The Quagga2 scanner is rendered in a div appended to body */}
         <View style={styles.statusContainer}>
           <Text style={styles.statusText}>{scanningStatus}</Text>
-          <Text
-            style={{ color: "#fff", fontSize: 10, marginTop: 5, opacity: 0.7 }}
-          >
-            Scanner v2.32 - Exact v2.24 Camera Constraints Restored
-          </Text>
         </View>
         {/* Flashlight toggle button as DOM element - position at top right */}
         {(torchSupported || Platform.OS === "web") && (

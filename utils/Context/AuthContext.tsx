@@ -717,10 +717,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         window.location.href = "/";
       } else {
         // On mobile, use router to navigate to welcome screen
-        // Use router.replace to ensure we go back to root
-        router.replace("/");
-        router.dismissAll();
-        console.log("✅ Logout successful, redirected to welcome screen");
+        // First dismiss all modals/screens, then navigate to root
+        try {
+          router.dismissAll();
+          // Small delay to ensure dismiss completes before navigation
+          setTimeout(() => {
+            router.replace("/");
+            console.log("✅ Logout successful, redirected to welcome screen");
+          }, 100);
+        } catch (navError) {
+          // If navigation fails, try direct replace
+          console.warn("Navigation error during logout, trying direct replace:", navError);
+          router.replace("/");
+        }
       }
     } catch (error) {
       console.error("Logout error:", error);

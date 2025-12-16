@@ -3,6 +3,7 @@ import { decode as base64Decode } from "base-64";
 import { getToken, removeToken } from "@/utils/Context/storageUtils";
 import { FetchUserByEmail } from "@/utils/Users";
 import type { UserSummary } from "@/Interfaces/user";
+import { AuthContext } from "./AuthContext";
 
 interface UserContextValue {
   currentUser: UserSummary | null;
@@ -32,6 +33,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [currentUser, setCurrentUser] = useState<UserSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const { isLoggedIn } = useContext(AuthContext);
 
   const refreshCurrentUser = async (): Promise<UserSummary | null> => {
     try {
@@ -39,6 +41,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!token) {
         console.log("⚠️ No token found when refreshing user");
         setCurrentUser(null);
+        setLoading(false);
         return null;
       }
 
@@ -46,6 +49,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!email) {
         console.log("⚠️ Could not parse email from token");
         setCurrentUser(null);
+        setLoading(false);
         return null;
       }
 
@@ -58,6 +62,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
         console.warn("⚠️ User not found for email:", email);
         setCurrentUser(null);
       }
+      setLoading(false);
       return user ?? null;
     } catch (error: any) {
       console.error("❌ Unable to refresh current user:", {
@@ -65,6 +70,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
         stack: error.stack,
       });
       setCurrentUser(null);
+      setLoading(false);
       return null;
     }
   };
@@ -74,9 +80,23 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
     setCurrentUser(null);
   };
 
+  // Fetch user on mount
   useEffect(() => {
-    refreshCurrentUser().finally(() => setLoading(false));
+    refreshCurrentUser();
   }, []);
+
+  // Refresh user when login state changes to true
+  useEffect(() => {
+    if (isLoggedIn) {
+      console.log("🔄 Login state changed to true, refreshing user...");
+      refreshCurrentUser();
+    } else {
+      // Clear user when logged out
+      console.log("🔄 Login state changed to false, clearing user...");
+      setCurrentUser(null);
+      setLoading(false);
+    }
+  }, [isLoggedIn]);
 
   return (
     <UserContext.Provider

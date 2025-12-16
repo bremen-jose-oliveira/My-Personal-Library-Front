@@ -30,7 +30,16 @@ const getAuthToken = async () => {
 };
 
 const enrichBookWithCover = async (book: Book) => {
-  if (book.cover) return book;
+  // Check if cover exists and is a valid URL (not empty string or null)
+  if (book.cover && book.cover.trim() !== "" && book.cover !== "null") {
+    // Ensure HTTPS for existing covers
+    const httpsUrl = book.cover.startsWith("http://")
+      ? book.cover.replace("http://", "https://")
+      : book.cover;
+    return { ...book, cover: httpsUrl };
+  }
+  // Fetch cover if missing or invalid
+  console.log(`🔄 Fetching cover for: ${book.title} by ${book.author}`);
   const coverUrl = await fetchCoverImage(book.title, book.author);
   return { ...book, cover: coverUrl };
 };

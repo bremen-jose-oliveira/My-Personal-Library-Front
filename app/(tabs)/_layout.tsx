@@ -18,9 +18,8 @@ function AppTabs() {
     if (Platform.OS === "web") {
       const confirmed = window.confirm("Are you sure you want to log out?");
       if (confirmed) {
+        // logout() handles navigation internally
         await logout();
-        // Navigate to welcome screen after logout completes
-        router.replace("/");
       }
     } else {
       Alert.alert("Confirm Logout", "Are you sure you want to log out?", [
@@ -28,10 +27,8 @@ function AppTabs() {
         {
           text: "Yes",
           onPress: async () => {
+            // logout() handles navigation internally
             await logout();
-            // Navigate to welcome screen after logout completes
-            router.replace("/");
-            router.dismissAll();
           },
         },
       ]);
