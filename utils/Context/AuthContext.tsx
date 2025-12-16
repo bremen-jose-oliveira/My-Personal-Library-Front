@@ -327,7 +327,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const scheme =
           process.env.EXPO_PUBLIC_IOS_URL_SCHEME ||
           "com.googleusercontent.apps.958080376950-ov7dgq16sggjncpa7u5p4edesradrr0g";
-        
+
         // Manually construct to ensure full path is included
         const redirectUri = `${scheme}:/oauth2redirect/google`;
         console.log("🔍 Google redirect URI (manual):", redirectUri);
