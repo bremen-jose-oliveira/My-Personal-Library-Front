@@ -7,12 +7,12 @@ PODS:
     - AppAuth/Core
   - EXApplication (7.0.8):
     - ExpoModulesCore
-  - EXConstants (18.0.11):
+  - EXConstants (18.0.12):
     - ExpoModulesCore
   - EXJSONUtils (0.15.0)
   - EXManifests (1.0.10):
     - ExpoModulesCore
-  - Expo (54.0.28):
+  - Expo (54.0.29):
     - ExpoModulesCore
     - hermes-engine
     - RCTRequired
@@ -222,11 +222,11 @@ PODS:
     - ZXingObjC/PDF417
   - ExpoCrypto (15.0.8):
     - ExpoModulesCore
-  - ExpoFileSystem (19.0.20):
+  - ExpoFileSystem (19.0.21):
     - ExpoModulesCore
   - ExpoFont (14.0.10):
     - ExpoModulesCore
-  - ExpoHead (6.0.18):
+  - ExpoHead (6.0.19):
     - ExpoModulesCore
     - RNScreens
   - ExpoKeepAwake (15.0.8):
@@ -235,7 +235,7 @@ PODS:
     - ExpoModulesCore
   - ExpoLinking (8.0.10):
     - ExpoModulesCore
-  - ExpoModulesCore (3.0.28):
+  - ExpoModulesCore (3.0.29):
     - hermes-engine
     - RCTRequired
     - RCTTypeSafety
@@ -2634,10 +2634,10 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   AppAuth: d4f13a8fe0baf391b2108511793e4b479691fb73
   EXApplication: 1e98d4b1dccdf30627f92917f4b2c5a53c330e5f
-  EXConstants: c378c1b344ff1ecfbad27b90f0e48d1d0ead8cbb
+  EXConstants: 805f35b1b295c542ca6acce836f21a1f9ee104d5
   EXJSONUtils: 1d3e4590438c3ee593684186007028a14b3686cd
   EXManifests: a8d97683e5c7a3b026ffbd58559c64dc655b747b
-  Expo: e502d1f8830a34019d835f182fdce94fdba458c2
+  Expo: 8fa2204bf8483fe546b4ec87c90d3ca189afc8db
   expo-dev-client: 425ee077d6754a98cfe3a2e2410d29b440b24c9d
   expo-dev-launcher: a4f4cdef064ab1fb8621e5b8c7c457cd6e9568c3
   expo-dev-menu: 05b18812110c175814c6af0d09dd658abcc5e00d
@@ -2647,13 +2647,13 @@ SPEC CHECKSUMS:
   ExpoAsset: 23a958e97d3d340919fe6774db35d563241e6c03
   ExpoCamera: 6a326deb45ba840749652e4c15198317aa78497e
   ExpoCrypto: b6105ebaa15d6b38a811e71e43b52cd934945322
-  ExpoFileSystem: 3592defb5faa3c5866a2900eae87ceec8cc0489f
+  ExpoFileSystem: 858a44267a3e6e9057e0888ad7c7cfbf55d52063
   ExpoFont: 35ac6191ed86bbf56b3ebd2d9154eda9fad5b509
-  ExpoHead: 5d292008999eb420f3470dbcfbd597cc5e177540
+  ExpoHead: 5d3fd633fce8f2c3a2cb97ff39fd497b7dd3d268
   ExpoKeepAwake: 55f75eca6499bb9e4231ebad6f3e9cb8f99c0296
   ExpoLinearGradient: 809102bdb979f590083af49f7fa4805cd931bd58
   ExpoLinking: f4c4a351523da72a6bfa7e1f4ca92aee1043a3ca
-  ExpoModulesCore: ded694f230d03c59d919efe243911622fa169834
+  ExpoModulesCore: f3da4f1ab5a8375d0beafab763739dbee8446583
   ExpoSecureStore: d32f751874a2ceb5aaeebeb3578e165c1ba2b24a
   ExpoSplashScreen: 76af87337650d06926aa7d0157fe98b4fddca336
   ExpoSystemUI: 2ad325f361a2fcd96a464e8574e19935c461c9cc
@@ -2740,6 +2740,6 @@ SPEC CHECKSUMS:
   Yoga: 5934998fbeaef7845dbf698f698518695ab4cd1a
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: a9ea69c72f7d8d5217f4f2978513fa4b5882cd53
+PODFILE CHECKSUM: 97c807195f164db5f7b34e2cc7ecbd0ce2d25d6e
 
 COCOAPODS: 1.16.2

@@ -7,7 +7,7 @@ import * as Google from "expo-auth-session/providers/google";
 import * as WebBrowser from "expo-web-browser";
 import { makeRedirectUri } from "expo-auth-session";
 import * as AppleAuthentication from "expo-apple-authentication";
-import { useRouter } from "expo-router";
+import { useRouter, router } from "expo-router";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -200,6 +200,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             status: response.status,
             statusText: response.statusText,
             error: errorText,
+            url: apiUrl,
           });
           // Clear any existing token
           await removeToken();
@@ -211,6 +212,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         const data = await response.json();
+        console.log("📥 Backend response data:", {
+          hasToken: !!data.token,
+          hasUser: !!data.user,
+        });
         if (!data.token) {
           await removeToken();
           setIsLoggedIn(false);
@@ -316,22 +321,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }),
     redirectUri: Platform.select({
       web: `${process.env.EXPO_PUBLIC_API_URL}/login/oauth2/code/google`,
-      ios: process.env.EXPO_PUBLIC_IOS_URL_SCHEME
-        ? makeRedirectUri({
-            scheme: process.env.EXPO_PUBLIC_IOS_URL_SCHEME,
-            path: "oauth2redirect/google",
-          })
-        : makeRedirectUri({
-            scheme:
-              "com.googleusercontent.apps.958080376950-ov7dgq16sggjncpa7u5p4edesradrr0g",
-            path: "oauth2redirect/google",
-          }),
-      default: makeRedirectUri({
-        scheme:
+      ios: (() => {
+        // Manually construct redirect URI to prevent truncation
+        // Use :/ format (single colon, single slash) for iOS native apps
+        const scheme =
           process.env.EXPO_PUBLIC_IOS_URL_SCHEME ||
-          "com.googleusercontent.apps.958080376950-ov7dgq16sggjncpa7u5p4edesradrr0g",
-        path: "oauth2redirect/google",
-      }),
+          "com.googleusercontent.apps.958080376950-ov7dgq16sggjncpa7u5p4edesradrr0g";
+        
+        // Manually construct to ensure full path is included
+        const redirectUri = `${scheme}:/oauth2redirect/google`;
+        console.log("🔍 Google redirect URI (manual):", redirectUri);
+        return redirectUri;
+      })(),
+      default: (() => {
+        // Manually construct redirect URI to prevent truncation
+        const scheme =
+          process.env.EXPO_PUBLIC_IOS_URL_SCHEME ||
+          "com.googleusercontent.apps.958080376950-ov7dgq16sggjncpa7u5p4edesradrr0g";
+        
+        // Manually construct to ensure full path is included
+        const redirectUri = `${scheme}:/oauth2redirect/google`;
+        console.log("🔍 Google redirect URI (manual):", redirectUri);
+        return redirectUri;
+      })(),
     }),
   });
 
@@ -692,15 +704,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await removeToken();
       setIsLoggedIn(false);
 
-      // On web, clean up URL parameters to ensure clean state for next login
+      // On web, clean up URL parameters and redirect
       if (Platform.OS === "web") {
         // Remove any query parameters from URL
         window.history.replaceState(
           {},
           document.title,
-          window.location.pathname
+          "/"
         );
-        console.log("Logout: Cleared URL parameters");
+        console.log("Logout: Cleared URL parameters and redirected");
+        // Force navigation to welcome screen
+        window.location.href = "/";
+      } else {
+        // On mobile, use router to navigate to welcome screen
+        // Use router.replace to ensure we go back to root
+        router.replace("/");
+        router.dismissAll();
+        console.log("✅ Logout successful, redirected to welcome screen");
       }
     } catch (error) {
       console.error("Logout error:", error);

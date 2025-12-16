@@ -14,21 +14,23 @@ import NotificationBell from "@/components/NotificationBell";
 function AppTabs() {
   const { logout } = useContext(AuthContext);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (Platform.OS === "web") {
       const confirmed = window.confirm("Are you sure you want to log out?");
       if (confirmed) {
-        logout();
-        router.push("/Login");
+        await logout();
+        // Navigate to welcome screen after logout completes
+        router.replace("/");
       }
     } else {
       Alert.alert("Confirm Logout", "Are you sure you want to log out?", [
         { text: "Cancel", style: "cancel" },
         {
           text: "Yes",
-          onPress: () => {
-            logout();
-            router.push("/Login");
+          onPress: async () => {
+            await logout();
+            // Navigate to welcome screen after logout completes
+            router.replace("/");
             router.dismissAll();
           },
         },

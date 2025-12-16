@@ -27,23 +27,43 @@ const parseEmailFromToken = (token: string | null): string | null => {
   }
 };
 
-export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [currentUser, setCurrentUser] = useState<UserSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refreshCurrentUser = async (): Promise<UserSummary | null> => {
     try {
       const token = await getToken();
-      const email = parseEmailFromToken(token);
-      if (!email) {
+      if (!token) {
+        console.log("⚠️ No token found when refreshing user");
         setCurrentUser(null);
         return null;
       }
+
+      const email = parseEmailFromToken(token);
+      if (!email) {
+        console.log("⚠️ Could not parse email from token");
+        setCurrentUser(null);
+        return null;
+      }
+
+      console.log("🔍 Fetching user by email:", email);
       const user = await FetchUserByEmail(email);
-      setCurrentUser(user);
+      if (user) {
+        console.log("✅ User fetched successfully:", user.email);
+        setCurrentUser(user);
+      } else {
+        console.warn("⚠️ User not found for email:", email);
+        setCurrentUser(null);
+      }
       return user ?? null;
-    } catch (error) {
-      console.error("Unable to refresh current user:", error);
+    } catch (error: any) {
+      console.error("❌ Unable to refresh current user:", {
+        error: error.message || error,
+        stack: error.stack,
+      });
       setCurrentUser(null);
       return null;
     }
@@ -79,4 +99,3 @@ export const useUserContext = () => {
   }
   return context;
 };
-

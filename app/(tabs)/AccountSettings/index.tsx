@@ -199,16 +199,11 @@ const handleUpdatePassword = async () => {
       // Clear token and user data immediately
       await removeToken();
       await logoutUserLocally();
-      logout();
+      await logout();
       
-      // Clean up URL parameters on web
-      if (Platform.OS === 'web') {
-        window.history.replaceState({}, document.title, '/');
-      }
-      
-      // Redirect to welcome screen immediately
-      // The logout() call should trigger AuthContext to redirect, but we'll ensure it happens
+      // Redirect to welcome screen after logout completes
       router.replace('/');
+      router.dismissAll();
       
       // Show success message after redirect is initiated
       setTimeout(() => {

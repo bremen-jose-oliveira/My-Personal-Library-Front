@@ -20,6 +20,15 @@ export default {
         NSCameraUsageDescription:
           "This app needs access to your camera to scan barcodes.",
         ITSAppUsesNonExemptEncryption: false,
+        CFBundleURLTypes: [
+          {
+            CFBundleURLSchemes: [
+              "myapp",
+              "com.jose-oliv.mypersonallibraryfront",
+              "com.googleusercontent.apps.958080376950-ov7dgq16sggjncpa7u5p4edesradrr0g",
+            ],
+          },
+        ],
       },
     },
     android: {
