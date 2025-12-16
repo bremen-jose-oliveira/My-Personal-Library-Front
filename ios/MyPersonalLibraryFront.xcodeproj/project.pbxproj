@@ -23,7 +23,7 @@
 		4F9A3D6A9F324AE216DF60DD /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-MyPersonalLibraryFront/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		614ED3F70CED8F763B894A75 /* libPods-MyPersonalLibraryFront.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-MyPersonalLibraryFront.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		6A7F7508712B2EF6C2FBADF4 /* Pods-MyPersonalLibraryFront.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MyPersonalLibraryFront.release.xcconfig"; path = "Target Support Files/Pods-MyPersonalLibraryFront/Pods-MyPersonalLibraryFront.release.xcconfig"; sourceTree = "<group>"; };
-		83CB3879990831BBAE43E5A7 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = MyPersonalLibraryFront/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		83CB3879990831BBAE43E5A7 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = MyPersonalLibraryFront/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = MyPersonalLibraryFront/SplashScreen.storyboard; sourceTree = "<group>"; };
 		B0468A814B7BD2E024BFB5E4 /* Pods-MyPersonalLibraryFront.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MyPersonalLibraryFront.debug.xcconfig"; path = "Target Support Files/Pods-MyPersonalLibraryFront/Pods-MyPersonalLibraryFront.debug.xcconfig"; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
@@ -89,7 +89,6 @@
 				B0468A814B7BD2E024BFB5E4 /* Pods-MyPersonalLibraryFront.debug.xcconfig */,
 				6A7F7508712B2EF6C2FBADF4 /* Pods-MyPersonalLibraryFront.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -357,6 +356,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = MyPersonalLibraryFront/MyPersonalLibraryFront.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = YJYA3WJYT5;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -376,7 +376,7 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.jose-oliv.mypersonallibraryfront";
-				PRODUCT_NAME = "MyPersonalLibraryFront";
+				PRODUCT_NAME = MyPersonalLibraryFront;
 				SWIFT_OBJC_BRIDGING_HEADER = "MyPersonalLibraryFront/MyPersonalLibraryFront-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -393,6 +393,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = MyPersonalLibraryFront/MyPersonalLibraryFront.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = YJYA3WJYT5;
 				INFOPLIST_FILE = MyPersonalLibraryFront/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -407,7 +408,7 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.jose-oliv.mypersonallibraryfront";
-				PRODUCT_NAME = "MyPersonalLibraryFront";
+				PRODUCT_NAME = MyPersonalLibraryFront;
 				SWIFT_OBJC_BRIDGING_HEADER = "MyPersonalLibraryFront/MyPersonalLibraryFront-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
