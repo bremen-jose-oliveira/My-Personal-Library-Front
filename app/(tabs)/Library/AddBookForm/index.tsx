@@ -3,6 +3,7 @@
 import BarcodeScanner from "@/components/BarcodeScanner";
 import Book from "@/Interfaces/book";
 import { useBookContext } from "@/utils/Context/BookContext";
+import { fetchCoverImage } from "@/utils/fetchBookData";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
@@ -95,8 +96,32 @@ export default function AddBookForm() {
   };
 
   // Add selected book to the global state
-  const handleAddBook = () => {
+  const handleAddBook = async () => {
     if (!selectedBook) return;
+
+    // Get cover from Google Books API result, or fetch it if missing
+    let coverUrl =
+      selectedBook.volumeInfo.imageLinks?.thumbnail ||
+      selectedBook.volumeInfo.imageLinks?.smallThumbnail ||
+      null;
+
+    // Ensure HTTPS if cover exists
+    if (coverUrl) {
+      coverUrl = coverUrl.startsWith("http://")
+        ? coverUrl.replace("http://", "https://")
+        : coverUrl;
+    }
+
+    // If no cover found, fetch it using the title and author
+    if (!coverUrl) {
+      const title = selectedBook.volumeInfo.title;
+      const author =
+        selectedBook.volumeInfo.authors?.join(", ") || "Unknown Author";
+      console.log(
+        `🔄 No cover found in Google Books result, fetching cover for: ${title} by ${author}`
+      );
+      coverUrl = await fetchCoverImage(title, author);
+    }
 
     const bookData: Book = {
       title: selectedBook.volumeInfo.title,
@@ -105,7 +130,7 @@ export default function AddBookForm() {
         ? selectedBook.volumeInfo.publishedDate.substring(0, 4)
         : "",
       publisher: selectedBook.volumeInfo.publisher || "",
-      cover: selectedBook.volumeInfo.imageLinks?.thumbnail || "",
+      cover: coverUrl || null, // Use null instead of empty string
       id: selectedBook.identifier,
       isbn:
         selectedBook.volumeInfo.industryIdentifiers?.[0]?.identifier || "N/A",
@@ -119,15 +144,23 @@ export default function AddBookForm() {
       readingStatus: undefined,
     };
 
-    addBook(bookData);
-    setSelectedBook(null);
-    router.push("/Library/DisplayBooks");
+    try {
+      await addBook(bookData);
+      setSelectedBook(null);
+      router.push("/Library/DisplayBooks");
 
-    if (Platform.OS === "web") {
-      // Web-specific alert
-      window.confirm("Success " + " Book added successfully!");
-    } else {
-      Alert.alert("Success", "Book added successfully!");
+      if (Platform.OS === "web") {
+        // Web-specific alert
+        window.confirm("Success " + " Book added successfully!");
+      } else {
+        Alert.alert("Success", "Book added successfully!");
+      }
+    } catch (error: any) {
+      console.error("Error adding book:", error);
+      Alert.alert(
+        "Error",
+        error.message || "Failed to add book. Please try again."
+      );
     }
   };
 
@@ -184,7 +217,9 @@ export default function AddBookForm() {
 
           {/* Render "Open Barcode Scanner" only if not on iOS Web */}
           <View style={{ flexDirection: "row", marginBottom: 10 }}>
-            <View style={{ flex: 1, marginRight: searchResults.length > 0 ? 5 : 0 }}>
+            <View
+              style={{ flex: 1, marginRight: searchResults.length > 0 ? 5 : 0 }}
+            >
               <Button
                 color="#bf471b"
                 title="Open Scanner"
@@ -414,7 +449,7 @@ export default function AddBookForm() {
 
           <Modal visible={Boolean(scannerVisible)} animationType="slide">
             <View style={{ flex: 1, position: "relative" }}>
-              <BarcodeScanner 
+              <BarcodeScanner
                 onISBNScanned={handleISBNScanned}
                 onClose={() => setScannerVisible(false)}
               />

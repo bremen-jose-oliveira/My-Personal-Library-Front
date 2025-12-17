@@ -338,7 +338,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const scheme =
           process.env.EXPO_PUBLIC_IOS_URL_SCHEME ||
           "com.googleusercontent.apps.958080376950-ov7dgq16sggjncpa7u5p4edesradrr0g";
-        
+
         // Manually construct to ensure full path is included
         const redirectUri = `${scheme}:/oauth2redirect/google`;
         console.log("🔍 Google redirect URI (manual):", redirectUri);
@@ -701,17 +701,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      await removeToken();
+      // First, set logged in state and loading to false to prevent any redirects
       setIsLoggedIn(false);
+      setLoading(false);
+      await removeToken();
 
       // On web, clean up URL parameters and redirect
       if (Platform.OS === "web") {
         // Remove any query parameters from URL
-        window.history.replaceState(
-          {},
-          document.title,
-          "/"
-        );
+        window.history.replaceState({}, document.title, "/");
         console.log("Logout: Cleared URL parameters and redirected");
         // Force navigation to welcome screen
         window.location.href = "/";
@@ -720,19 +718,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // First dismiss all modals/screens, then navigate to root
         try {
           router.dismissAll();
-          // Small delay to ensure dismiss completes before navigation
+          // Use a delay to ensure state updates and dismiss completes
+          // This ensures isLoggedIn and loading are false before index.tsx renders
           setTimeout(() => {
+            // Navigate to root index (welcome screen) explicitly
             router.replace("/");
             console.log("✅ Logout successful, redirected to welcome screen");
-          }, 100);
+          }, 300);
         } catch (navError) {
           // If navigation fails, try direct replace
-          console.warn("Navigation error during logout, trying direct replace:", navError);
+          console.warn(
+            "Navigation error during logout, trying direct replace:",
+            navError
+          );
+          // Ensure we're navigating to root, not tabs
           router.replace("/");
         }
       }
     } catch (error) {
       console.error("Logout error:", error);
+      // Even on error, ensure state is reset and navigate to welcome screen
+      setIsLoggedIn(false);
+      setLoading(false);
+      router.replace("/");
     }
   };
 
