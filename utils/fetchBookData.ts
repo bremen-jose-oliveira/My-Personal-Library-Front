@@ -41,8 +41,9 @@ export const fetchCoverImage = async (
 ): Promise<string | null> => {
   const query = `${title} ${author}`.replace(/\s+/g, "+");
   const url = `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=40`;
-  // Use a more reliable fallback cover URL
-  const fallbackCover = `https://via.placeholder.com/128x192/cccccc/666666?text=No+Cover`;
+  // Fallback cover - using Flaticon book icon (restored from earlier version)
+  // If you want to use a local image, add it to assets/images/ and reference it in components
+  const fallbackCover = `https://cdn-icons-png.flaticon.com/512/7340/7340665.png`;
 
   try {
     const response = await fetch(url, {
@@ -61,29 +62,28 @@ export const fetchCoverImage = async (
 
     const data = await response.json();
 
-    if (data.items && data.items.length > 0) {
-      const coverUrl =
-        data.items[0]?.volumeInfo?.imageLinks?.thumbnail ||
-        data.items[0]?.volumeInfo?.imageLinks?.smallThumbnail;
+    // Simple: return thumbnail or fallback - always returns a cover
+    const coverUrl = data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
 
-      if (coverUrl) {
-        // Ensure HTTPS
-        const httpsUrl = coverUrl.startsWith("http://")
-          ? coverUrl.replace("http://", "https://")
-          : coverUrl;
-        console.log(`✅ Found cover for: ${title}`);
-        return httpsUrl;
-      }
+    if (coverUrl) {
+      // Ensure HTTPS
+      const httpsUrl = coverUrl.startsWith("http://")
+        ? coverUrl.replace("http://", "https://")
+        : coverUrl;
+      console.log(`✅ Found cover for: ${title}`);
+      return httpsUrl;
     }
 
-    console.warn(`No cover found in Google Books API for: ${title}`);
+    console.warn(
+      `No cover found in Google Books API for: ${title}, using fallback`
+    );
     return fallbackCover;
   } catch (error: any) {
     console.error(
       `❌ Failed to fetch cover image for "${title}":`,
       error.message || error
     );
-    // Return fallback even on error
+    // Always return fallback - ensures all books have a cover
     return fallbackCover;
   }
 };

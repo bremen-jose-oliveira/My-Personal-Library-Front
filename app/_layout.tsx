@@ -1,5 +1,5 @@
 // app/_layout.tsx
-import 'react-native-gesture-handler';  // Must be imported first
+import "react-native-gesture-handler"; // Must be imported first
 import React, { useEffect, useState } from "react";
 import { Stack, useRouter } from "expo-router";
 import { AuthProvider } from "@/utils/Context/AuthContext";
@@ -52,13 +52,42 @@ export default function Layout() {
               <ReviewProvider>
                 <BookProvider>
                   <Stack>
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false, headerTitle: `` }} />
-                    <Stack.Screen name="Login/index" options={{ presentation: "modal" }} />
-                    <Stack.Screen name="Register/index" options={{ presentation: "modal" }} />
-                    <Stack.Screen name="ForgotPassword" options={{ presentation: "modal" }} />
-                    <Stack.Screen name="ResetPassword" options={{ presentation: "modal" }} />
-                    <Stack.Screen name="BookDetails/[id]" options={{ headerTitle: "Book Details" }} />
-                    <Stack.Screen name="Notifications/index" options={{ headerTitle: "Notifications" }} />
+                    <Stack.Screen
+                      name="index"
+                      options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                      name="(tabs)"
+                      options={{ headerShown: false, headerTitle: `` }}
+                    />
+                    <Stack.Screen
+                      name="Login/index"
+                      options={{ presentation: "modal" }}
+                    />
+                    <Stack.Screen
+                      name="Register/index"
+                      options={{ presentation: "modal" }}
+                    />
+                    <Stack.Screen
+                      name="ForgotPassword"
+                      options={{ presentation: "modal" }}
+                    />
+                    <Stack.Screen
+                      name="ResetPassword"
+                      options={{ presentation: "modal" }}
+                    />
+                    <Stack.Screen
+                      name="Logout"
+                      options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                      name="BookDetails/[id]"
+                      options={{ headerTitle: "Book Details" }}
+                    />
+                    <Stack.Screen
+                      name="Notifications/index"
+                      options={{ headerTitle: "Notifications" }}
+                    />
                   </Stack>
                 </BookProvider>
               </ReviewProvider>

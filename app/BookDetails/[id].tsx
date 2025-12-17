@@ -48,6 +48,7 @@ export default function BookDetails() {
     createReview,
     updateReview,
     deleteReview,
+    clearReviews,
   } = useReviewContext();
 
   const [reviewRating, setReviewRating] = useState("5");
@@ -59,9 +60,17 @@ export default function BookDetails() {
   const [editComment, setEditComment] = useState("");
 
   useEffect(() => {
-    if (!isNaN(bookId)) {
+    // Clear reviews and reset loading when component mounts or bookId changes
+    if (!isNaN(bookId) && bookId > 0) {
+      clearReviews();
       fetchBookById(bookId);
-      fetchReviewsForBook(bookId);
+      // Small delay to ensure clearReviews completes before fetching
+      const timer = setTimeout(() => {
+        fetchReviewsForBook(bookId);
+      }, 50);
+      return () => clearTimeout(timer);
+    } else {
+      clearReviews();
     }
   }, [bookId]);
 
@@ -300,19 +309,35 @@ export default function BookDetails() {
         </View>
 
         <View style={{ marginTop: 32 }}>
-          <Text
+          <View
             style={{
-              color: "#f0dcc7",
-              fontSize: 18,
-              fontWeight: "600",
+              flexDirection: "row",
+              alignItems: "center",
               marginBottom: 12,
             }}
           >
-            Reviews
-          </Text>
-          {reviewsLoading ? (
-            <ActivityIndicator color="#bf471b" />
-          ) : (
+            <Text
+              style={{
+                color: "#f0dcc7",
+                fontSize: 18,
+                fontWeight: "600",
+              }}
+            >
+              Reviews
+            </Text>
+            {reviewsLoading && (
+              <ActivityIndicator
+                color="#bf471b"
+                size="small"
+                style={{ marginLeft: 8 }}
+              />
+            )}
+          </View>
+          {!reviewsLoading && reviews.length === 0 ? (
+            <Text style={{ color: "#f0dcc7", fontStyle: "italic" }}>
+              No reviews yet. Be the first to review this book!
+            </Text>
+          ) : !reviewsLoading && reviews.length > 0 ? (
             reviews.map((review) => (
               <View
                 key={review.id}
@@ -365,7 +390,7 @@ export default function BookDetails() {
                 )}
               </View>
             ))
-          )}
+          ) : null}
         </View>
 
         <View style={{ marginTop: 24 }}>

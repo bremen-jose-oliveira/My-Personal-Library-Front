@@ -9,7 +9,10 @@ interface ReviewContextValue {
   fetchReviewsForBook: (bookId: number) => Promise<void>;
   fetchMyReviews: () => Promise<void>;
   createReview: (payload: ReviewRequest) => Promise<void>;
-  updateReview: (reviewId: number, payload: Omit<ReviewRequest, "bookId">) => Promise<void>;
+  updateReview: (
+    reviewId: number,
+    payload: Omit<ReviewRequest, "bookId">
+  ) => Promise<void>;
   deleteReview: (reviewId: number) => Promise<void>;
   getReviewById: (reviewId: number) => Promise<Review | null>;
   clearReviews: () => void;
@@ -17,10 +20,13 @@ interface ReviewContextValue {
 
 const ReviewContext = createContext<ReviewContextValue | undefined>(undefined);
 
-export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [myReviews, setMyReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(false);
+  const [fetchingBookId, setFetchingBookId] = useState<number | null>(null);
 
   const getToken = async () => {
     const token = await AsyncStorage.getItem("token");
@@ -29,10 +35,43 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const fetchReviewsForBook = async (bookId: number) => {
-    if (!bookId) return;
+    if (!bookId || isNaN(bookId)) {
+      console.log(`⚠️ Invalid bookId: ${bookId}, clearing reviews`);
+      setLoading(false);
+      setReviews([]);
+      setFetchingBookId(null);
+      return;
+    }
+
+    // Prevent duplicate calls for the same book, but allow if previous call finished
+    if (fetchingBookId === bookId && loading) {
+      console.log(
+        `⏳ Already fetching reviews for book ${bookId}, skipping...`
+      );
+      return;
+    }
+
+    // If switching to a different book, clear previous state first
+    if (fetchingBookId !== null && fetchingBookId !== bookId) {
+      console.log(
+        `🔄 Switching from book ${fetchingBookId} to ${bookId}, clearing state`
+      );
+      setLoading(false);
+      setReviews([]);
+    }
+
+    console.log(`🔄 Starting to fetch reviews for book ${bookId}`);
     setLoading(true);
+    setFetchingBookId(bookId);
     try {
       const token = await getToken();
+      if (!token) {
+        console.log(`⚠️ No token found, stopping fetch for book ${bookId}`);
+        setLoading(false);
+        setReviews([]);
+        setFetchingBookId(null);
+        return;
+      }
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/reviews/book/${bookId}`,
         {
@@ -44,29 +83,66 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch reviews");
+        // If 404 or empty response, set empty array instead of error
+        if (response.status === 404) {
+          console.log(
+            `No reviews found for book ${bookId} (404) - this is normal if book has no reviews`
+          );
+          setReviews([]);
+          setLoading(false);
+          setFetchingBookId(null);
+          return;
+        }
+        // For other errors, log but don't throw - just set empty array
+        console.warn(
+          `Failed to fetch reviews for book ${bookId}: ${response.status}`
+        );
+        setReviews([]);
+        setLoading(false);
+        setFetchingBookId(null);
+        return;
       }
 
-      const data: Review[] = await response.json();
+      let data: Review[] = [];
+      try {
+        const responseData = await response.json();
+        data = Array.isArray(responseData) ? responseData : [];
+      } catch (jsonError) {
+        console.warn(
+          "Failed to parse reviews JSON, treating as empty:",
+          jsonError
+        );
+        data = [];
+      }
+
+      // Always set reviews (empty array if no reviews) and stop loading
+      console.log(`✅ Loaded ${data.length} reviews for book ${bookId}`);
       setReviews(data);
+      setLoading(false);
+      setFetchingBookId(null);
     } catch (error) {
       console.error("Unable to fetch reviews:", error);
-    } finally {
+      // Set empty array on error instead of keeping old data
+      setReviews([]);
       setLoading(false);
+      setFetchingBookId(null);
     }
   };
 
   const createReview = async (payload: ReviewRequest) => {
     try {
       const token = await getToken();
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/reviews`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/reviews`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(errorText || "Failed to create review");
@@ -78,17 +154,23 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
-  const updateReview = async (reviewId: number, payload: Omit<ReviewRequest, "bookId">) => {
+  const updateReview = async (
+    reviewId: number,
+    payload: Omit<ReviewRequest, "bookId">
+  ) => {
     try {
       const token = await getToken();
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/reviews/${reviewId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/reviews/${reviewId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(errorText || "Failed to update review");
@@ -103,13 +185,16 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const deleteReview = async (reviewId: number) => {
     try {
       const token = await getToken();
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/reviews/${reviewId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/reviews/${reviewId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(errorText || "Failed to delete review");
@@ -125,12 +210,15 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setLoading(true);
     try {
       const token = await getToken();
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/reviews/my`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/reviews/my`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch my reviews");
@@ -148,12 +236,15 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const getReviewById = async (reviewId: number): Promise<Review | null> => {
     try {
       const token = await getToken();
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/reviews/${reviewId}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/reviews/${reviewId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch review");
@@ -167,7 +258,11 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
-  const clearReviews = () => setReviews([]);
+  const clearReviews = () => {
+    setReviews([]);
+    setLoading(false);
+    setFetchingBookId(null);
+  };
 
   return (
     <ReviewContext.Provider
@@ -196,7 +291,3 @@ export const useReviewContext = () => {
   }
   return context;
 };
-
-
-
-

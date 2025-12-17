@@ -105,27 +105,16 @@ export default function DisplayBooks() {
                     }}
                   />
                 ) : (
-                  <View
+                  <Image
                     style={{
                       width: 100,
                       height: 144,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backgroundColor: "#d1d5db",
-                      borderRadius: 8,
+                      resizeMode: "contain",
                     }}
-                  >
-                    <Text
-                      style={{
-                        color: "#f0dcc7",
-                        fontSize: 12,
-                        lineHeight: 16,
-                        textAlign: "center",
-                      }}
-                    >
-                      No Image Available
-                    </Text>
-                  </View>
+                    source={{
+                      uri: "https://cdn-icons-png.flaticon.com/512/7340/7340665.png",
+                    }}
+                  />
                 )}
                 <View style={{ alignItems: "center" }}>
                   <Text

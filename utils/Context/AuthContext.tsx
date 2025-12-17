@@ -1,6 +1,12 @@
 // utils/Context/AuthContext.tsx
 
-import React, { createContext, useState, useEffect, ReactNode } from "react";
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+} from "react";
 import { Alert, ActivityIndicator, Platform } from "react-native";
 import { storeToken, getToken, removeToken } from "./storageUtils";
 import * as Google from "expo-auth-session/providers/google";
@@ -699,12 +705,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }, []); // Only run once on mount
   }
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
-      // First, set logged in state and loading to false to prevent any redirects
+      console.log("🚪 Starting logout process...");
+
+      // CRITICAL: Set logged in state to false FIRST before any navigation
+      // This ensures app/index.tsx will show welcome screen instead of redirecting to tabs
       setIsLoggedIn(false);
       setLoading(false);
+      console.log("✅ Set isLoggedIn=false, loading=false");
+
+      // Remove token from storage
       await removeToken();
+      console.log("✅ Token removed from storage");
 
       // On web, clean up URL parameters and redirect
       if (Platform.OS === "web") {
@@ -714,35 +727,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Force navigation to welcome screen
         window.location.href = "/";
       } else {
-        // On mobile, use router to navigate to welcome screen
-        // First dismiss all modals/screens, then navigate to root
+        // On mobile, navigate to dedicated Logout screen
+        // This bypasses any navigation issues with the root index route
         try {
-          router.dismissAll();
-          // Use a delay to ensure state updates and dismiss completes
-          // This ensures isLoggedIn and loading are false before index.tsx renders
+          // Use a small delay to ensure state is updated first
           setTimeout(() => {
-            // Navigate to root index (welcome screen) explicitly
-            router.replace("/");
-            console.log("✅ Logout successful, redirected to welcome screen");
-          }, 300);
+            router.replace("/Logout");
+            console.log("✅ Navigated to Logout screen");
+          }, 100);
         } catch (navError) {
-          // If navigation fails, try direct replace
-          console.warn(
-            "Navigation error during logout, trying direct replace:",
-            navError
-          );
-          // Ensure we're navigating to root, not tabs
-          router.replace("/");
+          console.error("Navigation error during logout:", navError);
+          // Fallback: state is already set, so welcome screen should show
         }
+        console.log("✅ Logout complete - navigating to Logout screen");
       }
     } catch (error) {
       console.error("Logout error:", error);
-      // Even on error, ensure state is reset and navigate to welcome screen
+      // Even on error, ensure state is reset
       setIsLoggedIn(false);
       setLoading(false);
-      router.replace("/");
+      // Try to navigate to logout screen anyway
+      if (Platform.OS !== "web") {
+        try {
+          setTimeout(() => {
+            router.replace("/Logout");
+          }, 100);
+        } catch (navError) {
+          console.error("Navigation error in logout catch:", navError);
+        }
+      }
+      console.log(
+        "✅ Logout error handled - state reset, navigating to Logout screen"
+      );
     }
-  };
+  }, []); // Empty deps - logout doesn't depend on any props/state that changes
 
   const createUser = async (
     username: string,

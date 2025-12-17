@@ -99,20 +99,32 @@ export default function AddBookForm() {
   const handleAddBook = async () => {
     if (!selectedBook) return;
 
-    // Get cover from Google Books API result, or fetch it if missing
+    // Get cover from Google Books API result - use the same URL that's showing in the preview
+    // Check all possible image sizes to get the best available
     let coverUrl =
       selectedBook.volumeInfo.imageLinks?.thumbnail ||
       selectedBook.volumeInfo.imageLinks?.smallThumbnail ||
+      selectedBook.volumeInfo.imageLinks?.small ||
+      selectedBook.volumeInfo.imageLinks?.medium ||
+      selectedBook.volumeInfo.imageLinks?.large ||
       null;
 
-    // Ensure HTTPS if cover exists
+    console.log("📸 Cover URL from selectedBook:", coverUrl);
+    console.log(
+      "📸 imageLinks object:",
+      JSON.stringify(selectedBook.volumeInfo.imageLinks, null, 2)
+    );
+
+    // Ensure HTTPS if cover exists - but don't reject it!
     if (coverUrl) {
       coverUrl = coverUrl.startsWith("http://")
         ? coverUrl.replace("http://", "https://")
         : coverUrl;
+      console.log("✅ Using cover URL from Google Books:", coverUrl);
     }
 
-    // If no cover found, fetch it using the title and author
+    // Only fetch a new cover if we truly don't have one
+    // If the user can see the cover in the preview, we should use that exact URL
     if (!coverUrl) {
       const title = selectedBook.volumeInfo.title;
       const author =
@@ -123,6 +135,12 @@ export default function AddBookForm() {
       coverUrl = await fetchCoverImage(title, author);
     }
 
+    // Ensure coverUrl is never null or empty - use fallback if needed
+    if (!coverUrl || coverUrl.trim() === "") {
+      console.warn("⚠️ Cover URL is empty, using fallback");
+      coverUrl = "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
+    }
+
     const bookData: Book = {
       title: selectedBook.volumeInfo.title,
       author: selectedBook.volumeInfo.authors?.join(", ") || "Unknown Author",
@@ -130,7 +148,7 @@ export default function AddBookForm() {
         ? selectedBook.volumeInfo.publishedDate.substring(0, 4)
         : "",
       publisher: selectedBook.volumeInfo.publisher || "",
-      cover: coverUrl || null, // Use null instead of empty string
+      cover: coverUrl, // Always use a valid URL (never null or empty)
       id: selectedBook.identifier,
       isbn:
         selectedBook.volumeInfo.industryIdentifiers?.[0]?.identifier || "N/A",
@@ -145,6 +163,7 @@ export default function AddBookForm() {
     };
 
     try {
+      console.log("💾 Saving book with cover URL:", bookData.cover);
       await addBook(bookData);
       setSelectedBook(null);
       router.push("/Library/DisplayBooks");
