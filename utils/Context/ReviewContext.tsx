@@ -36,7 +36,6 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const fetchReviewsForBook = async (bookId: number) => {
     if (!bookId || isNaN(bookId)) {
-      console.log(`⚠️ Invalid bookId: ${bookId}, clearing reviews`);
       setLoading(false);
       setReviews([]);
       setFetchingBookId(null);
@@ -45,28 +44,20 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({
 
     // Prevent duplicate calls for the same book, but allow if previous call finished
     if (fetchingBookId === bookId && loading) {
-      console.log(
-        `⏳ Already fetching reviews for book ${bookId}, skipping...`
-      );
       return;
     }
 
     // If switching to a different book, clear previous state first
     if (fetchingBookId !== null && fetchingBookId !== bookId) {
-      console.log(
-        `🔄 Switching from book ${fetchingBookId} to ${bookId}, clearing state`
-      );
       setLoading(false);
       setReviews([]);
     }
 
-    console.log(`🔄 Starting to fetch reviews for book ${bookId}`);
     setLoading(true);
     setFetchingBookId(bookId);
     try {
       const token = await getToken();
       if (!token) {
-        console.log(`⚠️ No token found, stopping fetch for book ${bookId}`);
         setLoading(false);
         setReviews([]);
         setFetchingBookId(null);
@@ -85,18 +76,12 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!response.ok) {
         // If 404 or empty response, set empty array instead of error
         if (response.status === 404) {
-          console.log(
-            `No reviews found for book ${bookId} (404) - this is normal if book has no reviews`
-          );
           setReviews([]);
           setLoading(false);
           setFetchingBookId(null);
           return;
         }
-        // For other errors, log but don't throw - just set empty array
-        console.warn(
-          `Failed to fetch reviews for book ${bookId}: ${response.status}`
-        );
+        // For other errors, set empty array
         setReviews([]);
         setLoading(false);
         setFetchingBookId(null);
@@ -108,15 +93,10 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({
         const responseData = await response.json();
         data = Array.isArray(responseData) ? responseData : [];
       } catch (jsonError) {
-        console.warn(
-          "Failed to parse reviews JSON, treating as empty:",
-          jsonError
-        );
         data = [];
       }
 
       // Always set reviews (empty array if no reviews) and stop loading
-      console.log(`✅ Loaded ${data.length} reviews for book ${bookId}`);
       setReviews(data);
       setLoading(false);
       setFetchingBookId(null);

@@ -1,4 +1,3 @@
-// app/PrivacyPolicy.tsx
 import { Stack } from "expo-router";
 import React from "react";
 import { ScrollView, Text, View, StyleSheet, Linking } from "react-native";
@@ -169,13 +168,9 @@ export default function PrivacyPolicy() {
           </Text>
           <Text
             style={styles.link}
-            onPress={() => Linking.openURL("mailto:support@example.com")}
+            onPress={() => Linking.openURL("mailto:my.personal.lib@proton.me")}
           >
-            support@example.com
-          </Text>
-          <Text style={styles.paragraph}>
-            Please replace "support@example.com" with your actual support email
-            address.
+            my.personal.lib@proton.me
           </Text>
         </View>
       </ScrollView>

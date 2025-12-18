@@ -54,9 +54,6 @@ export const fetchCoverImage = async (
     });
 
     if (!response.ok) {
-      console.warn(
-        `Google Books API returned ${response.status} for: ${title}`
-      );
       return fallbackCover;
     }
 
@@ -70,13 +67,8 @@ export const fetchCoverImage = async (
       const httpsUrl = coverUrl.startsWith("http://")
         ? coverUrl.replace("http://", "https://")
         : coverUrl;
-      console.log(`✅ Found cover for: ${title}`);
       return httpsUrl;
     }
-
-    console.warn(
-      `No cover found in Google Books API for: ${title}, using fallback`
-    );
     return fallbackCover;
   } catch (error: any) {
     console.error(

@@ -1,5 +1,4 @@
-// app//index.tsx
-import "react-native-reanimated"; // Reanimated
+import "react-native-reanimated";
 
 import { Link, Stack, Redirect, useRouter, useSegments } from "expo-router";
 import "../global.css";
@@ -10,13 +9,12 @@ import {
   ImageBackground,
   ActivityIndicator,
 } from "react-native";
-import Animated, { FadeInRight } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useContext } from "react";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
 import { useEffect } from "react";
 import { AuthContext } from "@/utils/Context/AuthContext";
-import "react-native-reanimated";
+
 // Only import dev-client in development builds (prevents TestFlight crashes)
 if (__DEV__) {
   require("expo-dev-client");
@@ -53,36 +51,12 @@ export default function WelcomeScreen() {
       // When user logs out, increment refresh key to force component re-render
       // Use a longer delay to ensure navigation and app reload have completed
       setTimeout(() => {
-        setRefreshKey((prev) => {
-          const newKey = prev + 1;
-          console.log(
-            "🔄 Welcome screen refreshed after logout, refreshKey:",
-            newKey
-          );
-          return newKey;
-        });
-      }, 600); // Increased delay to account for app reload
+        setRefreshKey((prev) => prev + 1);
+      }, 600);
     }
     prevIsLoggedInRef.current = isLoggedIn;
   }, [isLoggedIn, loading]);
 
-  console.log(
-    "🔍 WelcomeScreen - isLoggedIn:",
-    isLoggedIn,
-    "loading:",
-    loading,
-    "authContext available:",
-    !!authContext,
-    "segments:",
-    segments,
-    "refreshKey:",
-    refreshKey,
-    "current route check"
-  );
-
-  // If we're on tabs route but logged out, force navigation to root
-  // This ensures we're on the correct route to show the welcome screen
-  // Use a ref to prevent multiple navigation calls
   const hasNavigatedRef = React.useRef(false);
   useEffect(() => {
     if (
@@ -92,31 +66,23 @@ export default function WelcomeScreen() {
       segments[0] === "(tabs)" &&
       !hasNavigatedRef.current
     ) {
-      console.log(
-        "⚠️ Still on tabs route after logout, forcing navigation to root"
-      );
       hasNavigatedRef.current = true;
-      // Use a small delay to avoid conflicts with other navigation
       setTimeout(() => {
         try {
           router.replace("/");
-          console.log("✅ Navigated from tabs route to root after logout");
         } catch (error) {
-          console.warn("Navigation error:", error);
-          hasNavigatedRef.current = false; // Reset on error
+          console.error("Navigation error:", error);
+          hasNavigatedRef.current = false;
         }
       }, 100);
     } else if (isLoggedIn) {
-      // Reset flag when logged in
       hasNavigatedRef.current = false;
     }
   }, [isLoggedIn, loading, segments, router]);
 
-  // Timeout fallback - if loading takes more than 5 seconds, show welcome screen anyway
   useEffect(() => {
     const timer = setTimeout(() => {
       if (loading) {
-        console.warn("⚠️ Loading timeout - showing welcome screen anyway");
         setLoadingTimeout(true);
       }
     }, 5000);
@@ -124,22 +90,11 @@ export default function WelcomeScreen() {
     return () => clearTimeout(timer);
   }, [loading]);
 
-  // Use Redirect component instead of router.replace to avoid mounting issues
-  // IMPORTANT: Only redirect to tabs if user is actually logged in
-  // After logout, isLoggedIn will be false, so this won't redirect
   if (!loading && isLoggedIn) {
-    console.log("✅ User is logged in, redirecting to tabs...");
     return <Redirect href="/(tabs)" />;
   }
 
-  // Debug: Log when we're showing welcome screen (after logout)
-  if (!loading && !isLoggedIn) {
-    console.log("✅ Showing welcome screen - user is logged out");
-  }
-
-  // Show loading spinner while checking login status (with timeout fallback)
   if (loading && !loadingTimeout) {
-    console.log("⏳ Still loading...");
     return (
       <View
         style={{
@@ -155,9 +110,7 @@ export default function WelcomeScreen() {
     );
   }
 
-  // Show loading while redirecting if user is logged in
   if (isLoggedIn) {
-    console.log("🔄 User logged in, redirecting...");
     return (
       <View
         style={{
@@ -172,8 +125,6 @@ export default function WelcomeScreen() {
       </View>
     );
   }
-
-  console.log("✅ Showing welcome screen, refreshKey:", refreshKey);
 
   return (
     <>
@@ -198,10 +149,7 @@ export default function WelcomeScreen() {
           }}
           resizeMode="cover"
           onError={(error) => {
-            console.error("❌ ImageBackground failed to load:", error);
-          }}
-          onLoad={() => {
-            console.log("✅ ImageBackground loaded successfully");
+            console.error("ImageBackground failed to load:", error);
           }}
         >
           <LinearGradient

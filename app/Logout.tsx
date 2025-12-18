@@ -1,4 +1,3 @@
-// app/Logout.tsx - Dedicated logout screen identical to welcome screen
 import "react-native-reanimated";
 
 import { Link, Stack, Redirect } from "expo-router";
@@ -16,11 +15,8 @@ export default function LogoutScreen() {
     loading: false,
   };
 
-  console.log("✅ LogoutScreen rendering, isLoggedIn:", isLoggedIn);
-
   // If user logs in from this screen, redirect to tabs
   if (!loading && isLoggedIn) {
-    console.log("✅ User logged in from Logout screen, redirecting to tabs...");
     return <Redirect href="/(tabs)" />;
   }
 
@@ -46,10 +42,7 @@ export default function LogoutScreen() {
           }}
           resizeMode="cover"
           onError={(error) => {
-            console.error("❌ ImageBackground failed to load:", error);
-          }}
-          onLoad={() => {
-            console.log("✅ LogoutScreen ImageBackground loaded successfully");
+            console.error("ImageBackground failed to load:", error);
           }}
         >
           <LinearGradient
@@ -147,4 +140,3 @@ export default function LogoutScreen() {
     </>
   );
 }
-

@@ -27,28 +27,18 @@ const BookContext = createContext<BookContextProps | undefined>(undefined);
 
 const getAuthToken = async () => {
   const token = await AsyncStorage.getItem("token");
-  return token; // Return null if no token instead of throwing
+  return token;
 };
 
 const enrichBookWithCover = async (book: Book) => {
-  // If cover exists and is not empty, use it (with HTTPS conversion)
-  // Don't reject valid URLs - if it's saved in the DB, it should work!
   if (book.cover && book.cover.trim() !== "" && book.cover !== "null") {
-    // Ensure HTTPS for existing covers
     const httpsUrl = book.cover.startsWith("http://")
       ? book.cover.replace("http://", "https://")
       : book.cover;
-    console.log(
-      `✅ Using existing cover from DB for "${book.title}":`,
-      httpsUrl
-    );
     return { ...book, cover: httpsUrl };
   }
-  // Only fetch cover if truly missing - don't replace valid URLs!
-  console.log(`🔄 No cover in DB for "${book.title}", fetching...`);
   try {
     const coverUrl = await fetchCoverImage(book.title, book.author);
-    // Ensure we always have a cover - fetchCoverImage should never return null, but double-check
     return {
       ...book,
       cover:
@@ -56,7 +46,6 @@ const enrichBookWithCover = async (book: Book) => {
     };
   } catch (error) {
     console.error(`Error fetching cover for ${book.title}:`, error);
-    // Always return a fallback cover even on error
     return {
       ...book,
       cover: "https://cdn-icons-png.flaticon.com/512/7340/7340665.png",
@@ -143,10 +132,6 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
       }
       const apiUrl = `${process.env.EXPO_PUBLIC_API_URL}/api/books`;
 
-      console.log("Adding book to:", apiUrl);
-      console.log("Book data:", JSON.stringify(book, null, 2));
-      console.log("💾 Saving book with cover URL:", book.cover);
-
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
@@ -174,7 +159,6 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
           console.error("Error parsing error response:", parseError);
         }
 
-        // Handle duplicate book case (409 Conflict or 400 with duplicate message)
         if (
           response.status === 409 ||
           (response.status === 400 &&
@@ -182,14 +166,8 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
               errorMessage.toLowerCase().includes("duplicate") ||
               errorMessage.toLowerCase().includes("already added")))
         ) {
-          console.log(
-            "📚 Book already exists, checking if we need to update missing information..."
-          );
-
-          // Try to find the existing book by ISBN to update missing fields
           if (book.isbn && book.isbn !== "N/A") {
             try {
-              // Fetch all books to find the one with matching ISBN
               const allBooks = await fetchAllBooks();
               const existingBook = allBooks.find(
                 (b) =>
@@ -197,11 +175,9 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
               );
 
               if (existingBook) {
-                // Build update object with fields that are missing or incomplete in existing book
                 const updates: Partial<Book> = {};
                 let needsUpdate = false;
 
-                // Check and update cover if missing or is fallback
                 const hasNoCover =
                   !existingBook.cover ||
                   existingBook.cover.trim() === "" ||
@@ -212,10 +188,8 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
                 if (hasNoCover && book.cover && book.cover.trim() !== "") {
                   updates.cover = book.cover;
                   needsUpdate = true;
-                  console.log("📸 Will update cover");
                 }
 
-                // Check and update author if missing or incomplete
                 if (
                   book.author &&
                   book.author.trim() !== "" &&
@@ -225,10 +199,8 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
                 ) {
                   updates.author = book.author;
                   needsUpdate = true;
-                  console.log("👤 Will update author");
                 }
 
-                // Check and update title if missing or incomplete
                 if (
                   book.title &&
                   book.title.trim() !== "" &&
@@ -236,10 +208,8 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
                 ) {
                   updates.title = book.title;
                   needsUpdate = true;
-                  console.log("📖 Will update title");
                 }
 
-                // Check and update publisher if missing
                 if (
                   book.publisher &&
                   book.publisher.trim() !== "" &&
@@ -248,10 +218,8 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
                 ) {
                   updates.publisher = book.publisher;
                   needsUpdate = true;
-                  console.log("🏢 Will update publisher");
                 }
 
-                // Check and update year if missing
                 if (
                   book.year &&
                   book.year.toString().trim() !== "" &&
@@ -260,32 +228,22 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
                 ) {
                   updates.year = book.year;
                   needsUpdate = true;
-                  console.log("📅 Will update year");
                 }
 
                 if (needsUpdate) {
-                  console.log(
-                    `🔄 Updating existing book (ID: ${existingBook.id}) with missing information:`,
-                    updates
-                  );
                   await updateBook(existingBook.id, updates);
                   await fetchCurrentUserBooks();
-                  return; // Successfully updated, exit early
+                  return;
                 } else {
-                  console.log(
-                    "✅ Book already exists with complete information, no update needed"
-                  );
                   await fetchCurrentUserBooks();
-                  return; // Book exists, just refresh the list
+                  return;
                 }
               }
             } catch (updateError) {
               console.error("Error updating existing book:", updateError);
-              // Fall through to show the duplicate error
             }
           }
 
-          // If we couldn't update, show the duplicate message
           throw new Error(
             errorMessage || "This book already exists in the library."
           );
@@ -305,7 +263,6 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch (error: any) {
       console.error("Error adding book:", error);
 
-      // Provide more specific error messages
       if (
         error.message?.includes("Failed to fetch") ||
         error.message?.includes("NetworkError")
@@ -517,36 +474,23 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // Fetch books when user logs in, clear when user logs out
-  // Use a ref to track previous state and prevent unnecessary updates
   const prevIsLoggedInRef = React.useRef<boolean | undefined>(undefined);
   useEffect(() => {
-    // Only act on state changes, not every render
-    // Initialize ref on first render
     if (prevIsLoggedInRef.current === undefined) {
       prevIsLoggedInRef.current = isLoggedIn;
-      // On first render, if logged in, fetch books
       if (isLoggedIn) {
-        console.log(
-          "🔄 BookContext: Initial render, user is logged in, fetching books..."
-        );
         fetchCurrentUserBooks();
       }
       return;
     }
 
     if (prevIsLoggedInRef.current === isLoggedIn) {
-      return; // No change, skip
+      return;
     }
 
     if (isLoggedIn && prevIsLoggedInRef.current === false) {
-      // Transitioning from logged out to logged in
-      console.log("🔄 BookContext: User is logged in, fetching books...");
       fetchCurrentUserBooks();
     } else if (!isLoggedIn && prevIsLoggedInRef.current === true) {
-      // Transitioning from logged in to logged out
-      console.log("🔄 BookContext: User is not logged in, clearing books...");
-      // Use functional updates to prevent unnecessary re-renders
       setBooks((prev) => {
         if (prev.length > 0) {
           return [];
@@ -561,10 +505,9 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
       });
     }
 
-    // Update ref after processing
     prevIsLoggedInRef.current = isLoggedIn;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn]); // Intentionally omit fetchCurrentUserBooks to prevent loops
+  }, [isLoggedIn]);
 
   return (
     <BookContext.Provider

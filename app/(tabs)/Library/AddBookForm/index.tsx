@@ -1,5 +1,3 @@
-// app/AddBookForm/index.tsx
-
 import BarcodeScanner from "@/components/BarcodeScanner";
 import Book from "@/Interfaces/book";
 import { useBookContext } from "@/utils/Context/BookContext";
@@ -32,7 +30,6 @@ export default function AddBookForm() {
   const [loading, setLoading] = useState(false);
   const [addingBook, setAddingBook] = useState(false);
 
-  // Fetch book data based on ISBN or search query
   const fetchBooks = async (query: string, reset: boolean = false) => {
     if (loading) return;
     setLoading(true);
@@ -71,7 +68,6 @@ export default function AddBookForm() {
     }
   };
 
-  // Clear all search state
   const clearSearchState = () => {
     setSearchResults([]);
     setSelectedBook(null);
@@ -79,31 +75,24 @@ export default function AddBookForm() {
     setStartIndex(0);
   };
 
-  // Handle ISBN scanned from the barcode scanner
   const handleISBNScanned = (isbn: string) => {
     setScannerVisible(false);
-    // Clear previous results before fetching new ones
     clearSearchState();
-    // Format ISBN for Google Books API: use isbn: prefix for ISBN-specific search
     const isbnQuery = `isbn:${isbn}`;
-    fetchBooks(isbnQuery, true); // Fetch book data using the scanned ISBN with proper prefix, reset results
+    fetchBooks(isbnQuery, true);
   };
 
-  // Select book from search results
   const handleBookSelect = (bookData: any) => {
     setSelectedBook(bookData);
-    setSearchQuery(""); // Clear the search input
-    setSearchResults([]); // Clear search results
+    setSearchQuery("");
+    setSearchResults([]);
   };
 
-  // Add selected book to the global state
   const handleAddBook = async () => {
     if (!selectedBook || addingBook) return; // Prevent double submission
 
     setAddingBook(true);
 
-    // Get cover from Google Books API result - use the same URL that's showing in the preview
-    // Check all possible image sizes to get the best available
     let coverUrl =
       selectedBook.volumeInfo.imageLinks?.thumbnail ||
       selectedBook.volumeInfo.imageLinks?.smallThumbnail ||
@@ -112,35 +101,20 @@ export default function AddBookForm() {
       selectedBook.volumeInfo.imageLinks?.large ||
       null;
 
-    console.log("📸 Cover URL from selectedBook:", coverUrl);
-    console.log(
-      "📸 imageLinks object:",
-      JSON.stringify(selectedBook.volumeInfo.imageLinks, null, 2)
-    );
-
-    // Ensure HTTPS if cover exists - but don't reject it!
     if (coverUrl) {
       coverUrl = coverUrl.startsWith("http://")
         ? coverUrl.replace("http://", "https://")
         : coverUrl;
-      console.log("✅ Using cover URL from Google Books:", coverUrl);
     }
 
-    // Only fetch a new cover if we truly don't have one
-    // If the user can see the cover in the preview, we should use that exact URL
     if (!coverUrl) {
       const title = selectedBook.volumeInfo.title;
       const author =
         selectedBook.volumeInfo.authors?.join(", ") || "Unknown Author";
-      console.log(
-        `🔄 No cover found in Google Books result, fetching cover for: ${title} by ${author}`
-      );
       coverUrl = await fetchCoverImage(title, author);
     }
 
-    // Ensure coverUrl is never null or empty - use fallback if needed
     if (!coverUrl || coverUrl.trim() === "") {
-      console.warn("⚠️ Cover URL is empty, using fallback");
       coverUrl = "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
     }
 
@@ -151,8 +125,8 @@ export default function AddBookForm() {
         ? selectedBook.volumeInfo.publishedDate.substring(0, 4)
         : "",
       publisher: selectedBook.volumeInfo.publisher || "",
-      cover: coverUrl, // Always use a valid URL (never null or empty)
-      description: selectedBook.volumeInfo.description || null, // Save description from Google Books
+      cover: coverUrl,
+      description: selectedBook.volumeInfo.description || null,
       id: selectedBook.identifier,
       isbn:
         selectedBook.volumeInfo.industryIdentifiers?.[0]?.identifier || "N/A",
@@ -167,13 +141,11 @@ export default function AddBookForm() {
     };
 
     try {
-      console.log("💾 Saving book with cover URL:", bookData.cover);
       await addBook(bookData);
       setSelectedBook(null);
       router.push("/Library/DisplayBooks");
 
       if (Platform.OS === "web") {
-        // Web-specific alert
         window.confirm("Success " + " Book added successfully!");
       } else {
         Alert.alert("Success", "Book added successfully!");
@@ -293,7 +265,6 @@ export default function AddBookForm() {
                   }`
                 }
                 renderItem={({ item }) => {
-                  // Get cover from Google Books API result - check all possible image sizes (same as handleAddBook)
                   let coverUrl =
                     item.volumeInfo.imageLinks?.thumbnail ||
                     item.volumeInfo.imageLinks?.smallThumbnail ||
@@ -302,14 +273,12 @@ export default function AddBookForm() {
                     item.volumeInfo.imageLinks?.large ||
                     null;
 
-                  // Ensure HTTPS if cover exists
                   if (coverUrl) {
                     coverUrl = coverUrl.startsWith("http://")
                       ? coverUrl.replace("http://", "https://")
                       : coverUrl;
                   }
 
-                  // Use fallback if no cover (same as DisplayBooks)
                   const finalCoverUrl =
                     coverUrl ||
                     "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
@@ -336,11 +305,6 @@ export default function AddBookForm() {
                             console.error(
                               `Failed to load cover for "${item.volumeInfo.title}":`,
                               error
-                            );
-                          }}
-                          onLoad={() => {
-                            console.log(
-                              `✅ Successfully loaded cover for: ${item.volumeInfo.title}`
                             );
                           }}
                         />
@@ -408,7 +372,6 @@ export default function AddBookForm() {
                   />
                 </View>
                 {(() => {
-                  // Get cover from Google Books API result - check all possible image sizes (same as handleAddBook)
                   let coverUrl =
                     selectedBook.volumeInfo.imageLinks?.thumbnail ||
                     selectedBook.volumeInfo.imageLinks?.smallThumbnail ||
@@ -417,21 +380,19 @@ export default function AddBookForm() {
                     selectedBook.volumeInfo.imageLinks?.large ||
                     null;
 
-                  // Ensure HTTPS if cover exists
                   if (coverUrl) {
                     coverUrl = coverUrl.startsWith("http://")
                       ? coverUrl.replace("http://", "https://")
                       : coverUrl;
                   }
 
-                  // Use fallback if no cover (same as DisplayBooks)
                   const finalCoverUrl =
                     coverUrl ||
                     "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
 
                   return (
                     <Image
-                      key={finalCoverUrl} // Add key to force re-render when cover changes
+                      key={finalCoverUrl}
                       source={{ uri: finalCoverUrl }}
                       style={{
                         width: 65,
@@ -443,11 +404,6 @@ export default function AddBookForm() {
                         console.error(
                           `Failed to load cover for "${selectedBook.volumeInfo.title}":`,
                           error
-                        );
-                      }}
-                      onLoad={() => {
-                        console.log(
-                          `✅ Successfully loaded cover for: ${selectedBook.volumeInfo.title}`
                         );
                       }}
                     />

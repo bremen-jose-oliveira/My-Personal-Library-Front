@@ -133,8 +133,6 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
     const cleanedData = data.replace(/[^0-9X]/g, "");
 
     if (isISBN(cleanedData)) {
-      // IMPORTANT: Scanning happens FIRST, Google API is called AFTER
-      // If Google API fails, scanning still succeeded - we have the ISBN
       if (onISBNScanned) {
         // Pass the ISBN immediately - don't wait for Google API
         onISBNScanned(cleanedData);

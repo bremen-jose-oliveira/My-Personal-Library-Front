@@ -14,8 +14,6 @@ import {
 } from "react-native";
 
 const HomeScreen = () => {
-  // CRITICAL: All hooks must be called before any conditional returns
-  // This ensures React hooks are called in the same order every render
   const authContext = useContext(AuthContext);
   const router = useRouter();
   const { isLoggedIn } = authContext || { isLoggedIn: false };
@@ -24,32 +22,20 @@ const HomeScreen = () => {
   const { refreshCurrentUser } = useUserContext();
   const [refreshing, setRefreshing] = useState(false);
 
-  // Redirect to welcome screen if not logged in
-  // Use useEffect to handle navigation instead of Redirect component
-  // This prevents app reloads and blank screens
   useEffect(() => {
     if (!isLoggedIn) {
-      console.log(
-        "🚫 HomeScreen: User not logged in, redirecting to welcome screen"
-      );
-      // Use a small delay to ensure state has propagated
       const timer = setTimeout(() => {
         try {
           router.replace("/");
-          console.log("✅ HomeScreen: Navigated to welcome screen");
         } catch (error) {
-          console.warn("Navigation error in HomeScreen:", error);
+          console.error("Navigation error in HomeScreen:", error);
         }
       }, 50);
       return () => clearTimeout(timer);
     }
   }, [isLoggedIn, router]);
 
-  // Don't render or fetch data if not logged in
-  // IMPORTANT: This check happens AFTER all hooks are called
-  // Return null instead of Redirect to prevent app reload
   if (!isLoggedIn) {
-    // Return null - the useEffect will handle navigation
     return null;
   }
 
@@ -57,20 +43,17 @@ const HomeScreen = () => {
   const numberOfFriends = friends.length;
 
   const onRefresh = async () => {
-    // Don't fetch if not logged in
     if (!isLoggedIn) {
       return;
     }
 
     setRefreshing(true);
     try {
-      // Refresh all data: books, friends, and user info
       await Promise.all([
         fetchCurrentUserBooks(),
         fetchCurrentUserFriends(),
         refreshCurrentUser(),
       ]);
-      console.log("✅ Refreshed all data: books, friends, and user");
     } catch (error) {
       console.error("Error refreshing data:", error);
     } finally {

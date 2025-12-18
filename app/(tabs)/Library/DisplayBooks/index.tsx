@@ -1,4 +1,3 @@
-// app/DisplayBooks/index.tsx
 import { useBookContext } from "@/utils/Context/BookContext";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
@@ -18,7 +17,6 @@ export default function DisplayBooks() {
   const { books, fetchCurrentUserBooks } = useBookContext();
   const [refreshing, setRefreshing] = useState(false);
 
-  // Function to handle refresh
   const onRefresh = async () => {
     setRefreshing(true);
     try {
@@ -33,7 +31,6 @@ export default function DisplayBooks() {
     NOT_READ: "Not read",
     READING: "Reading",
     READ: "Finished",
-    // Add other statuses as needed
   };
 
   return (
@@ -98,11 +95,7 @@ export default function DisplayBooks() {
                         error.nativeEvent.error
                       );
                     }}
-                    onLoad={() => {
-                      console.log(
-                        `✅ Successfully loaded cover for: ${book.title}`
-                      );
-                    }}
+                    onLoad={() => {}}
                   />
                 ) : (
                   <Image

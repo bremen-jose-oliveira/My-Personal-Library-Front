@@ -1,4 +1,3 @@
-// app/DisplayBooks/index.tsx
 import { useFriendContext } from "@/utils/Context/FriendContext";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
@@ -126,7 +125,9 @@ export default function FriendList() {
                   onPress={() => {
                     const friendEmail = friend.email || friend.friendEmail;
                     if (friendEmail) {
-                      router.push(`/FriendBooks/${encodeURIComponent(friendEmail)}`);
+                      router.push(
+                        `/FriendBooks/${encodeURIComponent(friendEmail)}`
+                      );
                     } else {
                       Alert.alert("Error", "Friend email not available");
                     }
@@ -134,14 +135,26 @@ export default function FriendList() {
                   style={{ flex: 1 }}
                 >
                   <Text
-                    style={{ fontSize: 20, fontWeight: "bold", color: "#f0dcc7" }}
+                    style={{
+                      fontSize: 20,
+                      fontWeight: "bold",
+                      color: "#f0dcc7",
+                    }}
                   >
-                    Name: {friend.name ? friend.name : friend.email || friend.friendEmail}
+                    Name:{" "}
+                    {friend.name
+                      ? friend.name
+                      : friend.email || friend.friendEmail}
                   </Text>
                   <Text
-                    style={{ fontSize: 20, fontWeight: "bold", color: "#f0dcc7" }}
+                    style={{
+                      fontSize: 20,
+                      fontWeight: "bold",
+                      color: "#f0dcc7",
+                    }}
                   >
-                    Email: {friend.email || friend.friendEmail || "No Email Provided"}
+                    Email:{" "}
+                    {friend.email || friend.friendEmail || "No Email Provided"}
                   </Text>
                   <Text
                     style={{
@@ -151,7 +164,12 @@ export default function FriendList() {
                       textDecorationLine: "underline",
                     }}
                   >
-                    View {friend.name || friend.email || friend.friendEmail || "Friend"}'s Books →
+                    View{" "}
+                    {friend.name ||
+                      friend.email ||
+                      friend.friendEmail ||
+                      "Friend"}
+                    's Books →
                   </Text>
                 </TouchableOpacity>
 

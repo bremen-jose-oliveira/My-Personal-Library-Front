@@ -194,11 +194,6 @@ export default function BookDetails() {
                   error.nativeEvent.error
                 );
               }}
-              onLoad={() => {
-                console.log(
-                  `✅ Successfully loaded cover for: ${selectedBook.title}`
-                );
-              }}
             />
           ) : (
             <View
@@ -229,8 +224,7 @@ export default function BookDetails() {
             </Text>
             <Text style={{ color: "#f0dcc7" }}>ISBN: {selectedBook.isbn}</Text>
             <Text style={{ color: "#f0dcc7", fontWeight: "600" }}>
-              Owner:{" "}
-              {selectedBook.ownerUsername || selectedBook.owner || "Unknown"}
+              Owner: {selectedBook.ownerUsername || "Unknown"}
             </Text>
             <Text style={{ color: "#f0dcc7" }}>
               Reading Status:{" "}

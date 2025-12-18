@@ -29,19 +29,16 @@ const AccountSettings = () => {
 
   const handleUpdateUsername = async () => {
     try {
-      // Validate username input
       if (!username.trim()) {
         Alert.alert("Error", "Username cannot be empty");
         return;
       }
 
-      // Get the token
       const token = await getToken();
       if (!token) {
         throw new Error("Token is missing or expired");
       }
 
-      // Make API request
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/users/current/update`,
         {
@@ -54,17 +51,13 @@ const AccountSettings = () => {
         }
       );
 
-      // Parse response
       const responseData = await response.json();
 
       if (!response.ok) {
         throw new Error(responseData.message || "Failed to update username");
       }
 
-      // Success feedback
       Alert.alert("Success", "Username updated successfully!");
-      console.log("Updated User:", responseData);
-      // Refresh current user to show updated username
       await refreshCurrentUser();
       setUsername(""); // Clear the input field
     } catch (error: any) {
@@ -114,7 +107,6 @@ const AccountSettings = () => {
   };
 
   const handleDeleteAccount = async () => {
-    // Show warning dialog
     const showWarning = () => {
       if (Platform.OS === "web") {
         const confirmed = window.confirm(
@@ -130,7 +122,6 @@ const AccountSettings = () => {
         );
 
         if (confirmed) {
-          // Second confirmation
           const doubleConfirmed = window.confirm(
             "This is your LAST chance to cancel.\n\n" +
               "Click OK to permanently delete your account, or Cancel to keep it."
@@ -160,7 +151,6 @@ const AccountSettings = () => {
               text: "Delete",
               style: "destructive",
               onPress: () => {
-                // Second confirmation
                 Alert.alert(
                   "⚠️ Final Confirmation",
                   "This is your LAST chance to cancel.\n\n" +
@@ -207,21 +197,13 @@ const AccountSettings = () => {
           throw new Error(errorData.message || "Failed to delete account");
         }
 
-        // Account deleted successfully - immediately clear token and redirect
-        console.log(
-          "✅ Account deleted successfully, clearing token and redirecting..."
-        );
-
-        // Clear token and user data immediately
         await removeToken();
         await logoutUserLocally();
         await logout();
 
-        // Redirect to welcome screen after logout completes
         router.replace("/");
         router.dismissAll();
 
-        // Show success message after redirect is initiated
         setTimeout(() => {
           if (Platform.OS === "web") {
             alert(
@@ -494,7 +476,7 @@ const AccountSettings = () => {
                 minHeight: 48,
               }}
               onPress={() => {
-                // @ts-ignore - PrivacyPolicy route exists but TypeScript hasn't picked it up yet
+                // @ts-ignore
                 router.push("/PrivacyPolicy");
               }}
             >
@@ -503,7 +485,6 @@ const AccountSettings = () => {
               </Text>
             </TouchableOpacity>
 
-            {/* Support the App */}
             <Text
               style={{
                 fontSize: 14,
@@ -533,9 +514,7 @@ const AccountSettings = () => {
                 gap: 8,
               }}
               onPress={async () => {
-                // PayPal support link
-                const paypalUrl =
-                  "https://www.paypal.com/send?email=my.personal.lib@proton.me";
+                const paypalUrl = "https://paypal.me/MyPersonalLibrary";
                 try {
                   const canOpen = await Linking.canOpenURL(paypalUrl);
                   if (canOpen) {

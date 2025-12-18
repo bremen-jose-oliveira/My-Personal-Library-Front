@@ -1,5 +1,3 @@
-// app/(tabs)/_layout.tsx
-
 import React, { useContext, useCallback, useRef } from "react";
 import { Platform, Alert, Button } from "react-native";
 import "../../global.css";
@@ -11,8 +9,6 @@ import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
 import NotificationBell from "@/components/NotificationBell";
 
 function AppTabs() {
-  // CRITICAL: All hooks must be called before any conditional returns
-  // This ensures React hooks are called in the same order every render
   const authContext = useContext(AuthContext);
   const { logout, isLoggedIn } = authContext || {
     logout: () => {},
@@ -21,9 +17,7 @@ function AppTabs() {
   const isLoggingOutRef = useRef(false);
 
   const handleLogout = useCallback(async () => {
-    // Prevent multiple simultaneous logout calls
     if (isLoggingOutRef.current) {
-      console.log("⏳ Logout already in progress, skipping...");
       return;
     }
 
@@ -33,7 +27,6 @@ function AppTabs() {
       if (Platform.OS === "web") {
         const confirmed = window.confirm("Are you sure you want to log out?");
         if (confirmed) {
-          // logout() handles navigation internally
           await logout();
         }
       } else {
@@ -49,7 +42,6 @@ function AppTabs() {
             text: "Yes",
             onPress: async () => {
               try {
-                // logout() handles navigation internally
                 await logout();
               } catch (error) {
                 console.error("Logout error in handleLogout:", error);
@@ -65,9 +57,6 @@ function AppTabs() {
     }
   }, [logout]);
 
-  // After all hooks are called, check if logged in
-  // If not logged in, return null to prevent Tabs from rendering
-  // This prevents the "Maximum update depth exceeded" error
   if (!isLoggedIn) {
     return null;
   }
@@ -205,8 +194,5 @@ function AppTabs() {
 }
 
 export default function _Layout() {
-  // This layout is only rendered when the (tabs) route is active
-  // The HomeScreen redirect will handle navigation away when logged out
-  // We don't check auth here to avoid re-render loops
   return <AppTabs />;
 }

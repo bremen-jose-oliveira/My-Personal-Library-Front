@@ -70,22 +70,29 @@ export default function NotificationsScreen() {
       notification.type === NotificationType.EXCHANGE_RETURNED
     ) {
       router.push("/(tabs)/Exchanges");
-    } else if (notification.type === NotificationType.REVIEW_ADDED && notification.relatedBookId) {
+    } else if (
+      notification.type === NotificationType.REVIEW_ADDED &&
+      notification.relatedBookId
+    ) {
       router.push(`/BookDetails/${notification.relatedBookId}`);
     }
   };
 
   const handleClearAll = () => {
-    Alert.alert("Clear All Notifications", "Are you sure you want to clear all notifications?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Clear",
-        style: "destructive",
-        onPress: async () => {
-          await clearAllNotifications();
+    Alert.alert(
+      "Clear All Notifications",
+      "Are you sure you want to clear all notifications?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Clear",
+          style: "destructive",
+          onPress: async () => {
+            await clearAllNotifications();
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
   const sortedNotifications = [...notifications].sort(
@@ -94,7 +101,7 @@ export default function NotificationsScreen() {
 
   return (
     <ImageBackground
-      source={require("@/assets/images/Background.jpg")}
+      source={require("@/assets/images/background2.png")}
       style={styles.backgroundImage}
       resizeMode="cover"
     >
@@ -105,17 +112,20 @@ export default function NotificationsScreen() {
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Notifications</Text>
           {unreadCount > 0 && (
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={async () => {
                 await markAllAsRead();
-              }} 
+              }}
               style={styles.markAllButton}
             >
               <Text style={styles.markAllText}>Mark all as read</Text>
             </TouchableOpacity>
           )}
           {notifications.length > 0 && (
-            <TouchableOpacity onPress={handleClearAll} style={styles.clearAllButton}>
+            <TouchableOpacity
+              onPress={handleClearAll}
+              style={styles.clearAllButton}
+            >
               <Text style={styles.clearAllText}>Clear all</Text>
             </TouchableOpacity>
           )}
@@ -125,7 +135,11 @@ export default function NotificationsScreen() {
           data={sortedNotifications}
           keyExtractor={(item) => item.id}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#bf471b" />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#bf471b"
+            />
           }
           renderItem={({ item }) => (
             <TouchableOpacity
@@ -151,13 +165,21 @@ export default function NotificationsScreen() {
                 onPress={() => clearNotification(item.id)}
                 style={styles.deleteButton}
               >
-                <MaterialCommunityIcons name="close" size={20} color="#6b7280" />
+                <MaterialCommunityIcons
+                  name="close"
+                  size={20}
+                  color="#6b7280"
+                />
               </TouchableOpacity>
             </TouchableOpacity>
           )}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <MaterialCommunityIcons name="bell-off" size={48} color="#9ca3af" />
+              <MaterialCommunityIcons
+                name="bell-off"
+                size={48}
+                color="#9ca3af"
+              />
               <Text style={styles.emptyText}>No notifications</Text>
             </View>
           }
@@ -269,4 +291,3 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
 });
-

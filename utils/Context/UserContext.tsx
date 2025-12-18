@@ -46,7 +46,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const token = await getToken();
         if (!token) {
-          console.log("⚠️ No token found when refreshing user");
           setCurrentUser(null);
           setLoading(false);
           return null;
@@ -54,19 +53,15 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 
         const email = parseEmailFromToken(token);
         if (!email) {
-          console.log("⚠️ Could not parse email from token");
           setCurrentUser(null);
           setLoading(false);
           return null;
         }
 
-        console.log("🔍 Fetching user by email:", email);
         const user = await FetchUserByEmail(email);
         if (user) {
-          console.log("✅ User fetched successfully:", user.email);
           setCurrentUser(user);
         } else {
-          console.warn("⚠️ User not found for email:", email);
           setCurrentUser(null);
         }
         setLoading(false);
@@ -101,9 +96,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
       prevIsLoggedInRef.current = isLoggedIn;
       // On first render, if logged in, fetch user
       if (isLoggedIn) {
-        console.log(
-          "🔄 UserContext: Initial render, user is logged in, refreshing user..."
-        );
         refreshCurrentUser();
       }
       return;
@@ -116,11 +108,9 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 
     if (isLoggedIn && prevIsLoggedInRef.current === false) {
       // Transitioning from logged out to logged in
-      console.log("🔄 Login state changed to true, refreshing user...");
       refreshCurrentUser();
     } else if (!isLoggedIn && prevIsLoggedInRef.current === true) {
       // Transitioning from logged in to logged out
-      console.log("🔄 Login state changed to false, clearing user...");
       // Clear user when logged out - use functional update to prevent loops
       setCurrentUser((prev) => {
         if (prev !== null) {

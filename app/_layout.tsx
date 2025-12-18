@@ -1,5 +1,4 @@
-// app/_layout.tsx
-import "react-native-gesture-handler"; // Must be imported first
+import "react-native-gesture-handler";
 import React, { useEffect, useState } from "react";
 import { Stack, useRouter } from "expo-router";
 import { AuthProvider } from "@/utils/Context/AuthContext";
@@ -23,7 +22,6 @@ export default function Layout() {
       if (!isMounted) return; // Ensure app is mounted before navigation
 
       const { path, queryParams } = Linking.parse(event.url);
-      console.log("Deep link received:", path, queryParams);
 
       if (path === "reset-password" && queryParams?.token) {
         router.push(`/ResetPassword?token=${queryParams.token}`);
