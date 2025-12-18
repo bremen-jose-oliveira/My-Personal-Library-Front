@@ -30,6 +30,7 @@ export default function AddBookForm() {
   const [scannerVisible, setScannerVisible] = useState(false);
   const [startIndex, setStartIndex] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [addingBook, setAddingBook] = useState(false);
 
   // Fetch book data based on ISBN or search query
   const fetchBooks = async (query: string, reset: boolean = false) => {
@@ -97,7 +98,9 @@ export default function AddBookForm() {
 
   // Add selected book to the global state
   const handleAddBook = async () => {
-    if (!selectedBook) return;
+    if (!selectedBook || addingBook) return; // Prevent double submission
+
+    setAddingBook(true);
 
     // Get cover from Google Books API result - use the same URL that's showing in the preview
     // Check all possible image sizes to get the best available
@@ -180,6 +183,8 @@ export default function AddBookForm() {
         "Error",
         error.message || "Failed to add book. Please try again."
       );
+    } finally {
+      setAddingBook(false);
     }
   };
 
@@ -425,6 +430,7 @@ export default function AddBookForm() {
 
                   return (
                     <Image
+                      key={finalCoverUrl} // Add key to force re-render when cover changes
                       source={{ uri: finalCoverUrl }}
                       style={{
                         width: 65,
@@ -522,9 +528,10 @@ export default function AddBookForm() {
                 >
                   <View style={{ flex: 1, marginRight: 5 }}>
                     <Button
-                      title="Add Book"
+                      title={addingBook ? "Adding..." : "Add Book"}
                       onPress={handleAddBook}
                       color="#bf471b"
+                      disabled={addingBook}
                     />
                   </View>
                   <View style={{ flex: 1, marginLeft: 5 }}>
