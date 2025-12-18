@@ -458,7 +458,7 @@ const AccountSettings = () => {
             </Text>
           </TouchableOpacity>
 
-          {/* Support the App Section */}
+          {/* Legal & Support Section */}
           <View
             style={{
               marginTop: 40,
@@ -478,20 +478,45 @@ const AccountSettings = () => {
                 textAlign: "center",
               }}
             >
-              Support the App
+              Legal & Support
             </Text>
+
+            {/* Privacy Policy Link */}
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#6b7280",
+                alignItems: "center",
+                borderRadius: 5,
+                alignSelf: "stretch",
+                paddingVertical: 14,
+                paddingHorizontal: 18,
+                marginBottom: 12,
+                minHeight: 48,
+              }}
+              onPress={() => {
+                // @ts-ignore - PrivacyPolicy route exists but TypeScript hasn't picked it up yet
+                router.push("/PrivacyPolicy");
+              }}
+            >
+              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+                📄 Privacy Policy
+              </Text>
+            </TouchableOpacity>
+
+            {/* Support the App */}
             <Text
               style={{
                 fontSize: 14,
                 color: "#4b5563",
-                marginBottom: 20,
+                marginTop: 20,
+                marginBottom: 12,
                 textAlign: "center",
                 paddingHorizontal: 16,
                 lineHeight: 20,
               }}
             >
-              If you enjoy using My Library, consider supporting its development
-              with a donation. Every contribution helps!
+              If you enjoy using My Library, consider supporting its
+              development. Every contribution helps the server to stay online!
             </Text>
             <TouchableOpacity
               style={{
@@ -508,9 +533,9 @@ const AccountSettings = () => {
                 gap: 8,
               }}
               onPress={async () => {
-                // Replace with your PayPal donation link
+                // PayPal support link
                 const paypalUrl =
-                  "https://www.paypal.com/donate?hosted_button_id=YOUR_BUTTON_ID";
+                  "https://www.paypal.com/send?email=my.personal.lib@proton.me";
                 try {
                   const canOpen = await Linking.canOpenURL(paypalUrl);
                   if (canOpen) {

@@ -152,6 +152,7 @@ export default function AddBookForm() {
         : "",
       publisher: selectedBook.volumeInfo.publisher || "",
       cover: coverUrl, // Always use a valid URL (never null or empty)
+      description: selectedBook.volumeInfo.description || null, // Save description from Google Books
       id: selectedBook.identifier,
       isbn:
         selectedBook.volumeInfo.industryIdentifiers?.[0]?.identifier || "N/A",

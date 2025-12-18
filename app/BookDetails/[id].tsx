@@ -58,6 +58,7 @@ export default function BookDetails() {
   const [editingReview, setEditingReview] = useState<number | null>(null);
   const [editRating, setEditRating] = useState("5");
   const [editComment, setEditComment] = useState("");
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
 
   useEffect(() => {
     // Clear reviews and reset loading when component mounts or bookId changes
@@ -243,6 +244,57 @@ export default function BookDetails() {
             </Text>
           </View>
         </View>
+
+        {/* Book Description - Expandable Section */}
+        {selectedBook.description && (
+          <View style={{ marginTop: 24 }}>
+            <TouchableOpacity
+              onPress={() => setDescriptionExpanded(!descriptionExpanded)}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                backgroundColor: "rgba(0,0,0,0.4)",
+                borderRadius: 10,
+                padding: 12,
+                marginBottom: descriptionExpanded ? 8 : 0,
+              }}
+            >
+              <Text
+                style={{
+                  color: "#f0dcc7",
+                  fontSize: 18,
+                  fontWeight: "600",
+                  flex: 1,
+                }}
+              >
+                Description
+              </Text>
+              <Text style={{ color: "#f0dcc7", fontSize: 16 }}>
+                {descriptionExpanded ? "▼" : "▶"}
+              </Text>
+            </TouchableOpacity>
+            {descriptionExpanded && (
+              <View
+                style={{
+                  backgroundColor: "rgba(0,0,0,0.35)",
+                  borderRadius: 10,
+                  padding: 12,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#f0dcc7",
+                    lineHeight: 20,
+                    fontSize: 14,
+                  }}
+                >
+                  {selectedBook.description}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
 
         <View style={{ marginTop: 24, gap: 12 }}>
           <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "600" }}>

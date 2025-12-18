@@ -2,13 +2,14 @@ import type { Exchange } from "@/Interfaces/exchange";
 import type { Review } from "@/Interfaces/review";
 
 export default interface Book {
-    id: number;
+  id: number;
   isbn: string;
-    title: string;
-    author: string;
-    year: number;
-    publisher: string;
+  title: string;
+  author: string;
+  year: number;
+  publisher: string;
   cover?: string | null;
+  description?: string | null;
   owner?: string;
   ownerUsername?: string;
   readingStatus?: string;

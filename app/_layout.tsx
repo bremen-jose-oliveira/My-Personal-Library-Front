@@ -81,6 +81,10 @@ export default function Layout() {
                       options={{ headerShown: false }}
                     />
                     <Stack.Screen
+                      name="PrivacyPolicy"
+                      options={{ headerTitle: "Privacy Policy" }}
+                    />
+                    <Stack.Screen
                       name="BookDetails/[id]"
                       options={{ headerTitle: "Book Details" }}
                     />
