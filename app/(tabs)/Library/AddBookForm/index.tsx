@@ -287,13 +287,26 @@ export default function AddBookForm() {
                   }`
                 }
                 renderItem={({ item }) => {
-                  // Get thumbnail and ensure HTTPS
-                  const thumbnail = item.volumeInfo.imageLinks?.thumbnail;
-                  const imageUri = thumbnail
-                    ? thumbnail.startsWith("http://")
-                      ? thumbnail.replace("http://", "https://")
-                      : thumbnail
-                    : null;
+                  // Get cover from Google Books API result - check all possible image sizes (same as handleAddBook)
+                  let coverUrl =
+                    item.volumeInfo.imageLinks?.thumbnail ||
+                    item.volumeInfo.imageLinks?.smallThumbnail ||
+                    item.volumeInfo.imageLinks?.small ||
+                    item.volumeInfo.imageLinks?.medium ||
+                    item.volumeInfo.imageLinks?.large ||
+                    null;
+
+                  // Ensure HTTPS if cover exists
+                  if (coverUrl) {
+                    coverUrl = coverUrl.startsWith("http://")
+                      ? coverUrl.replace("http://", "https://")
+                      : coverUrl;
+                  }
+
+                  // Use fallback if no cover (same as DisplayBooks)
+                  const finalCoverUrl =
+                    coverUrl ||
+                    "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
 
                   return (
                     <TouchableOpacity onPress={() => handleBookSelect(item)}>
@@ -305,12 +318,26 @@ export default function AddBookForm() {
                           marginBottom: 5,
                         }}
                       >
-                        {imageUri ? (
-                          <Image
-                            source={{ uri: imageUri }}
-                            style={{ width: 50, height: 75, marginRight: 10 }}
-                          />
-                        ) : null}
+                        <Image
+                          source={{ uri: finalCoverUrl }}
+                          style={{
+                            width: 50,
+                            height: 75,
+                            marginRight: 10,
+                            resizeMode: "contain",
+                          }}
+                          onError={(error) => {
+                            console.error(
+                              `Failed to load cover for "${item.volumeInfo.title}":`,
+                              error
+                            );
+                          }}
+                          onLoad={() => {
+                            console.log(
+                              `✅ Successfully loaded cover for: ${item.volumeInfo.title}`
+                            );
+                          }}
+                        />
                         <View
                           style={{
                             flex: 1,
@@ -374,14 +401,51 @@ export default function AddBookForm() {
                     color="#666"
                   />
                 </View>
-                {selectedBook.volumeInfo.imageLinks?.thumbnail ? (
-                  <Image
-                    source={{
-                      uri: selectedBook.volumeInfo.imageLinks.thumbnail,
-                    }}
-                    style={{ width: 65, height: 90, marginBottom: 10 }}
-                  />
-                ) : null}
+                {(() => {
+                  // Get cover from Google Books API result - check all possible image sizes (same as handleAddBook)
+                  let coverUrl =
+                    selectedBook.volumeInfo.imageLinks?.thumbnail ||
+                    selectedBook.volumeInfo.imageLinks?.smallThumbnail ||
+                    selectedBook.volumeInfo.imageLinks?.small ||
+                    selectedBook.volumeInfo.imageLinks?.medium ||
+                    selectedBook.volumeInfo.imageLinks?.large ||
+                    null;
+
+                  // Ensure HTTPS if cover exists
+                  if (coverUrl) {
+                    coverUrl = coverUrl.startsWith("http://")
+                      ? coverUrl.replace("http://", "https://")
+                      : coverUrl;
+                  }
+
+                  // Use fallback if no cover (same as DisplayBooks)
+                  const finalCoverUrl =
+                    coverUrl ||
+                    "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
+
+                  return (
+                    <Image
+                      source={{ uri: finalCoverUrl }}
+                      style={{
+                        width: 65,
+                        height: 90,
+                        marginBottom: 10,
+                        resizeMode: "contain",
+                      }}
+                      onError={(error) => {
+                        console.error(
+                          `Failed to load cover for "${selectedBook.volumeInfo.title}":`,
+                          error
+                        );
+                      }}
+                      onLoad={() => {
+                        console.log(
+                          `✅ Successfully loaded cover for: ${selectedBook.volumeInfo.title}`
+                        );
+                      }}
+                    />
+                  );
+                })()}
                 <Text
                   style={{
                     fontWeight: "bold",
