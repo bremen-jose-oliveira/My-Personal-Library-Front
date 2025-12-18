@@ -286,42 +286,54 @@ export default function AddBookForm() {
                     index
                   }`
                 }
-                renderItem={({ item }) => (
-                  <TouchableOpacity onPress={() => handleBookSelect(item)}>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        padding: 10,
-                        alignItems: "center",
-                        marginBottom: 5,
-                      }}
-                    >
-                      {item.volumeInfo.imageLinks?.thumbnail ? (
-                        <Image
-                          source={{ uri: item.volumeInfo.imageLinks.thumbnail }}
-                          style={{ width: 50, height: 75, marginRight: 10 }}
-                        />
-                      ) : null}
+                renderItem={({ item }) => {
+                  // Get thumbnail and ensure HTTPS
+                  const thumbnail = item.volumeInfo.imageLinks?.thumbnail;
+                  const imageUri = thumbnail
+                    ? thumbnail.startsWith("http://")
+                      ? thumbnail.replace("http://", "https://")
+                      : thumbnail
+                    : null;
+
+                  return (
+                    <TouchableOpacity onPress={() => handleBookSelect(item)}>
                       <View
                         style={{
-                          flex: 1,
-                          padding: 17,
-                          borderRadius: 2,
-                          borderBlockColor: "#f0dcc7",
-                          backgroundColor: "rgba(0,0,0,0.4)",
+                          flexDirection: "row",
+                          padding: 10,
+                          alignItems: "center",
+                          marginBottom: 5,
                         }}
                       >
-                        <Text style={{ fontWeight: "bold", color: "#f0dcc7" }}>
-                          {item.volumeInfo.title}
-                        </Text>
-                        <Text style={{ color: "#f0dcc7" }}>
-                          {item.volumeInfo.authors?.join(", ") ||
-                            "Unknown Author"}
-                        </Text>
+                        {imageUri ? (
+                          <Image
+                            source={{ uri: imageUri }}
+                            style={{ width: 50, height: 75, marginRight: 10 }}
+                          />
+                        ) : null}
+                        <View
+                          style={{
+                            flex: 1,
+                            padding: 17,
+                            borderRadius: 2,
+                            borderBlockColor: "#f0dcc7",
+                            backgroundColor: "rgba(0,0,0,0.4)",
+                          }}
+                        >
+                          <Text
+                            style={{ fontWeight: "bold", color: "#f0dcc7" }}
+                          >
+                            {item.volumeInfo.title}
+                          </Text>
+                          <Text style={{ color: "#f0dcc7" }}>
+                            {item.volumeInfo.authors?.join(", ") ||
+                              "Unknown Author"}
+                          </Text>
+                        </View>
                       </View>
-                    </View>
-                  </TouchableOpacity>
-                )}
+                    </TouchableOpacity>
+                  );
+                }}
                 contentContainerStyle={{ paddingBottom: 100 }}
                 style={{ maxHeight: 400 }}
                 keyboardShouldPersistTaps="handled"
