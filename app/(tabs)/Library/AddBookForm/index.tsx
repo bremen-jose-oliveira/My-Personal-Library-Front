@@ -105,6 +105,8 @@ export default function AddBookForm() {
       coverUrl = coverUrl.startsWith("http://")
         ? coverUrl.replace("http://", "https://")
         : coverUrl;
+      coverUrl = coverUrl.replace("&edge=curl", "");
+      coverUrl = coverUrl.replace("&zoom=1", "&zoom=0");
     }
 
     if (!coverUrl) {
@@ -277,6 +279,8 @@ export default function AddBookForm() {
                     coverUrl = coverUrl.startsWith("http://")
                       ? coverUrl.replace("http://", "https://")
                       : coverUrl;
+                    coverUrl = coverUrl.replace("&edge=curl", "");
+                    coverUrl = coverUrl.replace("&zoom=1", "&zoom=0");
                   }
 
                   const finalCoverUrl =
@@ -294,18 +298,23 @@ export default function AddBookForm() {
                         }}
                       >
                         <Image
+                          key={`${item.id}-${coverUrl || "no-cover"}`}
                           source={{ uri: finalCoverUrl }}
                           style={{
                             width: 50,
                             height: 75,
                             marginRight: 10,
                             resizeMode: "contain",
+                            backgroundColor: "rgba(255,255,255,0.1)",
                           }}
                           onError={(error) => {
                             console.error(
                               `Failed to load cover for "${item.volumeInfo.title}":`,
                               error
                             );
+                          }}
+                          onLoad={() => {
+                            // Image loaded successfully
                           }}
                         />
                         <View
@@ -384,6 +393,8 @@ export default function AddBookForm() {
                     coverUrl = coverUrl.startsWith("http://")
                       ? coverUrl.replace("http://", "https://")
                       : coverUrl;
+                    coverUrl = coverUrl.replace("&edge=curl", "");
+                    coverUrl = coverUrl.replace("&zoom=1", "&zoom=0");
                   }
 
                   const finalCoverUrl =
@@ -392,7 +403,7 @@ export default function AddBookForm() {
 
                   return (
                     <Image
-                      key={finalCoverUrl}
+                      key={`preview-${finalCoverUrl}`}
                       source={{ uri: finalCoverUrl }}
                       style={{
                         width: 65,

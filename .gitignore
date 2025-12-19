@@ -25,3 +25,6 @@ expo-env.d.ts
 .netlify
 # Netlify config with secrets (if you create one)
 netlify.toml.local
+
+# App Store screenshots (not committed to repo)
+screenshots/

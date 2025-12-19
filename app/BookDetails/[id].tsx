@@ -13,6 +13,7 @@ import {
   RefreshControl,
   Modal,
   StyleSheet,
+  KeyboardAvoidingView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useBookContext } from "@/utils/Context/BookContext";
@@ -165,93 +166,211 @@ export default function BookDetails() {
       colors={["#1f1f1f", "#3d2c29"]}
       style={{ flex: 1, padding: 16, paddingTop: 32 }}
     >
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: 120 }}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor="#fff"
-          />
-        }
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       >
-        <View
-          style={{
-            backgroundColor: "rgba(0,0,0,0.4)",
-            borderRadius: 16,
-            padding: 16,
-            flexDirection: "row",
-            gap: 16,
-          }}
-        >
-          {selectedBook.cover ? (
-            <Image
-              source={{ uri: selectedBook.cover }}
-              style={{ width: 120, height: 180, borderRadius: 8 }}
-              onError={(error) => {
-                console.error(
-                  `Failed to load cover image for "${selectedBook.title}":`,
-                  error.nativeEvent.error
-                );
-              }}
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 200 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              tintColor="#fff"
             />
-          ) : (
-            <View
-              style={{
-                width: 120,
-                height: 180,
-                borderRadius: 8,
-                backgroundColor: "#d1d5db",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Text>No cover</Text>
+          }
+          keyboardShouldPersistTaps="handled"
+        >
+          <View
+            style={{
+              backgroundColor: "rgba(0,0,0,0.4)",
+              borderRadius: 16,
+              padding: 16,
+              flexDirection: "row",
+              gap: 16,
+            }}
+          >
+            {selectedBook.cover ? (
+              <Image
+                source={{ uri: selectedBook.cover }}
+                style={{ width: 120, height: 180, borderRadius: 8 }}
+                onError={(error) => {
+                  console.error(
+                    `Failed to load cover image for "${selectedBook.title}":`,
+                    error.nativeEvent.error
+                  );
+                }}
+              />
+            ) : (
+              <View
+                style={{
+                  width: 120,
+                  height: 180,
+                  borderRadius: 8,
+                  backgroundColor: "#d1d5db",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Text>No cover</Text>
+              </View>
+            )}
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{ color: "#f0dcc7", fontSize: 22, fontWeight: "bold" }}
+              >
+                {selectedBook.title}
+              </Text>
+              <Text style={{ color: "#f0dcc7", marginTop: 4 }}>
+                Author: {selectedBook.author}
+              </Text>
+              <Text style={{ color: "#f0dcc7" }}>
+                Year: {selectedBook.year}
+              </Text>
+              <Text style={{ color: "#f0dcc7" }}>
+                Publisher: {selectedBook.publisher}
+              </Text>
+              <Text style={{ color: "#f0dcc7" }}>
+                ISBN: {selectedBook.isbn}
+              </Text>
+              <Text style={{ color: "#f0dcc7", fontWeight: "600" }}>
+                Owner: {selectedBook.ownerUsername || "Unknown"}
+              </Text>
+              <Text style={{ color: "#f0dcc7" }}>
+                Reading Status:{" "}
+                {selectedBook.readingStatus
+                  ? statusLabels[selectedBook.readingStatus as BookStatus] ??
+                    selectedBook.readingStatus
+                  : "Not set"}
+              </Text>
+              <Text style={{ color: "#f0dcc7" }}>
+                Exchange Status: {selectedBook.exchangeStatus ?? "N/A"}
+              </Text>
+            </View>
+          </View>
+
+          {/* Book Description - Expandable Section */}
+          {selectedBook.description && (
+            <View style={{ marginTop: 24 }}>
+              <TouchableOpacity
+                onPress={() => setDescriptionExpanded(!descriptionExpanded)}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  backgroundColor: "rgba(0,0,0,0.4)",
+                  borderRadius: 10,
+                  padding: 12,
+                  marginBottom: descriptionExpanded ? 8 : 0,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#f0dcc7",
+                    fontSize: 18,
+                    fontWeight: "600",
+                    flex: 1,
+                  }}
+                >
+                  Description
+                </Text>
+                <Text style={{ color: "#f0dcc7", fontSize: 16 }}>
+                  {descriptionExpanded ? "▼" : "▶"}
+                </Text>
+              </TouchableOpacity>
+              {descriptionExpanded && (
+                <View
+                  style={{
+                    backgroundColor: "rgba(0,0,0,0.35)",
+                    borderRadius: 10,
+                    padding: 12,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "#f0dcc7",
+                      lineHeight: 20,
+                      fontSize: 14,
+                    }}
+                  >
+                    {selectedBook.description}
+                  </Text>
+                </View>
+              )}
             </View>
           )}
-          <View style={{ flex: 1 }}>
-            <Text
-              style={{ color: "#f0dcc7", fontSize: 22, fontWeight: "bold" }}
-            >
-              {selectedBook.title}
-            </Text>
-            <Text style={{ color: "#f0dcc7", marginTop: 4 }}>
-              Author: {selectedBook.author}
-            </Text>
-            <Text style={{ color: "#f0dcc7" }}>Year: {selectedBook.year}</Text>
-            <Text style={{ color: "#f0dcc7" }}>
-              Publisher: {selectedBook.publisher}
-            </Text>
-            <Text style={{ color: "#f0dcc7" }}>ISBN: {selectedBook.isbn}</Text>
-            <Text style={{ color: "#f0dcc7", fontWeight: "600" }}>
-              Owner: {selectedBook.ownerUsername || "Unknown"}
-            </Text>
-            <Text style={{ color: "#f0dcc7" }}>
-              Reading Status:{" "}
-              {selectedBook.readingStatus
-                ? statusLabels[selectedBook.readingStatus as BookStatus] ??
-                  selectedBook.readingStatus
-                : "Not set"}
-            </Text>
-            <Text style={{ color: "#f0dcc7" }}>
-              Exchange Status: {selectedBook.exchangeStatus ?? "N/A"}
-            </Text>
-          </View>
-        </View>
 
-        {/* Book Description - Expandable Section */}
-        {selectedBook.description && (
-          <View style={{ marginTop: 24 }}>
-            <TouchableOpacity
-              onPress={() => setDescriptionExpanded(!descriptionExpanded)}
+          <View style={{ marginTop: 24, gap: 12 }}>
+            <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "600" }}>
+              Update Reading Status
+            </Text>
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              {Object.values(BookStatus).map((status) => (
+                <TouchableOpacity
+                  key={status}
+                  style={{
+                    paddingVertical: 8,
+                    paddingHorizontal: 12,
+                    borderRadius: 8,
+                    backgroundColor:
+                      selectedBook.readingStatus === status
+                        ? "#bf471b"
+                        : "rgba(255,255,255,0.1)",
+                  }}
+                  onPress={() => handleUpdateReadingStatus(status)}
+                >
+                  <Text style={{ color: "#fff" }}>{statusLabels[status]}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          <View style={{ marginTop: 24, gap: 12 }}>
+            <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "600" }}>
+              Actions
+            </Text>
+            {!isOwner && (
+              <TouchableOpacity
+                style={{
+                  backgroundColor: "#bf471b",
+                  padding: 12,
+                  borderRadius: 8,
+                  alignItems: "center",
+                }}
+                onPress={handleRequestExchange}
+              >
+                <Text style={{ color: "#fff", fontWeight: "600" }}>
+                  Request Exchange
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            {isOwner && (
+              <>
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: "#b91c1c",
+                    padding: 12,
+                    borderRadius: 8,
+                    alignItems: "center",
+                  }}
+                  onPress={handleDeleteBook}
+                >
+                  <Text style={{ color: "#fff", fontWeight: "600" }}>
+                    Delete Book
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+
+          <View style={{ marginTop: 32 }}>
+            <View
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                justifyContent: "space-between",
-                backgroundColor: "rgba(0,0,0,0.4)",
-                borderRadius: 10,
-                padding: 12,
-                marginBottom: descriptionExpanded ? 8 : 0,
+                marginBottom: 12,
               }}
             >
               <Text
@@ -259,244 +378,139 @@ export default function BookDetails() {
                   color: "#f0dcc7",
                   fontSize: 18,
                   fontWeight: "600",
-                  flex: 1,
                 }}
               >
-                Description
+                Reviews
               </Text>
-              <Text style={{ color: "#f0dcc7", fontSize: 16 }}>
-                {descriptionExpanded ? "▼" : "▶"}
+              {reviewsLoading && (
+                <ActivityIndicator
+                  color="#bf471b"
+                  size="small"
+                  style={{ marginLeft: 8 }}
+                />
+              )}
+            </View>
+            {!reviewsLoading && reviews.length === 0 ? (
+              <Text style={{ color: "#f0dcc7", fontStyle: "italic" }}>
+                No reviews yet. Be the first to review this book!
               </Text>
-            </TouchableOpacity>
-            {descriptionExpanded && (
-              <View
-                style={{
-                  backgroundColor: "rgba(0,0,0,0.35)",
-                  borderRadius: 10,
-                  padding: 12,
-                }}
-              >
-                <Text
+            ) : !reviewsLoading && reviews.length > 0 ? (
+              reviews.map((review) => (
+                <View
+                  key={review.id}
                   style={{
-                    color: "#f0dcc7",
-                    lineHeight: 20,
-                    fontSize: 14,
+                    backgroundColor: "rgba(0,0,0,0.35)",
+                    borderRadius: 10,
+                    padding: 12,
+                    marginBottom: 10,
                   }}
                 >
-                  {selectedBook.description}
-                </Text>
-              </View>
-            )}
+                  <Text style={{ color: "#f0dcc7", fontWeight: "600" }}>
+                    {review.user?.username ?? "Anonymous"} • {review.rating}/5
+                  </Text>
+                  <Text style={{ color: "#f0dcc7", marginTop: 4 }}>
+                    {review.comment}
+                  </Text>
+                  {review.user?.email === currentUser?.email && (
+                    <View
+                      style={{ flexDirection: "row", gap: 10, marginTop: 8 }}
+                    >
+                      <TouchableOpacity
+                        onPress={() => {
+                          setEditingReview(review.id);
+                          setEditRating(review.rating.toString());
+                          setEditComment(review.comment);
+                        }}
+                        style={{
+                          backgroundColor: "#bf471b",
+                          paddingVertical: 6,
+                          paddingHorizontal: 12,
+                          borderRadius: 6,
+                        }}
+                      >
+                        <Text style={{ color: "#fff", fontWeight: "600" }}>
+                          Edit
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => deleteReview(review.id)}
+                        style={{
+                          backgroundColor: "#b91c1c",
+                          paddingVertical: 6,
+                          paddingHorizontal: 12,
+                          borderRadius: 6,
+                        }}
+                      >
+                        <Text style={{ color: "#fff", fontWeight: "600" }}>
+                          Delete
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              ))
+            ) : null}
           </View>
-        )}
 
-        <View style={{ marginTop: 24, gap: 12 }}>
-          <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "600" }}>
-            Update Reading Status
-          </Text>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            {Object.values(BookStatus).map((status) => (
-              <TouchableOpacity
-                key={status}
-                style={{
-                  paddingVertical: 8,
-                  paddingHorizontal: 12,
-                  borderRadius: 8,
-                  backgroundColor:
-                    selectedBook.readingStatus === status
-                      ? "#bf471b"
-                      : "rgba(255,255,255,0.1)",
-                }}
-                onPress={() => handleUpdateReadingStatus(status)}
-              >
-                <Text style={{ color: "#fff" }}>{statusLabels[status]}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        <View style={{ marginTop: 24, gap: 12 }}>
-          <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "600" }}>
-            Actions
-          </Text>
-          {!isOwner && (
-            <TouchableOpacity
-              style={{
-                backgroundColor: "#bf471b",
-                padding: 12,
-                borderRadius: 8,
-                alignItems: "center",
-              }}
-              onPress={handleRequestExchange}
-            >
-              <Text style={{ color: "#fff", fontWeight: "600" }}>
-                Request Exchange
-              </Text>
-            </TouchableOpacity>
-          )}
-
-          {isOwner && (
-            <>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: "#b91c1c",
-                  padding: 12,
-                  borderRadius: 8,
-                  alignItems: "center",
-                }}
-                onPress={handleDeleteBook}
-              >
-                <Text style={{ color: "#fff", fontWeight: "600" }}>
-                  Delete Book
-                </Text>
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-
-        <View style={{ marginTop: 32 }}>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              marginBottom: 12,
-            }}
-          >
+          <View style={{ marginTop: 24 }}>
             <Text
               style={{
                 color: "#f0dcc7",
                 fontSize: 18,
                 fontWeight: "600",
+                marginBottom: 12,
               }}
             >
-              Reviews
+              Add a Review
             </Text>
-            {reviewsLoading && (
-              <ActivityIndicator
-                color="#bf471b"
-                size="small"
-                style={{ marginLeft: 8 }}
-              />
-            )}
-          </View>
-          {!reviewsLoading && reviews.length === 0 ? (
-            <Text style={{ color: "#f0dcc7", fontStyle: "italic" }}>
-              No reviews yet. Be the first to review this book!
-            </Text>
-          ) : !reviewsLoading && reviews.length > 0 ? (
-            reviews.map((review) => (
-              <View
-                key={review.id}
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              <TextInput
+                value={reviewRating}
+                onChangeText={setReviewRating}
+                keyboardType="numeric"
+                maxLength={1}
                 style={{
-                  backgroundColor: "rgba(0,0,0,0.35)",
-                  borderRadius: 10,
-                  padding: 12,
-                  marginBottom: 10,
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                  color: "#fff",
+                  padding: 10,
+                  borderRadius: 8,
+                  width: 60,
+                  textAlign: "center",
                 }}
-              >
-                <Text style={{ color: "#f0dcc7", fontWeight: "600" }}>
-                  {review.user?.username ?? "Anonymous"} • {review.rating}/5
-                </Text>
-                <Text style={{ color: "#f0dcc7", marginTop: 4 }}>
-                  {review.comment}
-                </Text>
-                {review.user?.email === currentUser?.email && (
-                  <View style={{ flexDirection: "row", gap: 10, marginTop: 8 }}>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setEditingReview(review.id);
-                        setEditRating(review.rating.toString());
-                        setEditComment(review.comment);
-                      }}
-                      style={{
-                        backgroundColor: "#bf471b",
-                        paddingVertical: 6,
-                        paddingHorizontal: 12,
-                        borderRadius: 6,
-                      }}
-                    >
-                      <Text style={{ color: "#fff", fontWeight: "600" }}>
-                        Edit
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => deleteReview(review.id)}
-                      style={{
-                        backgroundColor: "#b91c1c",
-                        paddingVertical: 6,
-                        paddingHorizontal: 12,
-                        borderRadius: 6,
-                      }}
-                    >
-                      <Text style={{ color: "#fff", fontWeight: "600" }}>
-                        Delete
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-            ))
-          ) : null}
-        </View>
-
-        <View style={{ marginTop: 24 }}>
-          <Text
-            style={{
-              color: "#f0dcc7",
-              fontSize: 18,
-              fontWeight: "600",
-              marginBottom: 12,
-            }}
-          >
-            Add a Review
-          </Text>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            <TextInput
-              value={reviewRating}
-              onChangeText={setReviewRating}
-              keyboardType="numeric"
-              maxLength={1}
+              />
+              <TextInput
+                value={reviewComment}
+                onChangeText={setReviewComment}
+                placeholder="Share your thoughts..."
+                placeholderTextColor="#d1d5db"
+                multiline={true}
+                style={{
+                  flex: 1,
+                  backgroundColor: "rgba(255,255,255,0.1)",
+                  color: "#fff",
+                  padding: 10,
+                  borderRadius: 8,
+                }}
+              />
+            </View>
+            <TouchableOpacity
               style={{
-                backgroundColor: "rgba(255,255,255,0.1)",
-                color: "#fff",
-                padding: 10,
+                marginTop: 12,
+                padding: 12,
+                backgroundColor: "#bf471b",
                 borderRadius: 8,
-                width: 60,
-                textAlign: "center",
+                alignItems: "center",
               }}
-            />
-            <TextInput
-              value={reviewComment}
-              onChangeText={setReviewComment}
-              placeholder="Share your thoughts..."
-              placeholderTextColor="#d1d5db"
-              multiline={true}
-              style={{
-                flex: 1,
-                backgroundColor: "rgba(255,255,255,0.1)",
-                color: "#fff",
-                padding: 10,
-                borderRadius: 8,
-              }}
-            />
+              onPress={handleReviewSubmit}
+              disabled={Boolean(submittingReview)}
+            >
+              <Text style={{ color: "#fff", fontWeight: "600" }}>
+                {submittingReview ? "Submitting..." : "Submit Review"}
+              </Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={{
-              marginTop: 12,
-              padding: 12,
-              backgroundColor: "#bf471b",
-              borderRadius: 8,
-              alignItems: "center",
-            }}
-            onPress={handleReviewSubmit}
-            disabled={Boolean(submittingReview)}
-          >
-            <Text style={{ color: "#fff", fontWeight: "600" }}>
-              {submittingReview ? "Submitting..." : "Submit Review"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Edit Review Modal */}
       <Modal
