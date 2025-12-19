@@ -50,6 +50,7 @@
     "metro": "^0.83.1",
     "metro-core": "^0.83.1",
     "nativewind": "^4.1.21",
+    "ndarray-pixels": "^5.0.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",

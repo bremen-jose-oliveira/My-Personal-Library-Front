@@ -5,90 +5,175 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Support - My Personal Library</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
+            color: #4b5563;
+            background-color: #f3f4f6;
+            padding: 20px;
+        }
+        
+        .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
-            color: #333;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
-        h1 {
-            color: #2c3e50;
-            border-bottom: 3px solid #3498db;
-            padding-bottom: 10px;
+        
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 8px;
         }
+        
+        .subtitle {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 32px;
+        }
+        
+        .heading {
+            font-size: 20px;
+            font-weight: 600;
+            color: #000;
+            margin-top: 32px;
+            margin-bottom: 12px;
+        }
+        
+        .paragraph {
+            font-size: 14px;
+            color: #4b5563;
+            line-height: 22px;
+            margin-bottom: 12px;
+        }
+        
+        .bullet-point {
+            font-size: 14px;
+            color: #4b5563;
+            line-height: 22px;
+            margin-left: 16px;
+            margin-bottom: 8px;
+        }
+        
         .contact-box {
-            background-color: #ecf0f1;
+            background-color: #f9fafb;
+            border-left: 4px solid #bf471b;
             padding: 20px;
-            border-radius: 5px;
-            margin: 20px 0;
+            margin: 24px 0;
+            border-radius: 4px;
         }
-        .faq {
-            margin: 30px 0;
+        
+        .email-link {
+            font-size: 18px;
+            color: #bf471b;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 8px;
         }
-        .faq-item {
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-left: 4px solid #3498db;
+        
+        .email-link:hover {
+            color: #9a3a15;
+            text-decoration: underline;
         }
-        .faq-item h3 {
-            margin-top: 0;
-            color: #2c3e50;
+        
+        .support-section {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .button {
+            display: inline-block;
+            background-color: #bf471b;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 16px;
+            transition: background-color 0.2s;
+        }
+        
+        .button:hover {
+            background-color: #9a3a15;
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            .title {
+                font-size: 24px;
+            }
+            
+            .heading {
+                font-size: 18px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Support & Help</h1>
+    <div class="container">
+        <h1 class="title">Support</h1>
+        <p class="subtitle">We're here to help you with My Personal Library</p>
 
-    <div class="contact-box">
-        <h2>Contact Us</h2>
-        <p>If you need help or have questions about My Personal Library, please contact us:</p>
-        <p><strong>Email:</strong> [Your Support Email]</p>
-        <p><strong>Response Time:</strong> We typically respond within 24-48 hours.</p>
-    </div>
-
-    <div class="faq">
-        <h2>Frequently Asked Questions</h2>
-
-        <div class="faq-item">
-            <h3>How do I add books to my library?</h3>
-            <p>You can add books by scanning the barcode using the camera feature, or by searching for books using the search function.</p>
+        <div class="contact-box">
+            <h2 class="heading" style="margin-top: 0;">Contact Us</h2>
+            <p class="paragraph">
+                For support, questions, suggestions, or feedback, please contact us at:
+            </p>
+            <a href="mailto:my.personal.lib@proton.me?subject=My Personal Library Support" class="email-link">
+                my.personal.lib@proton.me
+            </a>
         </div>
 
-        <div class="faq-item">
-            <h3>How do I borrow a book from a friend?</h3>
-            <p>Navigate to your friend's library, find the book you want, and tap "Request Exchange". Your friend will receive a notification and can approve or reject the request.</p>
+        <h2 class="heading">How We Can Help</h2>
+        <p class="paragraph">We're available to assist you with:</p>
+        <p class="bullet-point">• Technical support and troubleshooting</p>
+        <p class="bullet-point">• Questions about app features</p>
+        <p class="bullet-point">• Account-related issues</p>
+        <p class="bullet-point">• Bug reports and feedback</p>
+        <p class="bullet-point">• Feature suggestions</p>
+        <p class="bullet-point">• General inquiries</p>
+
+        <h2 class="heading">Response Time</h2>
+        <p class="paragraph">
+            We aim to respond to all inquiries within 24-48 hours. For urgent issues, 
+            please include "URGENT" in your email subject line.
+        </p>
+
+        <div class="support-section">
+            <h2 class="heading">Support the App</h2>
+            <p class="paragraph">
+                If you enjoy using My Personal Library, consider supporting its development. 
+                Every contribution helps the server to stay online!
+            </p>
+            <a href="https://paypal.me/MyPersonalLibrary" class="button" target="_blank" rel="noopener noreferrer">
+                Support via PayPal
+            </a>
         </div>
 
-        <div class="faq-item">
-            <h3>Can I delete my account?</h3>
-            <p>Yes, you can delete your account through the app settings. This will permanently remove all your data including books, reviews, and connections.</p>
+        <div class="support-section">
+            <h2 class="heading">Additional Resources</h2>
+            <p class="paragraph">
+                <a href="/privacy-policy.html" style="color: #bf471b; text-decoration: underline;">Privacy Policy</a>
+            </p>
         </div>
-
-        <div class="faq-item">
-            <h3>How do I change my reading status for a book?</h3>
-            <p>Open the book details page and select your reading status from the options: "Want to Read", "Currently Reading", or "Finished".</p>
-        </div>
-
-        <div class="faq-item">
-            <h3>Is my data secure?</h3>
-            <p>Yes, we use industry-standard security measures to protect your data. All passwords are encrypted, and we use secure connections (HTTPS) for all data transmission. See our <a href="/privacy-policy">Privacy Policy</a> for more details.</p>
-        </div>
-
-        <div class="faq-item">
-            <h3>Can I use the app offline?</h3>
-            <p>The app requires an internet connection to sync data with our servers. However, you can view previously loaded content when offline.</p>
-        </div>
-    </div>
-
-    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
-        <p><a href="/privacy-policy">Privacy Policy</a> | <a href="/">Home</a></p>
     </div>
 </body>
 </html>
-
-
-
-

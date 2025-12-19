@@ -20,6 +20,34 @@ import {
   ImageBackground,
 } from "react-native";
 
+const processGoogleBooksImageUrl = (
+  url: string | null | undefined
+): string | null => {
+  if (!url) return null;
+
+  let processedUrl = url.startsWith("http://")
+    ? url.replace("http://", "https://")
+    : url;
+
+  processedUrl = processedUrl.replace("&edge=curl", "");
+  processedUrl = processedUrl.replace("&edge=curl&", "&");
+
+  return processedUrl;
+};
+
+const getBestCoverUrl = (imageLinks: any): string | null => {
+  if (!imageLinks) return null;
+
+  return (
+    imageLinks.medium ||
+    imageLinks.large ||
+    imageLinks.small ||
+    imageLinks.thumbnail ||
+    imageLinks.smallThumbnail ||
+    null
+  );
+};
+
 export default function AddBookForm() {
   const { addBook } = useBookContext();
   const [searchQuery, setSearchQuery] = useState("");
@@ -93,21 +121,8 @@ export default function AddBookForm() {
 
     setAddingBook(true);
 
-    let coverUrl =
-      selectedBook.volumeInfo.imageLinks?.thumbnail ||
-      selectedBook.volumeInfo.imageLinks?.smallThumbnail ||
-      selectedBook.volumeInfo.imageLinks?.small ||
-      selectedBook.volumeInfo.imageLinks?.medium ||
-      selectedBook.volumeInfo.imageLinks?.large ||
-      null;
-
-    if (coverUrl) {
-      coverUrl = coverUrl.startsWith("http://")
-        ? coverUrl.replace("http://", "https://")
-        : coverUrl;
-      coverUrl = coverUrl.replace("&edge=curl", "");
-      coverUrl = coverUrl.replace("&zoom=1", "&zoom=0");
-    }
+    const rawCoverUrl = getBestCoverUrl(selectedBook.volumeInfo.imageLinks);
+    let coverUrl = processGoogleBooksImageUrl(rawCoverUrl);
 
     if (!coverUrl) {
       const title = selectedBook.volumeInfo.title;
@@ -267,24 +282,13 @@ export default function AddBookForm() {
                   }`
                 }
                 renderItem={({ item }) => {
-                  let coverUrl =
-                    item.volumeInfo.imageLinks?.thumbnail ||
-                    item.volumeInfo.imageLinks?.smallThumbnail ||
-                    item.volumeInfo.imageLinks?.small ||
-                    item.volumeInfo.imageLinks?.medium ||
-                    item.volumeInfo.imageLinks?.large ||
-                    null;
-
-                  if (coverUrl) {
-                    coverUrl = coverUrl.startsWith("http://")
-                      ? coverUrl.replace("http://", "https://")
-                      : coverUrl;
-                    coverUrl = coverUrl.replace("&edge=curl", "");
-                    coverUrl = coverUrl.replace("&zoom=1", "&zoom=0");
-                  }
-
+                  const rawCoverUrl = getBestCoverUrl(
+                    item.volumeInfo.imageLinks
+                  );
+                  const processedCoverUrl =
+                    processGoogleBooksImageUrl(rawCoverUrl);
                   const finalCoverUrl =
-                    coverUrl ||
+                    processedCoverUrl ||
                     "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
 
                   return (
@@ -298,7 +302,7 @@ export default function AddBookForm() {
                         }}
                       >
                         <Image
-                          key={`${item.id}-${coverUrl || "no-cover"}`}
+                          key={`${item.id}-${processedCoverUrl || "no-cover"}`}
                           source={{ uri: finalCoverUrl }}
                           style={{
                             width: 50,
@@ -310,7 +314,10 @@ export default function AddBookForm() {
                           onError={(error) => {
                             console.error(
                               `Failed to load cover for "${item.volumeInfo.title}":`,
-                              error
+                              error,
+                              `Raw URL: ${rawCoverUrl}`,
+                              `Processed URL: ${processedCoverUrl}`,
+                              `Final URL: ${finalCoverUrl}`
                             );
                           }}
                           onLoad={() => {
@@ -381,29 +388,18 @@ export default function AddBookForm() {
                   />
                 </View>
                 {(() => {
-                  let coverUrl =
-                    selectedBook.volumeInfo.imageLinks?.thumbnail ||
-                    selectedBook.volumeInfo.imageLinks?.smallThumbnail ||
-                    selectedBook.volumeInfo.imageLinks?.small ||
-                    selectedBook.volumeInfo.imageLinks?.medium ||
-                    selectedBook.volumeInfo.imageLinks?.large ||
-                    null;
-
-                  if (coverUrl) {
-                    coverUrl = coverUrl.startsWith("http://")
-                      ? coverUrl.replace("http://", "https://")
-                      : coverUrl;
-                    coverUrl = coverUrl.replace("&edge=curl", "");
-                    coverUrl = coverUrl.replace("&zoom=1", "&zoom=0");
-                  }
-
+                  const rawCoverUrl = getBestCoverUrl(
+                    selectedBook.volumeInfo.imageLinks
+                  );
+                  const processedCoverUrl =
+                    processGoogleBooksImageUrl(rawCoverUrl);
                   const finalCoverUrl =
-                    coverUrl ||
+                    processedCoverUrl ||
                     "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
 
                   return (
                     <Image
-                      key={`preview-${finalCoverUrl}`}
+                      key={`preview-${processedCoverUrl || "no-cover"}`}
                       source={{ uri: finalCoverUrl }}
                       style={{
                         width: 65,
@@ -414,8 +410,14 @@ export default function AddBookForm() {
                       onError={(error) => {
                         console.error(
                           `Failed to load cover for "${selectedBook.volumeInfo.title}":`,
-                          error
+                          error,
+                          `Raw URL: ${rawCoverUrl}`,
+                          `Processed URL: ${processedCoverUrl}`,
+                          `Final URL: ${finalCoverUrl}`
                         );
+                      }}
+                      onLoad={() => {
+                        // Image loaded successfully
                       }}
                     />
                   );

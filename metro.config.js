@@ -26,15 +26,35 @@ config.resolver = {
     "react-native": require.resolve("react-native-web"),
   },
   resolveRequest: (context, moduleName, platform) => {
+    // Handle Quagga2 and its dependencies FIRST - before other resolution
+    // Quagga2 is web-only, so stub it and its dependencies for iOS/Android
+    if (platform !== "web") {
+      // For native platforms (iOS/Android), stub Quagga2 and all its dependencies
+      if (
+        moduleName === "@ericblade/quagga2" ||
+        moduleName.startsWith("@ericblade/quagga2/") ||
+        moduleName === "ndarray-pixels" ||
+        moduleName === "ndarray" ||
+        moduleName === "typedarray-pool"
+      ) {
+        return {
+          filePath: require.resolve("identity-obj-proxy"),
+          type: "sourceFile",
+        };
+      }
+    }
+
+    // For web platform, let Quagga2 resolve normally
     if (platform === "web") {
-      // Handle Quagga2 for web builds
       if (
         moduleName === "@ericblade/quagga2" ||
         moduleName.startsWith("@ericblade/quagga2/")
       ) {
-        // Let Metro resolve it normally - it should work with dynamic imports
         return context.resolveRequest(context, moduleName, platform);
       }
+    }
+
+    if (platform === "web") {
       if (moduleName.endsWith("BaseViewConfig")) {
         return {
           filePath: require.resolve("identity-obj-proxy"),
