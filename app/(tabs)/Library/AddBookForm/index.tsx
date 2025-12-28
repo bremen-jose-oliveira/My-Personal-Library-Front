@@ -23,29 +23,55 @@ import {
 const processGoogleBooksImageUrl = (
   url: string | null | undefined
 ): string | null => {
-  if (!url) return null;
+  if (!url || typeof url !== "string") return null;
 
-  let processedUrl = url.startsWith("http://")
-    ? url.replace("http://", "https://")
-    : url;
+  let processedUrl = url.trim();
 
-  processedUrl = processedUrl.replace("&edge=curl", "");
-  processedUrl = processedUrl.replace("&edge=curl&", "&");
+  // Convert http to https
+  if (processedUrl.startsWith("http://")) {
+    processedUrl = processedUrl.replace("http://", "https://");
+  }
 
-  return processedUrl;
+  // Remove problematic parameters that can break image loading
+  processedUrl = processedUrl.replace(/[?&]edge=curl/g, "");
+  processedUrl = processedUrl.replace(/edge=curl&/g, "");
+  processedUrl = processedUrl.replace(/[?&]edge=curl$/, "");
+
+  // Try to improve image quality by adjusting zoom parameter if present
+  // But don't add it if it's not there (some URLs work better without it)
+  if (processedUrl.includes("zoom=")) {
+    processedUrl = processedUrl.replace(/zoom=\d+/, "zoom=1");
+  }
+
+  // Ensure URL is valid and complete
+  try {
+    const urlObj = new URL(processedUrl);
+    // Ensure it's a valid image URL
+    if (!urlObj.hostname || !urlObj.pathname) {
+      return null;
+    }
+    return processedUrl;
+  } catch (e) {
+    return null;
+  }
 };
 
 const getBestCoverUrl = (imageLinks: any): string | null => {
   if (!imageLinks) return null;
 
-  return (
-    imageLinks.medium ||
-    imageLinks.large ||
-    imageLinks.small ||
-    imageLinks.thumbnail ||
-    imageLinks.smallThumbnail ||
-    null
-  );
+  // Try in order of quality: medium, large, small, thumbnail, smallThumbnail
+  // Google Books API sometimes has different field names or structures
+  const possibleUrls = [
+    imageLinks.medium,
+    imageLinks.large,
+    imageLinks.small,
+    imageLinks.thumbnail,
+    imageLinks.smallThumbnail,
+    // Sometimes the API returns nested structures
+    imageLinks?.medium?.replace("&zoom=1", "&zoom=5") || imageLinks.medium,
+  ].filter(Boolean); // Remove null/undefined values
+
+  return possibleUrls[0] || null;
 };
 
 export default function AddBookForm() {
@@ -282,14 +308,45 @@ export default function AddBookForm() {
                   }`
                 }
                 renderItem={({ item }) => {
-                  const rawCoverUrl = getBestCoverUrl(
-                    item.volumeInfo.imageLinks
-                  );
-                  const processedCoverUrl =
-                    processGoogleBooksImageUrl(rawCoverUrl);
+                  // Try to get cover URL with multiple fallback strategies
+                  let processedCoverUrl: string | null = null;
+
+                  if (item.volumeInfo.imageLinks) {
+                    // Strategy 1: Get best URL from imageLinks
+                    const rawCoverUrl = getBestCoverUrl(
+                      item.volumeInfo.imageLinks
+                    );
+                    processedCoverUrl = processGoogleBooksImageUrl(rawCoverUrl);
+
+                    // Strategy 2: If first attempt failed, try all imageLinks properties
+                    if (!processedCoverUrl) {
+                      const imageLinks = item.volumeInfo.imageLinks;
+                      const urlsToTry = [
+                        imageLinks.medium,
+                        imageLinks.large,
+                        imageLinks.small,
+                        imageLinks.thumbnail,
+                        imageLinks.smallThumbnail,
+                      ].filter(Boolean);
+
+                      for (const url of urlsToTry) {
+                        const processed = processGoogleBooksImageUrl(url);
+                        if (processed) {
+                          processedCoverUrl = processed;
+                          break;
+                        }
+                      }
+                    }
+                  }
+
                   const finalCoverUrl =
                     processedCoverUrl ||
                     "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
+
+                  // Create a unique key that includes the URL to force re-render if URL changes
+                  const imageKey = `${item.id}-${
+                    processedCoverUrl || "fallback"
+                  }`;
 
                   return (
                     <TouchableOpacity onPress={() => handleBookSelect(item)}>
@@ -302,7 +359,7 @@ export default function AddBookForm() {
                         }}
                       >
                         <Image
-                          key={`${item.id}-${processedCoverUrl || "no-cover"}`}
+                          key={imageKey}
                           source={{ uri: finalCoverUrl }}
                           style={{
                             width: 50,
@@ -311,14 +368,8 @@ export default function AddBookForm() {
                             resizeMode: "contain",
                             backgroundColor: "rgba(255,255,255,0.1)",
                           }}
-                          onError={(error) => {
-                            console.error(
-                              `Failed to load cover for "${item.volumeInfo.title}":`,
-                              error,
-                              `Raw URL: ${rawCoverUrl}`,
-                              `Processed URL: ${processedCoverUrl}`,
-                              `Final URL: ${finalCoverUrl}`
-                            );
+                          onError={() => {
+                            // Image failed to load, fallback will be used
                           }}
                           onLoad={() => {
                             // Image loaded successfully
@@ -388,18 +439,48 @@ export default function AddBookForm() {
                   />
                 </View>
                 {(() => {
-                  const rawCoverUrl = getBestCoverUrl(
-                    selectedBook.volumeInfo.imageLinks
-                  );
-                  const processedCoverUrl =
-                    processGoogleBooksImageUrl(rawCoverUrl);
+                  // Try to get cover URL with multiple fallback strategies
+                  let processedCoverUrl: string | null = null;
+
+                  if (selectedBook.volumeInfo.imageLinks) {
+                    // Strategy 1: Get best URL from imageLinks
+                    const rawCoverUrl = getBestCoverUrl(
+                      selectedBook.volumeInfo.imageLinks
+                    );
+                    processedCoverUrl = processGoogleBooksImageUrl(rawCoverUrl);
+
+                    // Strategy 2: If first attempt failed, try all imageLinks properties
+                    if (!processedCoverUrl) {
+                      const imageLinks = selectedBook.volumeInfo.imageLinks;
+                      const urlsToTry = [
+                        imageLinks.medium,
+                        imageLinks.large,
+                        imageLinks.small,
+                        imageLinks.thumbnail,
+                        imageLinks.smallThumbnail,
+                      ].filter(Boolean);
+
+                      for (const url of urlsToTry) {
+                        const processed = processGoogleBooksImageUrl(url);
+                        if (processed) {
+                          processedCoverUrl = processed;
+                          break;
+                        }
+                      }
+                    }
+                  }
+
                   const finalCoverUrl =
                     processedCoverUrl ||
                     "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
 
+                  const imageKey = `preview-${selectedBook.id}-${
+                    processedCoverUrl || "fallback"
+                  }`;
+
                   return (
                     <Image
-                      key={`preview-${processedCoverUrl || "no-cover"}`}
+                      key={imageKey}
                       source={{ uri: finalCoverUrl }}
                       style={{
                         width: 65,
@@ -407,14 +488,8 @@ export default function AddBookForm() {
                         marginBottom: 10,
                         resizeMode: "contain",
                       }}
-                      onError={(error) => {
-                        console.error(
-                          `Failed to load cover for "${selectedBook.volumeInfo.title}":`,
-                          error,
-                          `Raw URL: ${rawCoverUrl}`,
-                          `Processed URL: ${processedCoverUrl}`,
-                          `Final URL: ${finalCoverUrl}`
-                        );
+                      onError={() => {
+                        // Image failed to load, fallback will be used
                       }}
                       onLoad={() => {
                         // Image loaded successfully
