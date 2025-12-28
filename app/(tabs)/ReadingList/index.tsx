@@ -10,12 +10,13 @@ import {
   Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BookStatus } from "@/Interfaces/userBookStatus";
 import type { UserBookStatus } from "@/Interfaces/userBookStatus";
 import { fetchCoverImage } from "@/utils/fetchBookData";
 import { Platform } from "react-native";
+import { useCallback } from "react";
 
 const statusLabels: Record<BookStatus, string> = {
   [BookStatus.NOT_READ]: "Not Read",
@@ -53,11 +54,17 @@ export default function ReadingListScreen() {
         throw new Error(`Failed to fetch reading list: ${response.statusText}`);
       }
 
-      const data: UserBookStatus[] = await response.json();
+      const data: any[] = await response.json();
+
+      // Map the data and ensure status is properly converted to BookStatus enum
+      const mappedData: UserBookStatus[] = data.map((item) => ({
+        ...item,
+        status: item.status as BookStatus, // Backend returns string, map to enum
+      }));
 
       // Enrich books with cover images
       const enrichedData = await Promise.all(
-        data.map(async (item) => {
+        mappedData.map(async (item) => {
           if (item.book && !item.book.cover) {
             const coverUrl = await fetchCoverImage(
               item.book.title,
@@ -84,6 +91,13 @@ export default function ReadingListScreen() {
   useEffect(() => {
     fetchReadingList();
   }, []);
+
+  // Refresh the list when the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchReadingList();
+    }, [])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
