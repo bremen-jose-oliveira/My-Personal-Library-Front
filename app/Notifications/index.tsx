@@ -63,13 +63,16 @@ export default function NotificationsScreen() {
     // Navigate based on notification type
     if (notification.type === NotificationType.FRIEND_REQUEST) {
       router.push("/(tabs)/Friends/FriendRequests");
+    } else if (notification.type === NotificationType.EXCHANGE_REQUEST) {
+      // Someone wants to borrow your book -> Lending tab
+      router.push("/(tabs)/Lending");
     } else if (
-      notification.type === NotificationType.EXCHANGE_REQUEST ||
       notification.type === NotificationType.EXCHANGE_ACCEPTED ||
       notification.type === NotificationType.EXCHANGE_REJECTED ||
       notification.type === NotificationType.EXCHANGE_RETURNED
     ) {
-      router.push("/(tabs)/Exchanges");
+      // Your request was accepted/rejected or book returned -> Borrowed tab
+      router.push("/(tabs)/Borrowed");
     } else if (
       notification.type === NotificationType.REVIEW_ADDED &&
       notification.relatedBookId

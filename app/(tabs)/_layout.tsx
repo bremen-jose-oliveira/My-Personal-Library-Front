@@ -93,15 +93,32 @@ function AppTabs() {
       />
 
       <Tabs.Screen
-        name="Exchanges/index"
+        name="Borrowed/index"
         options={{
-          headerTitle: "Exchanges",
+          headerTitle: "Borrowed",
           headerRight: () => <NotificationBell />,
-          tabBarLabel: "Exchanges",
+          tabBarLabel: "Borrowed",
           tabBarActiveTintColor: "#bf471b",
           tabBarIcon: () => (
             <MaterialCommunityIcons
-              name="swap-horizontal"
+              name="book-arrow-down"
+              size={24}
+              color="black"
+            />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="Lending/index"
+        options={{
+          headerTitle: "Lending",
+          headerRight: () => <NotificationBell />,
+          tabBarLabel: "Lending",
+          tabBarActiveTintColor: "#bf471b",
+          tabBarIcon: () => (
+            <MaterialCommunityIcons
+              name="book-arrow-up"
               size={24}
               color="black"
             />
