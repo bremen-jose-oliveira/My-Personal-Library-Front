@@ -4,16 +4,15 @@ import {
   Text,
   FlatList,
   RefreshControl,
-  ImageBackground,
   TouchableOpacity,
   Alert,
   StyleSheet,
   Image,
   ActivityIndicator,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { useExchangeContext } from "@/utils/Context/ExchangeContext";
 import { ExchangeStatus } from "@/Interfaces/exchange";
+import { Colors } from "@/constants/Colors";
 
 const statusLabels: Record<ExchangeStatus, string> = {
   [ExchangeStatus.REQUESTED]: "Pending",
@@ -92,23 +91,15 @@ export default function LendingScreen() {
   };
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
-      style={styles.backgroundImage}
-      resizeMode="cover"
-    >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
-        style={styles.gradientOverlay}
-      >
-        <Text style={styles.header}>Lending Books</Text>
-        {(loading || localLoading) && lendingBooks.length === 0 ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#bf471b" />
-            <Text style={styles.loadingText}>Loading lending books...</Text>
-          </View>
-        ) : (
-          <FlatList
+    <View style={styles.container}>
+      <Text style={styles.header}>Lending Books</Text>
+      {(loading || localLoading) && lendingBooks.length === 0 ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.loadingText}>Loading lending books...</Text>
+        </View>
+      ) : (
+        <FlatList
           contentContainerStyle={styles.listContentContainer}
           data={lendingBooks}
           keyExtractor={(item) => item.id.toString()}
@@ -120,7 +111,7 @@ export default function LendingScreen() {
                 await refreshLending();
                 setLocalLoading(false);
               }}
-              tintColor="#bf471b"
+              tintColor={Colors.primary}
             />
           }
           renderItem={({ item }) => {
@@ -214,34 +205,21 @@ export default function LendingScreen() {
             ) : null
           }
         />
-        )}
-      </LinearGradient>
-    </ImageBackground>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  backgroundImage: {
+  container: {
     flex: 1,
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  gradientOverlay: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    justifyContent: "flex-start",
+    backgroundColor: Colors.background,
     paddingTop: 60,
-    zIndex: 1,
   },
   header: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#f0dcc7",
+    color: Colors.text,
     textAlign: "center",
     marginBottom: 20,
     paddingHorizontal: 16,
@@ -251,13 +229,18 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   exchangeCard: {
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: Colors.surface,
     padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
+    borderRadius: 12,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#bf471b",
+    borderColor: Colors.border,
     flexDirection: "row",
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   bookCover: {
     width: 80,
@@ -271,16 +254,17 @@ const styles = StyleSheet.create({
   bookTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#f0dcc7",
+    color: Colors.text,
     marginBottom: 8,
   },
   detailText: {
     fontSize: 14,
-    color: "#f0dcc7",
+    color: Colors.textSecondary,
     marginBottom: 4,
   },
   label: {
     fontWeight: "600",
+    color: Colors.text,
   },
   statusText: {
     fontWeight: "600",
@@ -299,13 +283,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   acceptButton: {
-    backgroundColor: "#22c55e",
+    backgroundColor: Colors.success,
   },
   rejectButton: {
-    backgroundColor: "#ef4444",
+    backgroundColor: Colors.error,
   },
   returnButton: {
-    backgroundColor: "#3b82f6",
+    backgroundColor: Colors.info,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -314,7 +298,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   buttonText: {
-    color: "#fff",
+    color: Colors.white,
     fontWeight: "600",
     fontSize: 14,
   },
@@ -322,11 +306,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 40,
     padding: 20,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    borderRadius: 10,
+    backgroundColor: Colors.surfaceAlt,
+    borderRadius: 12,
   },
   emptyText: {
-    color: "#f0dcc7",
+    color: Colors.textSecondary,
     fontSize: 16,
   },
   loadingContainer: {
@@ -334,11 +318,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingTop: 100,
-    zIndex: 100,
-    elevation: 100,
   },
   loadingText: {
-    color: "#f0dcc7",
+    color: Colors.textSecondary,
     fontSize: 16,
     marginTop: 12,
   },

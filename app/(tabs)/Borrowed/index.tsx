@@ -4,16 +4,15 @@ import {
   Text,
   FlatList,
   RefreshControl,
-  ImageBackground,
   TouchableOpacity,
   Alert,
   StyleSheet,
   Image,
   ActivityIndicator,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { useExchangeContext } from "@/utils/Context/ExchangeContext";
 import { ExchangeStatus } from "@/Interfaces/exchange";
+import { Colors } from "@/constants/Colors";
 
 const statusLabels: Record<ExchangeStatus, string> = {
   [ExchangeStatus.REQUESTED]: "Pending",
@@ -123,156 +122,135 @@ export default function BorrowedScreen() {
   }
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
-      style={styles.backgroundImage}
-      resizeMode="cover"
-    >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
-        style={styles.gradientOverlay}
-      >
-        <View style={styles.headerContainer}>
-          <Text style={styles.header}>Borrowed Books</Text>
-        </View>
-        {error ? (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity
-              style={styles.retryButton}
-              onPress={async () => {
-                setError(null);
-                setLocalLoading(true);
-                try {
-                  await refreshBorrowed();
-                } catch (err: any) {
-                  setError(err.message || "Failed to load borrowed books");
-                } finally {
-                  setLocalLoading(false);
-                }
-              }}
-            >
-              <Text style={styles.buttonText}>Retry</Text>
-            </TouchableOpacity>
-          </View>
-        ) : isLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#bf471b" />
-            <Text style={styles.loadingText}>Loading borrowed books...</Text>
-          </View>
-        ) : (
-          <FlatList
-            contentContainerStyle={styles.listContentContainer}
-            data={borrowedBooks}
-            keyExtractor={(item) => item.id.toString()}
-            refreshControl={
-              <RefreshControl
-                refreshing={loading || localLoading}
-                onRefresh={async () => {
-                  setLocalLoading(true);
-                  await refreshBorrowed();
-                  setLocalLoading(false);
-                }}
-                tintColor="#bf471b"
-              />
-            }
-            renderItem={({ item }) => {
-              const isProcessing = processing === item.id;
-              const canReturn =
-                item.status === ExchangeStatus.ACCEPTED && !isProcessing;
-
-              return (
-                <View style={styles.exchangeCard}>
-                  {item.book?.cover && (
-                    <Image
-                      source={{ uri: item.book.cover }}
-                      style={styles.bookCover}
-                      resizeMode="cover"
-                    />
-                  )}
-                  <View style={styles.cardContent}>
-                    <Text style={styles.bookTitle}>
-                      {item.book?.title ?? "Unknown book"}
-                    </Text>
-                    <Text style={styles.detailText}>
-                      <Text style={styles.label}>Author:</Text>{" "}
-                      {item.book?.author ?? "Unknown"}
-                    </Text>
-                    <Text style={styles.detailText}>
-                      <Text style={styles.label}>From:</Text>{" "}
-                      {item.book?.ownerUsername ??
-                        item.book?.owner ??
-                        "Unknown"}
-                    </Text>
-                    <Text style={styles.detailText}>
-                      <Text style={styles.label}>Status:</Text>{" "}
-                      <Text
-                        style={[
-                          styles.statusText,
-                          { color: getStatusColor(item.status) },
-                        ]}
-                      >
-                        {statusLabels[item.status]}
-                      </Text>
-                    </Text>
-                    {item.exchangeDate && (
-                      <Text style={styles.detailText}>
-                        <Text style={styles.label}>Borrowed on:</Text>{" "}
-                        {new Date(item.exchangeDate).toLocaleDateString()}
-                      </Text>
-                    )}
-                    {item.createdAt && (
-                      <Text style={styles.detailText}>
-                        <Text style={styles.label}>Requested on:</Text>{" "}
-                        {new Date(item.createdAt).toLocaleDateString()}
-                      </Text>
-                    )}
-                    {canReturn && (
-                      <TouchableOpacity
-                        style={styles.returnButton}
-                        onPress={() => handleReturnBook(item.id)}
-                        disabled={isProcessing}
-                      >
-                        <Text style={styles.buttonText}>
-                          {isProcessing ? "Processing..." : "Mark as Returned"}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-              );
+    <View style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.header}>Borrowed Books</Text>
+      </View>
+      {error ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={async () => {
+              setError(null);
+              setLocalLoading(true);
+              try {
+                await refreshBorrowed();
+              } catch (err: any) {
+                setError(err.message || "Failed to load borrowed books");
+              } finally {
+                setLocalLoading(false);
+              }
             }}
-            ListEmptyComponent={
-              !loading && !localLoading ? (
-                <View style={styles.emptyContainer}>
-                  <Text style={styles.emptyText}>No borrowed books yet.</Text>
+          >
+            <Text style={styles.buttonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.loadingText}>Loading borrowed books...</Text>
+        </View>
+      ) : (
+        <FlatList
+          contentContainerStyle={styles.listContentContainer}
+          data={borrowedBooks}
+          keyExtractor={(item) => item.id.toString()}
+          refreshControl={
+            <RefreshControl
+              refreshing={loading || localLoading}
+              onRefresh={async () => {
+                setLocalLoading(true);
+                await refreshBorrowed();
+                setLocalLoading(false);
+              }}
+              tintColor={Colors.primary}
+            />
+          }
+          renderItem={({ item }) => {
+            const isProcessing = processing === item.id;
+            const canReturn =
+              item.status === ExchangeStatus.ACCEPTED && !isProcessing;
+
+            return (
+              <View style={styles.exchangeCard}>
+                {item.book?.cover && (
+                  <Image
+                    source={{ uri: item.book.cover }}
+                    style={styles.bookCover}
+                    resizeMode="cover"
+                  />
+                )}
+                <View style={styles.cardContent}>
+                  <Text style={styles.bookTitle}>
+                    {item.book?.title ?? "Unknown book"}
+                  </Text>
+                  <Text style={styles.detailText}>
+                    <Text style={styles.label}>Author:</Text>{" "}
+                    {item.book?.author ?? "Unknown"}
+                  </Text>
+                  <Text style={styles.detailText}>
+                    <Text style={styles.label}>From:</Text>{" "}
+                    {item.book?.ownerUsername ??
+                      item.book?.owner ??
+                      "Unknown"}
+                  </Text>
+                  <Text style={styles.detailText}>
+                    <Text style={styles.label}>Status:</Text>{" "}
+                    <Text
+                      style={[
+                        styles.statusText,
+                        { color: getStatusColor(item.status) },
+                      ]}
+                    >
+                      {statusLabels[item.status]}
+                    </Text>
+                  </Text>
+                  {item.exchangeDate && (
+                    <Text style={styles.detailText}>
+                      <Text style={styles.label}>Borrowed on:</Text>{" "}
+                      {new Date(item.exchangeDate).toLocaleDateString()}
+                    </Text>
+                  )}
+                  {item.createdAt && (
+                    <Text style={styles.detailText}>
+                      <Text style={styles.label}>Requested on:</Text>{" "}
+                      {new Date(item.createdAt).toLocaleDateString()}
+                    </Text>
+                  )}
+                  {canReturn && (
+                    <TouchableOpacity
+                      style={styles.returnButton}
+                      onPress={() => handleReturnBook(item.id)}
+                      disabled={isProcessing}
+                    >
+                      <Text style={styles.buttonText}>
+                        {isProcessing ? "Processing..." : "Mark as Returned"}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
-              ) : null
-            }
-          />
-        )}
-      </LinearGradient>
-    </ImageBackground>
+              </View>
+            );
+          }}
+          ListEmptyComponent={
+            !loading && !localLoading ? (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>No borrowed books yet.</Text>
+              </View>
+            ) : null
+          }
+        />
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  backgroundImage: {
+  container: {
     flex: 1,
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  gradientOverlay: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    justifyContent: "flex-start",
+    backgroundColor: Colors.background,
     paddingTop: 60,
-    zIndex: 1,
   },
   headerContainer: {
     paddingTop: 10,
@@ -282,7 +260,7 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#f0dcc7",
+    color: Colors.text,
     textAlign: "center",
     marginBottom: 20,
   },
@@ -291,13 +269,18 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   exchangeCard: {
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: Colors.surface,
     padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
+    borderRadius: 12,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#bf471b",
+    borderColor: Colors.border,
     flexDirection: "row",
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   bookCover: {
     width: 80,
@@ -311,22 +294,23 @@ const styles = StyleSheet.create({
   bookTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#f0dcc7",
+    color: Colors.text,
     marginBottom: 8,
   },
   detailText: {
     fontSize: 14,
-    color: "#f0dcc7",
+    color: Colors.textSecondary,
     marginBottom: 4,
   },
   label: {
     fontWeight: "600",
+    color: Colors.text,
   },
   statusText: {
     fontWeight: "600",
   },
   returnButton: {
-    backgroundColor: "#22c55e",
+    backgroundColor: Colors.success,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -335,7 +319,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   buttonText: {
-    color: "#fff",
+    color: Colors.white,
     fontWeight: "600",
     fontSize: 14,
   },
@@ -343,11 +327,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 40,
     padding: 20,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    borderRadius: 10,
+    backgroundColor: Colors.surfaceAlt,
+    borderRadius: 12,
   },
   emptyText: {
-    color: "#f0dcc7",
+    color: Colors.textSecondary,
     fontSize: 16,
   },
   loadingContainer: {
@@ -355,11 +339,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingTop: 100,
-    zIndex: 100,
-    elevation: 100,
   },
   loadingText: {
-    color: "#f0dcc7",
+    color: Colors.textSecondary,
     fontSize: 16,
     marginTop: 12,
   },
@@ -371,13 +353,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   errorText: {
-    color: "#ef4444",
+    color: Colors.error,
     fontSize: 16,
     textAlign: "center",
     marginBottom: 20,
   },
   retryButton: {
-    backgroundColor: "#bf471b",
+    backgroundColor: Colors.primary,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
