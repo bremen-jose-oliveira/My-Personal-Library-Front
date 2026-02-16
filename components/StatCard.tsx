@@ -22,8 +22,7 @@ export const StatCard: React.FC<StatCardProps> = ({
 
   return (
     <CardWrapper
-      onPress={onPress}
-      activeOpacity={0.7}
+      {...(onPress ? { onPress, activeOpacity: 0.7 } : {})}
       className="bg-white rounded-xl p-4 flex-1 mx-1 my-2"
       style={{
         shadowColor: '#000',

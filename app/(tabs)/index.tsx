@@ -60,7 +60,9 @@ const HomeScreen = () => {
   const numberOfReviews = myReviews.length;
   
   // Get reading list count from books with reading status
-  const readingListCount = books.filter(book => book.readingStatus === 'reading' || book.readingStatus === 'want-to-read').length;
+  const readingListCount = books.filter(book => 
+    book.readingStatus === 'READING' || book.readingStatus === 'NOT_READ'
+  ).length;
 
   // Get recent books (last 4)
   const recentBooks = books.slice(0, 4);

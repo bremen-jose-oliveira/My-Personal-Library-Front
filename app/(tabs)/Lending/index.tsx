@@ -35,6 +35,7 @@ export default function LendingScreen() {
         await refreshLending();
         if (isMounted) {
           setLocalLoading(false);
+          clearTimeout(timeoutId); // Clear timeout on success
         }
       } catch (err: any) {
         console.error("LendingScreen: Error loading lending books:", err);

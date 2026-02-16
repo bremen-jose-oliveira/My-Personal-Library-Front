@@ -35,6 +35,7 @@ export default function BorrowedScreen() {
         await refreshBorrowed();
         if (isMounted) {
           setLocalLoading(false);
+          clearTimeout(timeoutId); // Clear timeout on success
         }
       } catch (err: any) {
         console.error("BorrowedScreen: Error loading borrowed books:", err);
