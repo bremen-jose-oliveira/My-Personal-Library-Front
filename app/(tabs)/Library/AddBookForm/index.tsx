@@ -2,14 +2,13 @@ import BarcodeScanner from "@/components/BarcodeScanner";
 import Book from "@/Interfaces/book";
 import { useBookContext } from "@/utils/Context/BookContext";
 import { fetchCoverImage } from "@/utils/fetchBookData";
-import { LinearGradient } from "expo-linear-gradient";
+import { Colors } from "@/constants/Colors";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { ScrollView } from "react-native";
 import {
   View,
   TextInput,
-  Button,
   FlatList,
   Text,
   TouchableOpacity,
@@ -17,7 +16,8 @@ import {
   Alert,
   Modal,
   Platform,
-  ImageBackground,
+  StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 
 const processGoogleBooksImageUrl = (
@@ -205,405 +205,407 @@ export default function AddBookForm() {
   };
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
-      style={{
-        flex: 1, // Take full screen
-        width: "100%", // Make sure it spans full width
-        height: "100%", // Make sure it spans full height
-        justifyContent: "center", // Center content vertically
-        alignItems: "center", // Center content horizontally
-      }}
-      resizeMode="cover" // Ensures the image covers the screen
-    >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
-        style={{
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-          justifyContent: "flex-start",
-        }}
-      >
-        <View style={{ flex: 1, padding: 20 }}>
-          <TextInput
-            placeholder="Search for a book..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            style={{
-              borderColor: "gray",
-              backgroundColor: "rgba(0,0,0,0.4)",
-              padding: 10,
-              marginBottom: 20,
-              fontSize: 15,
-              borderRadius: 8,
-              color: "#f0dcc7",
+    <View style={styles.container}>
+      <View style={styles.inner}>
+        <TextInput
+          placeholder="Search for a book..."
+          placeholderTextColor={Colors.placeholder}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          style={styles.searchInput}
+        />
+        <View style={styles.row}>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={() => {
+              setStartIndex(0);
+              fetchBooks(searchQuery, true);
             }}
-          />
-          <View style={{ flexDirection: "row", marginBottom: 10 }}>
-            <View style={{ flex: 1, marginRight: 5 }}>
-              <Button
-                title="Search"
-                onPress={() => {
-                  setStartIndex(0);
-                  fetchBooks(searchQuery, true);
-                }}
-                color="#bf471b"
-              />
-            </View>
-          </View>
-
-          {/* Render "Open Barcode Scanner" only if not on iOS Web */}
-          <View style={{ flexDirection: "row", marginBottom: 10 }}>
-            <View
-              style={{ flex: 1, marginRight: searchResults.length > 0 ? 5 : 0 }}
-            >
-              <Button
-                color="#bf471b"
-                title="Open Scanner"
-                onPress={() => {
-                  clearSearchState(); // Clear previous results when opening scanner
-                  setScannerVisible(true);
-                }}
-              />
-            </View>
-            {searchResults.length > 0 && (
-              <View style={{ flex: 1, marginLeft: 5 }}>
-                <Button
-                  color="#666"
-                  title="Clear Results"
-                  onPress={clearSearchState}
-                />
-              </View>
-            )}
-          </View>
-
-          {searchResults.length > 0 && (
-            <View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 10,
-                }}
-              >
-                <Text
-                  style={{ color: "#f0dcc7", fontSize: 16, fontWeight: "bold" }}
-                >
-                  Found {searchResults.length} result
-                  {searchResults.length !== 1 ? "s" : ""}
-                </Text>
-                <Button color="#666" title="Clear" onPress={clearSearchState} />
-              </View>
-              <FlatList
-                data={searchResults}
-                keyExtractor={(item: any, index: number) =>
-                  `${
-                    item.id ||
-                    item.volumeInfo?.industryIdentifiers?.[0]?.identifier ||
-                    index
-                  }`
-                }
-                renderItem={({ item }) => {
-                  // Try to get cover URL with multiple fallback strategies
-                  let processedCoverUrl: string | null = null;
-
-                  if (item.volumeInfo.imageLinks) {
-                    // Strategy 1: Get best URL from imageLinks
-                    const rawCoverUrl = getBestCoverUrl(
-                      item.volumeInfo.imageLinks
-                    );
-                    processedCoverUrl = processGoogleBooksImageUrl(rawCoverUrl);
-
-                    // Strategy 2: If first attempt failed, try all imageLinks properties
-                    if (!processedCoverUrl) {
-                      const imageLinks = item.volumeInfo.imageLinks;
-                      const urlsToTry = [
-                        imageLinks.medium,
-                        imageLinks.large,
-                        imageLinks.small,
-                        imageLinks.thumbnail,
-                        imageLinks.smallThumbnail,
-                      ].filter(Boolean);
-
-                      for (const url of urlsToTry) {
-                        const processed = processGoogleBooksImageUrl(url);
-                        if (processed) {
-                          processedCoverUrl = processed;
-                          break;
-                        }
-                      }
-                    }
-                  }
-
-                  const finalCoverUrl =
-                    processedCoverUrl ||
-                    "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
-
-                  // Create a unique key that includes the URL to force re-render if URL changes
-                  const imageKey = `${item.id}-${
-                    processedCoverUrl || "fallback"
-                  }`;
-
-                  return (
-                    <TouchableOpacity onPress={() => handleBookSelect(item)}>
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          padding: 10,
-                          alignItems: "center",
-                          marginBottom: 5,
-                        }}
-                      >
-                        <Image
-                          key={imageKey}
-                          source={{ uri: finalCoverUrl }}
-                          style={{
-                            width: 50,
-                            height: 75,
-                            marginRight: 10,
-                            resizeMode: "contain",
-                            backgroundColor: "rgba(255,255,255,0.1)",
-                          }}
-                          onError={() => {
-                            // Image failed to load, fallback will be used
-                          }}
-                          onLoad={() => {
-                            // Image loaded successfully
-                          }}
-                        />
-                        <View
-                          style={{
-                            flex: 1,
-                            padding: 17,
-                            borderRadius: 2,
-                            borderBlockColor: "#f0dcc7",
-                            backgroundColor: "rgba(0,0,0,0.4)",
-                          }}
-                        >
-                          <Text
-                            style={{ fontWeight: "bold", color: "#f0dcc7" }}
-                          >
-                            {item.volumeInfo.title}
-                          </Text>
-                          <Text style={{ color: "#f0dcc7" }}>
-                            {item.volumeInfo.authors?.join(", ") ||
-                              "Unknown Author"}
-                          </Text>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                }}
-                contentContainerStyle={{ paddingBottom: 100 }}
-                style={{ maxHeight: 400 }}
-                keyboardShouldPersistTaps="handled"
-              />
-            </View>
-          )}
-          {selectedBook && (
-            <ScrollView
-              style={{
-                marginTop: 20,
-                backgroundColor: "rgba(0,0,0,0.4)",
-                padding: 8,
-                borderRadius: 8,
-                maxHeight: 400, // Ensure the box has a max height
-              }}
-            >
-              <View style={{ alignItems: "center" }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    width: "100%",
-                    marginBottom: 10,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontWeight: "bold",
-                      color: "#f0dcc7",
-                      fontSize: 18,
-                    }}
-                  >
-                    Book Preview
-                  </Text>
-                  <Button
-                    title="Cancel"
-                    onPress={() => setSelectedBook(null)}
-                    color="#666"
-                  />
-                </View>
-                {(() => {
-                  // Try to get cover URL with multiple fallback strategies
-                  let processedCoverUrl: string | null = null;
-
-                  if (selectedBook.volumeInfo.imageLinks) {
-                    // Strategy 1: Get best URL from imageLinks
-                    const rawCoverUrl = getBestCoverUrl(
-                      selectedBook.volumeInfo.imageLinks
-                    );
-                    processedCoverUrl = processGoogleBooksImageUrl(rawCoverUrl);
-
-                    // Strategy 2: If first attempt failed, try all imageLinks properties
-                    if (!processedCoverUrl) {
-                      const imageLinks = selectedBook.volumeInfo.imageLinks;
-                      const urlsToTry = [
-                        imageLinks.medium,
-                        imageLinks.large,
-                        imageLinks.small,
-                        imageLinks.thumbnail,
-                        imageLinks.smallThumbnail,
-                      ].filter(Boolean);
-
-                      for (const url of urlsToTry) {
-                        const processed = processGoogleBooksImageUrl(url);
-                        if (processed) {
-                          processedCoverUrl = processed;
-                          break;
-                        }
-                      }
-                    }
-                  }
-
-                  const finalCoverUrl =
-                    processedCoverUrl ||
-                    "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
-
-                  const imageKey = `preview-${selectedBook.id}-${
-                    processedCoverUrl || "fallback"
-                  }`;
-
-                  return (
-                    <Image
-                      key={imageKey}
-                      source={{ uri: finalCoverUrl }}
-                      style={{
-                        width: 65,
-                        height: 90,
-                        marginBottom: 10,
-                        resizeMode: "contain",
-                      }}
-                      onError={() => {
-                        // Image failed to load, fallback will be used
-                      }}
-                      onLoad={() => {
-                        // Image loaded successfully
-                      }}
-                    />
-                  );
-                })()}
-                <Text
-                  style={{
-                    fontWeight: "bold",
-                    color: "#f0dcc7",
-                    marginBottom: 5,
-                  }}
-                >
-                  Title: {selectedBook.volumeInfo.title || ""}
-                </Text>
-                <Text
-                  style={{
-                    fontWeight: "bold",
-                    color: "#f0dcc7",
-                    marginBottom: 5,
-                  }}
-                >
-                  Author:{" "}
-                  {selectedBook.volumeInfo.authors?.join(", ") ||
-                    "Unknown Author"}
-                </Text>
-                <Text
-                  style={{
-                    fontWeight: "bold",
-                    color: "#f0dcc7",
-                    marginBottom: 5,
-                  }}
-                >
-                  Publisher: {selectedBook.volumeInfo.publisher || ""}
-                </Text>
-                <Text
-                  style={{
-                    fontWeight: "bold",
-                    color: "#f0dcc7",
-                    marginBottom: 5,
-                  }}
-                >
-                  Published Date: {selectedBook.volumeInfo.publishedDate || ""}
-                </Text>
-                <Text
-                  style={{
-                    fontWeight: "bold",
-                    color: "#f0dcc7",
-                    marginBottom: 5,
-                  }}
-                >
-                  Categories: {selectedBook.volumeInfo.categories || ""}
-                </Text>
-                <Text
-                  style={{
-                    fontWeight: "bold",
-                    color: "#f0dcc7",
-                    marginBottom: 5,
-                  }}
-                >
-                  Description: {selectedBook.volumeInfo.description || ""}
-                </Text>
-                <Text
-                  style={{
-                    fontWeight: "bold",
-                    color: "#f0dcc7",
-                    marginBottom: 5,
-                  }}
-                >
-                  isbn:{" "}
-                  {selectedBook.volumeInfo.industryIdentifiers?.[0]
-                    ?.identifier || "N/A"}
-                </Text>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    width: "100%",
-                    marginTop: 10,
-                  }}
-                >
-                  <View style={{ flex: 1, marginRight: 5 }}>
-                    <Button
-                      title={addingBook ? "Adding..." : "Add Book"}
-                      onPress={handleAddBook}
-                      color="#bf471b"
-                      disabled={addingBook}
-                    />
-                  </View>
-                  <View style={{ flex: 1, marginLeft: 5 }}>
-                    <Button
-                      title="Cancel"
-                      onPress={() => {
-                        setSelectedBook(null);
-                        clearSearchState();
-                      }}
-                      color="#666"
-                    />
-                  </View>
-                </View>
-              </View>
-            </ScrollView>
-          )}
-
-          <Modal visible={Boolean(scannerVisible)} animationType="slide">
-            <View style={{ flex: 1, position: "relative" }}>
-              <BarcodeScanner
-                onISBNScanned={handleISBNScanned}
-                onClose={() => setScannerVisible(false)}
-              />
-            </View>
-          </Modal>
+          >
+            <Text style={styles.primaryButtonText}>Search</Text>
+          </TouchableOpacity>
         </View>
-      </LinearGradient>
-    </ImageBackground>
+
+        {/* Render "Open Barcode Scanner" only if not on iOS Web */}
+        <View style={styles.row}>
+          <TouchableOpacity
+            style={[
+              styles.primaryButton,
+              { flex: 1, marginRight: searchResults.length > 0 ? 5 : 0 },
+            ]}
+            onPress={() => {
+              clearSearchState(); // Clear previous results when opening scanner
+              setScannerVisible(true);
+            }}
+          >
+            <Text style={styles.primaryButtonText}>Open Scanner</Text>
+          </TouchableOpacity>
+          {searchResults.length > 0 && (
+            <TouchableOpacity
+              style={[styles.secondaryButton, { flex: 1, marginLeft: 5 }]}
+              onPress={clearSearchState}
+            >
+              <Text style={styles.secondaryButtonText}>Clear Results</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {searchResults.length > 0 && (
+          <View>
+            <View style={styles.resultsHeader}>
+              <Text style={styles.resultsCount}>
+                Found {searchResults.length} result
+                {searchResults.length !== 1 ? "s" : ""}
+              </Text>
+              <TouchableOpacity onPress={clearSearchState}>
+                <Text style={styles.clearText}>Clear</Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={searchResults}
+              keyExtractor={(item: any, index: number) =>
+                `${
+                  item.id ||
+                  item.volumeInfo?.industryIdentifiers?.[0]?.identifier ||
+                  index
+                }`
+              }
+              renderItem={({ item }) => {
+                // Try to get cover URL with multiple fallback strategies
+                let processedCoverUrl: string | null = null;
+
+                if (item.volumeInfo.imageLinks) {
+                  // Strategy 1: Get best URL from imageLinks
+                  const rawCoverUrl = getBestCoverUrl(
+                    item.volumeInfo.imageLinks
+                  );
+                  processedCoverUrl = processGoogleBooksImageUrl(rawCoverUrl);
+
+                  // Strategy 2: If first attempt failed, try all imageLinks properties
+                  if (!processedCoverUrl) {
+                    const imageLinks = item.volumeInfo.imageLinks;
+                    const urlsToTry = [
+                      imageLinks.medium,
+                      imageLinks.large,
+                      imageLinks.small,
+                      imageLinks.thumbnail,
+                      imageLinks.smallThumbnail,
+                    ].filter(Boolean);
+
+                    for (const url of urlsToTry) {
+                      const processed = processGoogleBooksImageUrl(url);
+                      if (processed) {
+                        processedCoverUrl = processed;
+                        break;
+                      }
+                    }
+                  }
+                }
+
+                const finalCoverUrl =
+                  processedCoverUrl ||
+                  "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
+
+                // Create a unique key that includes the URL to force re-render if URL changes
+                const imageKey = `${item.id}-${
+                  processedCoverUrl || "fallback"
+                }`;
+
+                return (
+                  <TouchableOpacity onPress={() => handleBookSelect(item)}>
+                    <View style={styles.resultCard}>
+                      <Image
+                        key={imageKey}
+                        source={{ uri: finalCoverUrl }}
+                        style={styles.resultImage}
+                        onError={() => {
+                          // Image failed to load, fallback will be used
+                        }}
+                        onLoad={() => {
+                          // Image loaded successfully
+                        }}
+                      />
+                      <View style={styles.resultInfo}>
+                        <Text style={styles.resultTitle}>
+                          {item.volumeInfo.title}
+                        </Text>
+                        <Text style={styles.resultAuthor}>
+                          {item.volumeInfo.authors?.join(", ") ||
+                            "Unknown Author"}
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              }}
+              contentContainerStyle={{ paddingBottom: 100 }}
+              style={{ maxHeight: 400 }}
+              keyboardShouldPersistTaps="handled"
+            />
+          </View>
+        )}
+        {selectedBook && (
+          <ScrollView style={styles.previewCard}>
+            <View style={{ alignItems: "center" }}>
+              <View style={styles.previewHeader}>
+                <Text style={styles.previewTitle}>Book Preview</Text>
+                <TouchableOpacity onPress={() => setSelectedBook(null)}>
+                  <Text style={styles.secondaryButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+              {(() => {
+                // Try to get cover URL with multiple fallback strategies
+                let processedCoverUrl: string | null = null;
+
+                if (selectedBook.volumeInfo.imageLinks) {
+                  // Strategy 1: Get best URL from imageLinks
+                  const rawCoverUrl = getBestCoverUrl(
+                    selectedBook.volumeInfo.imageLinks
+                  );
+                  processedCoverUrl = processGoogleBooksImageUrl(rawCoverUrl);
+
+                  // Strategy 2: If first attempt failed, try all imageLinks properties
+                  if (!processedCoverUrl) {
+                    const imageLinks = selectedBook.volumeInfo.imageLinks;
+                    const urlsToTry = [
+                      imageLinks.medium,
+                      imageLinks.large,
+                      imageLinks.small,
+                      imageLinks.thumbnail,
+                      imageLinks.smallThumbnail,
+                    ].filter(Boolean);
+
+                    for (const url of urlsToTry) {
+                      const processed = processGoogleBooksImageUrl(url);
+                      if (processed) {
+                        processedCoverUrl = processed;
+                        break;
+                      }
+                    }
+                  }
+                }
+
+                const finalCoverUrl =
+                  processedCoverUrl ||
+                  "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
+
+                const imageKey = `preview-${selectedBook.id}-${
+                  processedCoverUrl || "fallback"
+                }`;
+
+                return (
+                  <Image
+                    key={imageKey}
+                    source={{ uri: finalCoverUrl }}
+                    style={styles.previewImage}
+                    onError={() => {
+                      // Image failed to load, fallback will be used
+                    }}
+                    onLoad={() => {
+                      // Image loaded successfully
+                    }}
+                  />
+                );
+              })()}
+              <Text style={styles.previewLabel}>
+                Title: {selectedBook.volumeInfo.title || ""}
+              </Text>
+              <Text style={styles.previewLabel}>
+                Author:{" "}
+                {selectedBook.volumeInfo.authors?.join(", ") ||
+                  "Unknown Author"}
+              </Text>
+              <Text style={styles.previewLabel}>
+                Publisher: {selectedBook.volumeInfo.publisher || ""}
+              </Text>
+              <Text style={styles.previewLabel}>
+                Published Date: {selectedBook.volumeInfo.publishedDate || ""}
+              </Text>
+              <Text style={styles.previewLabel}>
+                Categories: {selectedBook.volumeInfo.categories || ""}
+              </Text>
+              <Text style={styles.previewLabel}>
+                Description: {selectedBook.volumeInfo.description || ""}
+              </Text>
+              <Text style={styles.previewLabel}>
+                isbn:{" "}
+                {selectedBook.volumeInfo.industryIdentifiers?.[0]
+                  ?.identifier || "N/A"}
+              </Text>
+              <View style={styles.previewActions}>
+                <TouchableOpacity
+                  style={[styles.primaryButton, { flex: 1, marginRight: 5 }]}
+                  onPress={handleAddBook}
+                  disabled={addingBook}
+                >
+                  {addingBook ? (
+                    <ActivityIndicator color={Colors.white} size="small" />
+                  ) : (
+                    <Text style={styles.primaryButtonText}>Add Book</Text>
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.secondaryButton, { flex: 1, marginLeft: 5 }]}
+                  onPress={() => {
+                    setSelectedBook(null);
+                    clearSearchState();
+                  }}
+                >
+                  <Text style={styles.secondaryButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </ScrollView>
+        )}
+
+        <Modal visible={Boolean(scannerVisible)} animationType="slide">
+          <View style={{ flex: 1, position: "relative" }}>
+            <BarcodeScanner
+              onISBNScanned={handleISBNScanned}
+              onClose={() => setScannerVisible(false)}
+            />
+          </View>
+        </Modal>
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  inner: {
+    flex: 1,
+    padding: 20,
+  },
+  searchInput: {
+    backgroundColor: Colors.surface,
+    borderColor: Colors.border,
+    borderWidth: 1,
+    padding: 12,
+    marginBottom: 16,
+    fontSize: 15,
+    borderRadius: 12,
+    color: Colors.text,
+  },
+  row: {
+    flexDirection: "row",
+    marginBottom: 10,
+  },
+  primaryButton: {
+    flex: 1,
+    backgroundColor: Colors.primary,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  primaryButtonText: {
+    color: Colors.white,
+    fontWeight: "600",
+    fontSize: 15,
+  },
+  secondaryButton: {
+    backgroundColor: Colors.surfaceAlt,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  secondaryButtonText: {
+    color: Colors.textSecondary,
+    fontWeight: "600",
+    fontSize: 15,
+  },
+  resultsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  resultsCount: {
+    color: Colors.text,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  clearText: {
+    color: Colors.textSecondary,
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  resultCard: {
+    flexDirection: "row",
+    padding: 10,
+    alignItems: "center",
+    marginBottom: 8,
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  resultImage: {
+    width: 50,
+    height: 75,
+    marginRight: 10,
+    resizeMode: "contain",
+    backgroundColor: Colors.surfaceAlt,
+    borderRadius: 4,
+  },
+  resultInfo: {
+    flex: 1,
+    padding: 12,
+  },
+  resultTitle: {
+    fontWeight: "bold",
+    color: Colors.text,
+  },
+  resultAuthor: {
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
+  previewCard: {
+    marginTop: 20,
+    backgroundColor: Colors.surface,
+    padding: 16,
+    borderRadius: 12,
+    maxHeight: 400,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  previewHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    marginBottom: 10,
+    alignItems: "center",
+  },
+  previewTitle: {
+    fontWeight: "bold",
+    color: Colors.text,
+    fontSize: 18,
+  },
+  previewImage: {
+    width: 65,
+    height: 90,
+    marginBottom: 10,
+    resizeMode: "contain",
+  },
+  previewLabel: {
+    fontWeight: "600",
+    color: Colors.text,
+    marginBottom: 5,
+  },
+  previewActions: {
+    flexDirection: "row",
+    width: "100%",
+    marginTop: 10,
+  },
+});
