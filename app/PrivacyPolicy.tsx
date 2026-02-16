@@ -1,6 +1,7 @@
 import { Stack } from "expo-router";
 import React from "react";
 import { ScrollView, Text, View, StyleSheet, Linking } from "react-native";
+import { Colors } from "@/constants/Colors";
 
 export default function PrivacyPolicy() {
   return (
@@ -181,7 +182,7 @@ export default function PrivacyPolicy() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f3f4f6",
+    backgroundColor: Colors.background,
   },
   contentContainer: {
     padding: 20,
@@ -235,7 +236,7 @@ const styles = StyleSheet.create({
   },
   link: {
     fontSize: 14,
-    color: "#bf471b",
+    color: Colors.primary,
     textDecorationLine: "underline",
     marginBottom: 12,
   },

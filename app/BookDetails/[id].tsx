@@ -15,13 +15,13 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { useBookContext } from "@/utils/Context/BookContext";
 import { useExchangeContext } from "@/utils/Context/ExchangeContext";
 import { useReviewContext } from "@/utils/Context/ReviewContext";
 import { useUserContext } from "@/utils/Context/UserContext";
 import { BookStatus } from "@/Interfaces/userBookStatus";
 import { ExchangeStatus } from "@/Interfaces/exchange";
+import { Colors } from "@/constants/Colors";
 
 const statusLabels: Record<BookStatus, string> = {
   [BookStatus.NOT_READ]: "Not read",
@@ -155,17 +155,14 @@ export default function BookDetails() {
 
   if (loadingDetails || !selectedBook) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#bf471b" />
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
   }
 
   return (
-    <LinearGradient
-      colors={["#1f1f1f", "#3d2c29"]}
-      style={{ flex: 1, padding: 16, paddingTop: 32 }}
-    >
+    <View style={styles.screenContainer}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -177,24 +174,16 @@ export default function BookDetails() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={handleRefresh}
-              tintColor="#fff"
+              tintColor={Colors.primary}
             />
           }
           keyboardShouldPersistTaps="handled"
         >
-          <View
-            style={{
-              backgroundColor: "rgba(0,0,0,0.4)",
-              borderRadius: 16,
-              padding: 16,
-              flexDirection: "row",
-              gap: 16,
-            }}
-          >
+          <View style={styles.bookInfoCard}>
             {selectedBook.cover ? (
               <Image
                 source={{ uri: selectedBook.cover }}
-                style={{ width: 120, height: 180, borderRadius: 8 }}
+                style={styles.coverImage}
                 onError={(error) => {
                   console.error(
                     `Failed to load cover image for "${selectedBook.title}":`,
@@ -203,48 +192,37 @@ export default function BookDetails() {
                 }}
               />
             ) : (
-              <View
-                style={{
-                  width: 120,
-                  height: 180,
-                  borderRadius: 8,
-                  backgroundColor: "#d1d5db",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Text>No cover</Text>
+              <View style={styles.noCoverPlaceholder}>
+                <Text style={styles.noCoverText}>No cover</Text>
               </View>
             )}
             <View style={{ flex: 1 }}>
-              <Text
-                style={{ color: "#f0dcc7", fontSize: 22, fontWeight: "bold" }}
-              >
+              <Text style={styles.bookTitle}>
                 {selectedBook.title}
               </Text>
-              <Text style={{ color: "#f0dcc7", marginTop: 4 }}>
+              <Text style={styles.bookDetail}>
                 Author: {selectedBook.author}
               </Text>
-              <Text style={{ color: "#f0dcc7" }}>
+              <Text style={styles.bookDetail}>
                 Year: {selectedBook.year}
               </Text>
-              <Text style={{ color: "#f0dcc7" }}>
+              <Text style={styles.bookDetail}>
                 Publisher: {selectedBook.publisher}
               </Text>
-              <Text style={{ color: "#f0dcc7" }}>
+              <Text style={styles.bookDetail}>
                 ISBN: {selectedBook.isbn}
               </Text>
-              <Text style={{ color: "#f0dcc7", fontWeight: "600" }}>
+              <Text style={styles.bookDetailBold}>
                 Owner: {selectedBook.ownerUsername || "Unknown"}
               </Text>
-              <Text style={{ color: "#f0dcc7" }}>
+              <Text style={styles.bookDetail}>
                 Reading Status:{" "}
                 {selectedBook.readingStatus
                   ? statusLabels[selectedBook.readingStatus as BookStatus] ??
                     selectedBook.readingStatus
                   : "Not set"}
               </Text>
-              <Text style={{ color: "#f0dcc7" }}>
+              <Text style={styles.bookDetail}>
                 Exchange Status: {selectedBook.exchangeStatus ?? "N/A"}
               </Text>
             </View>
@@ -255,45 +233,18 @@ export default function BookDetails() {
             <View style={{ marginTop: 24 }}>
               <TouchableOpacity
                 onPress={() => setDescriptionExpanded(!descriptionExpanded)}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  backgroundColor: "rgba(0,0,0,0.4)",
-                  borderRadius: 10,
-                  padding: 12,
-                  marginBottom: descriptionExpanded ? 8 : 0,
-                }}
+                style={styles.descriptionHeader}
               >
-                <Text
-                  style={{
-                    color: "#f0dcc7",
-                    fontSize: 18,
-                    fontWeight: "600",
-                    flex: 1,
-                  }}
-                >
+                <Text style={styles.sectionTitle}>
                   Description
                 </Text>
-                <Text style={{ color: "#f0dcc7", fontSize: 16 }}>
+                <Text style={{ color: Colors.textSecondary, fontSize: 16 }}>
                   {descriptionExpanded ? "▼" : "▶"}
                 </Text>
               </TouchableOpacity>
               {descriptionExpanded && (
-                <View
-                  style={{
-                    backgroundColor: "rgba(0,0,0,0.35)",
-                    borderRadius: 10,
-                    padding: 12,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#f0dcc7",
-                      lineHeight: 20,
-                      fontSize: 14,
-                    }}
-                  >
+                <View style={styles.descriptionBody}>
+                  <Text style={styles.descriptionText}>
                     {selectedBook.description}
                   </Text>
                 </View>
@@ -302,45 +253,49 @@ export default function BookDetails() {
           )}
 
           <View style={{ marginTop: 24, gap: 12 }}>
-            <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "600" }}>
+            <Text style={styles.sectionTitle}>
               Update Reading Status
             </Text>
             <View style={{ flexDirection: "row", gap: 8 }}>
               {Object.values(BookStatus).map((status) => (
                 <TouchableOpacity
                   key={status}
-                  style={{
-                    paddingVertical: 8,
-                    paddingHorizontal: 12,
-                    borderRadius: 8,
-                    backgroundColor:
-                      selectedBook.readingStatus === status
-                        ? "#bf471b"
-                        : "rgba(255,255,255,0.1)",
-                  }}
+                  style={[
+                    styles.statusButton,
+                    {
+                      backgroundColor:
+                        selectedBook.readingStatus === status
+                          ? Colors.primary
+                          : Colors.surfaceAlt,
+                    },
+                  ]}
                   onPress={() => handleUpdateReadingStatus(status)}
                 >
-                  <Text style={{ color: "#fff" }}>{statusLabels[status]}</Text>
+                  <Text
+                    style={{
+                      color:
+                        selectedBook.readingStatus === status
+                          ? Colors.white
+                          : Colors.text,
+                    }}
+                  >
+                    {statusLabels[status]}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </View>
           </View>
 
           <View style={{ marginTop: 24, gap: 12 }}>
-            <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "600" }}>
+            <Text style={styles.sectionTitle}>
               Actions
             </Text>
             {!isOwner && (
               <TouchableOpacity
-                style={{
-                  backgroundColor: "#bf471b",
-                  padding: 12,
-                  borderRadius: 8,
-                  alignItems: "center",
-                }}
+                style={styles.exchangeButton}
                 onPress={handleRequestExchange}
               >
-                <Text style={{ color: "#fff", fontWeight: "600" }}>
+                <Text style={styles.actionButtonText}>
                   Request Exchange
                 </Text>
               </TouchableOpacity>
@@ -349,15 +304,10 @@ export default function BookDetails() {
             {isOwner && (
               <>
                 <TouchableOpacity
-                  style={{
-                    backgroundColor: "#b91c1c",
-                    padding: 12,
-                    borderRadius: 8,
-                    alignItems: "center",
-                  }}
+                  style={styles.deleteBookButton}
                   onPress={handleDeleteBook}
                 >
-                  <Text style={{ color: "#fff", fontWeight: "600" }}>
+                  <Text style={styles.actionButtonText}>
                     Delete Book
                   </Text>
                 </TouchableOpacity>
@@ -373,42 +323,28 @@ export default function BookDetails() {
                 marginBottom: 12,
               }}
             >
-              <Text
-                style={{
-                  color: "#f0dcc7",
-                  fontSize: 18,
-                  fontWeight: "600",
-                }}
-              >
+              <Text style={styles.sectionTitle}>
                 Reviews
               </Text>
               {reviewsLoading && (
                 <ActivityIndicator
-                  color="#bf471b"
+                  color={Colors.primary}
                   size="small"
                   style={{ marginLeft: 8 }}
                 />
               )}
             </View>
             {!reviewsLoading && reviews.length === 0 ? (
-              <Text style={{ color: "#f0dcc7", fontStyle: "italic" }}>
+              <Text style={styles.noReviewsText}>
                 No reviews yet. Be the first to review this book!
               </Text>
             ) : !reviewsLoading && reviews.length > 0 ? (
               reviews.map((review) => (
-                <View
-                  key={review.id}
-                  style={{
-                    backgroundColor: "rgba(0,0,0,0.35)",
-                    borderRadius: 10,
-                    padding: 12,
-                    marginBottom: 10,
-                  }}
-                >
-                  <Text style={{ color: "#f0dcc7", fontWeight: "600" }}>
+                <View key={review.id} style={styles.reviewCard}>
+                  <Text style={styles.reviewAuthor}>
                     {review.user?.username ?? "Anonymous"} • {review.rating}/5
                   </Text>
-                  <Text style={{ color: "#f0dcc7", marginTop: 4 }}>
+                  <Text style={styles.reviewComment}>
                     {review.comment}
                   </Text>
                   {review.user?.email === currentUser?.email && (
@@ -421,27 +357,17 @@ export default function BookDetails() {
                           setEditRating(review.rating.toString());
                           setEditComment(review.comment);
                         }}
-                        style={{
-                          backgroundColor: "#bf471b",
-                          paddingVertical: 6,
-                          paddingHorizontal: 12,
-                          borderRadius: 6,
-                        }}
+                        style={styles.editReviewButton}
                       >
-                        <Text style={{ color: "#fff", fontWeight: "600" }}>
+                        <Text style={styles.actionButtonText}>
                           Edit
                         </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         onPress={() => deleteReview(review.id)}
-                        style={{
-                          backgroundColor: "#b91c1c",
-                          paddingVertical: 6,
-                          paddingHorizontal: 12,
-                          borderRadius: 6,
-                        }}
+                        style={styles.deleteReviewButton}
                       >
-                        <Text style={{ color: "#fff", fontWeight: "600" }}>
+                        <Text style={styles.actionButtonText}>
                           Delete
                         </Text>
                       </TouchableOpacity>
@@ -453,14 +379,7 @@ export default function BookDetails() {
           </View>
 
           <View style={{ marginTop: 24 }}>
-            <Text
-              style={{
-                color: "#f0dcc7",
-                fontSize: 18,
-                fontWeight: "600",
-                marginBottom: 12,
-              }}
-            >
+            <Text style={[styles.sectionTitle, { marginBottom: 12 }]}>
               Add a Review
             </Text>
             <View style={{ flexDirection: "row", gap: 8 }}>
@@ -469,42 +388,23 @@ export default function BookDetails() {
                 onChangeText={setReviewRating}
                 keyboardType="numeric"
                 maxLength={1}
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.1)",
-                  color: "#fff",
-                  padding: 10,
-                  borderRadius: 8,
-                  width: 60,
-                  textAlign: "center",
-                }}
+                style={styles.ratingInput}
               />
               <TextInput
                 value={reviewComment}
                 onChangeText={setReviewComment}
                 placeholder="Share your thoughts..."
-                placeholderTextColor="#d1d5db"
+                placeholderTextColor={Colors.placeholder}
                 multiline={true}
-                style={{
-                  flex: 1,
-                  backgroundColor: "rgba(255,255,255,0.1)",
-                  color: "#fff",
-                  padding: 10,
-                  borderRadius: 8,
-                }}
+                style={styles.commentInput}
               />
             </View>
             <TouchableOpacity
-              style={{
-                marginTop: 12,
-                padding: 12,
-                backgroundColor: "#bf471b",
-                borderRadius: 8,
-                alignItems: "center",
-              }}
+              style={styles.submitReviewButton}
               onPress={handleReviewSubmit}
               disabled={Boolean(submittingReview)}
             >
-              <Text style={{ color: "#fff", fontWeight: "600" }}>
+              <Text style={styles.actionButtonText}>
                 {submittingReview ? "Submitting..." : "Submit Review"}
               </Text>
             </TouchableOpacity>
@@ -529,7 +429,7 @@ export default function BookDetails() {
               keyboardType="numeric"
               maxLength={1}
               style={styles.modalInput}
-              placeholderTextColor="#d1d5db"
+              placeholderTextColor={Colors.placeholder}
             />
             <Text style={styles.modalLabel}>Comment:</Text>
             <TextInput
@@ -538,14 +438,14 @@ export default function BookDetails() {
               multiline={true}
               numberOfLines={4}
               style={[styles.modalInput, styles.modalTextArea]}
-              placeholderTextColor="#d1d5db"
+              placeholderTextColor={Colors.placeholder}
             />
             <View style={styles.modalButtonRow}>
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setEditingReview(null)}
               >
-                <Text style={styles.modalButtonText}>Cancel</Text>
+                <Text style={[styles.modalButtonText, { color: Colors.text }]}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.saveButton]}
@@ -573,19 +473,184 @@ export default function BookDetails() {
           </View>
         </View>
       </Modal>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: Colors.background,
+  },
+  screenContainer: {
+    flex: 1,
+    backgroundColor: Colors.background,
+    padding: 16,
+    paddingTop: 32,
+  },
+  bookInfoCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: "row",
+    gap: 16,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  coverImage: {
+    width: 120,
+    height: 180,
+    borderRadius: 8,
+  },
+  noCoverPlaceholder: {
+    width: 120,
+    height: 180,
+    borderRadius: 8,
+    backgroundColor: Colors.surfaceAlt,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  noCoverText: {
+    color: Colors.textSecondary,
+  },
+  bookTitle: {
+    color: Colors.text,
+    fontSize: 22,
+    fontWeight: "bold",
+  },
+  bookDetail: {
+    color: Colors.textSecondary,
+    marginTop: 4,
+  },
+  bookDetailBold: {
+    color: Colors.text,
+    fontWeight: "600",
+    marginTop: 4,
+  },
+  descriptionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    padding: 12,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  descriptionBody: {
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 8,
+  },
+  descriptionText: {
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    fontSize: 14,
+  },
+  sectionTitle: {
+    color: Colors.text,
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  statusButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  exchangeButton: {
+    backgroundColor: Colors.primary,
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  deleteBookButton: {
+    backgroundColor: Colors.error,
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  actionButtonText: {
+    color: Colors.white,
+    fontWeight: "600",
+  },
+  noReviewsText: {
+    color: Colors.textSecondary,
+    fontStyle: "italic",
+  },
+  reviewCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 10,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  reviewAuthor: {
+    color: Colors.text,
+    fontWeight: "600",
+  },
+  reviewComment: {
+    color: Colors.textSecondary,
+    marginTop: 4,
+  },
+  editReviewButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  deleteReviewButton: {
+    backgroundColor: Colors.error,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  ratingInput: {
+    backgroundColor: Colors.surface,
+    color: Colors.text,
+    padding: 10,
+    borderRadius: 8,
+    width: 60,
+    textAlign: "center",
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  commentInput: {
+    flex: 1,
+    backgroundColor: Colors.surface,
+    color: Colors.text,
+    padding: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  submitReviewButton: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: Colors.primary,
+    borderRadius: 8,
+    alignItems: "center",
+  },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.7)",
+    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
   modalContent: {
-    backgroundColor: "#2d2d2d",
+    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 20,
     width: "90%",
@@ -594,22 +659,22 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#f0dcc7",
+    color: Colors.text,
     marginBottom: 16,
   },
   modalLabel: {
     fontSize: 14,
-    color: "#f0dcc7",
+    color: Colors.textSecondary,
     marginBottom: 8,
     marginTop: 12,
   },
   modalInput: {
-    backgroundColor: "rgba(255,255,255,0.1)",
-    color: "#fff",
+    backgroundColor: Colors.surface,
+    color: Colors.text,
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#bf471b",
+    borderColor: Colors.border,
   },
   modalTextArea: {
     height: 100,
@@ -627,13 +692,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cancelButton: {
-    backgroundColor: "#6b7280",
+    backgroundColor: Colors.surfaceAlt,
   },
   saveButton: {
-    backgroundColor: "#bf471b",
+    backgroundColor: Colors.primary,
   },
   modalButtonText: {
-    color: "#fff",
+    color: Colors.white,
     fontWeight: "600",
   },
 });
