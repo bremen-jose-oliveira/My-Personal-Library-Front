@@ -62,16 +62,52 @@ function AppTabs() {
   }
 
   return (
-    <Tabs>
+    <Tabs
+      screenOptions={{
+        tabBarStyle: {
+          backgroundColor: '#ffffff',
+          borderTopWidth: 0,
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarActiveTintColor: '#bf471b',
+        tabBarInactiveTintColor: '#999',
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '600',
+          marginTop: 4,
+        },
+        headerStyle: {
+          backgroundColor: '#ffffff',
+          elevation: 0,
+          shadowOpacity: 0,
+          borderBottomWidth: 1,
+          borderBottomColor: '#f0f0f0',
+        },
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          fontSize: 18,
+        },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
           headerTitle: "Home",
           headerRight: () => <NotificationBell />,
           tabBarLabel: "Home",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons name="home" size={24} color="black" />
+          tabBarIcon: ({ focused, color }) => (
+            <MaterialCommunityIcons 
+              name={focused ? "home" : "home-outline"} 
+              size={26} 
+              color={color} 
+            />
           ),
         }}
       />
@@ -81,12 +117,11 @@ function AppTabs() {
           headerTitle: "Library",
           headerRight: () => <NotificationBell />,
           tabBarLabel: "Library",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
+          tabBarIcon: ({ focused, color }) => (
             <MaterialCommunityIcons
-              name="bank-outline"
-              size={24}
-              color="black"
+              name={focused ? "library" : "library-outline"}
+              size={26}
+              color={color}
             />
           ),
         }}
@@ -98,12 +133,11 @@ function AppTabs() {
           headerTitle: "Borrowed",
           headerRight: () => <NotificationBell />,
           tabBarLabel: "Borrowed",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
+          tabBarIcon: ({ focused, color }) => (
             <MaterialCommunityIcons
               name="book-arrow-down"
-              size={24}
-              color="black"
+              size={26}
+              color={color}
             />
           ),
         }}
@@ -115,12 +149,11 @@ function AppTabs() {
           headerTitle: "Lending",
           headerRight: () => <NotificationBell />,
           tabBarLabel: "Lending",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
+          tabBarIcon: ({ focused, color }) => (
             <MaterialCommunityIcons
               name="book-arrow-up"
-              size={24}
-              color="black"
+              size={26}
+              color={color}
             />
           ),
         }}
@@ -130,13 +163,12 @@ function AppTabs() {
         name="MyReviews/index"
         options={{
           headerTitle: "My Reviews",
-          tabBarLabel: "My Reviews",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
+          tabBarLabel: "Reviews",
+          tabBarIcon: ({ focused, color }) => (
             <MaterialCommunityIcons
-              name="star-outline"
-              size={24}
-              color="black"
+              name={focused ? "star" : "star-outline"}
+              size={26}
+              color={color}
             />
           ),
         }}
@@ -146,13 +178,12 @@ function AppTabs() {
         name="ReadingList/index"
         options={{
           headerTitle: "Reading List",
-          tabBarLabel: "Reading List",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
+          tabBarLabel: "Reading",
+          tabBarIcon: ({ focused, color }) => (
             <MaterialCommunityIcons
               name="book-open-variant"
-              size={24}
-              color="black"
+              size={26}
+              color={color}
             />
           ),
         }}
@@ -163,12 +194,11 @@ function AppTabs() {
         options={{
           headerTitle: "Browse Books",
           tabBarLabel: "Browse",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
+          tabBarIcon: ({ focused, color }) => (
             <MaterialCommunityIcons
-              name="book-search"
-              size={24}
-              color="black"
+              name={focused ? "book-search" : "book-search-outline"}
+              size={26}
+              color={color}
             />
           ),
         }}
@@ -180,12 +210,11 @@ function AppTabs() {
           headerTitle: "Friends",
           headerRight: () => <NotificationBell />,
           tabBarLabel: "Friends",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
+          tabBarIcon: ({ focused, color }) => (
             <MaterialCommunityIcons
-              name="account-group"
-              size={24}
-              color="black"
+              name={focused ? "account-group" : "account-group-outline"}
+              size={26}
+              color={color}
             />
           ),
         }}
@@ -199,10 +228,13 @@ function AppTabs() {
           ),
 
           headerTitle: "Account Settings",
-          tabBarLabel: "",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <Ionicons name="settings-sharp" size={24} color="black" />
+          tabBarLabel: "Settings",
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons 
+              name={focused ? "settings" : "settings-outline"} 
+              size={26} 
+              color={color} 
+            />
           ),
         }}
       />
