@@ -5,14 +5,14 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-  ImageBackground,
   Image,
   FlatList,
+  StyleSheet,
 } from "react-native";
 import { useFriendContext } from "@/utils/Context/FriendContext";
-import { LinearGradient } from "expo-linear-gradient";
 import { FetchAllUsers, FetchAllUsersBySearchParam } from "@/utils/Users";
 import type { UserSummary } from "@/Interfaces/user";
+import { Colors } from "@/constants/Colors";
 
 interface UserWithProfilePicture extends UserSummary {
   profilePicture?: string;
@@ -35,7 +35,7 @@ const AddFriend = () => {
     }
 
     try {
-      setIsAddingFriend(true); // Set loading state
+      setIsAddingFriend(true);
       await addFriend(friendEmail);
       Alert.alert("Success", "Friend added successfully!");
       setFriendEmail("");
@@ -43,14 +43,13 @@ const AddFriend = () => {
       console.error("Error adding friend:", error);
       Alert.alert("Error", "Failed to add friend. Please try again.");
     } finally {
-      setIsAddingFriend(false); // Reset loading state
+      setIsAddingFriend(false);
     }
   };
 
-  // Add friend from the search results
   const handleAddFriendFromSearch = async (friend: UserWithProfilePicture) => {
     try {
-      setIsAddingFriend(true); // Set loading state
+      setIsAddingFriend(true);
       await addFriend(friend.email);
       console.log("Payload to be sent:", JSON.stringify(friend.email));
       Alert.alert("Success", "Friend added successfully!");
@@ -58,11 +57,10 @@ const AddFriend = () => {
       console.error("Error adding friend:", error);
       Alert.alert("Error", "Failed to add friend. Please try again.");
     } finally {
-      setIsAddingFriend(false); // Reset loading state
+      setIsAddingFriend(false);
     }
   };
 
-  // Search for users by email or username
   useEffect(() => {
     const fetchFriends = async () => {
       if (!searchQuery) return;
@@ -80,166 +78,169 @@ const AddFriend = () => {
   }, [searchQuery]);
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
-      style={{
-        flex: 1,
-        width: "100%",
-        height: "100%",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-      resizeMode="cover"
-    >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.8)"]}
-        style={{
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        {/* Search results display */}
-
-        <View
-          style={{
-            flex: 1,
-            width: "90%",
-            padding: 20,
-            backgroundColor: "rgba(0, 0, 0, 0.6)",
-            borderRadius: 8,
-          }}
+    <View style={styles.container}>
+      <View style={styles.formCard}>
+        <TextInput
+          value={friendEmail}
+          onChangeText={setFriendEmail}
+          placeholder="Enter friend's email"
+          placeholderTextColor={Colors.placeholder}
+          style={styles.input}
+        />
+        <TouchableOpacity
+          onPress={handleAddFriendByEmail}
+          style={styles.primaryButton}
         >
-          {/* Email Input for adding a friend */}
-          <TextInput
-            value={friendEmail}
-            onChangeText={setFriendEmail}
-            placeholder="Enter friend's email"
-            style={{
-              height: 40,
-              borderColor: "gray",
-              borderWidth: 1,
-              marginBottom: 20,
-              paddingHorizontal: 10,
-              color: "white",
-              backgroundColor: "rgba(0,0,0,0.4)",
-            }}
-          />
-          <TouchableOpacity
-            onPress={handleAddFriendByEmail}
-            style={{
-              backgroundColor: "#bf471b",
-              padding: 10,
-              marginBottom: 40,
-              borderRadius: 5,
-              alignItems: "center",
-            }}
-          >
-            <Text style={{ color: "white", fontSize: 16 }}>
-              Add Friend by Email
-            </Text>
-          </TouchableOpacity>
+          <Text style={styles.primaryButtonText}>Add Friend by Email</Text>
+        </TouchableOpacity>
 
-          {/* Search Query Input */}
-          <TextInput
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder="Search by username or email"
-            style={{
-              height: 40,
-              borderColor: "gray",
-              borderWidth: 1,
-              marginBottom: 20,
-              paddingHorizontal: 10,
-              color: "white",
-              backgroundColor: "rgba(0,0,0,0.4)",
-            }}
-          />
-          <FlatList
-            data={searchResults}
-            keyExtractor={(friend) =>
-              friend.id ? friend.id.toString() : Math.random().toString()
-            }
-            renderItem={({ item: friend }) => (
-              <View
-                style={{
-                  flexDirection: "row",
-                  marginTop: 3,
-                  padding: 1,
-                  borderRadius: 10,
-                  width: "100%",
-                  backgroundColor: "rgba(0,0,0,0.4)",
-                }}
-              >
-                {friend?.profilePicture ? (
-                  <Image
-                    style={{ width: 100, height: 144 }}
-                    source={{ uri: friend.profilePicture }}
-                  />
-                ) : (
-                  <View
-                    style={{
-                      width: 100,
-                      height: 144,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginRight: 16,
-                      backgroundColor: "#d1d5db",
-                      borderRadius: 8,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: "#f0dcc7",
-                        fontSize: 12,
-                        lineHeight: 16,
-                        textAlign: "center",
-                      }}
-                    >
-                      No Image Available
-                    </Text>
-                  </View>
-                )}
-                <View style={{ flex: 1, justifyContent: "space-between" }}>
-                  <Text
-                    style={{
-                      fontSize: 20,
-                      fontWeight: "bold",
-                      color: "#f0dcc7",
-                    }}
-                  >
-                    Name: {friend?.username}
-                  </Text>
-                  <Text style={{ fontSize: 15, color: "#f0dcc7" }}>
-                    Email: {friend?.email}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => handleAddFriendFromSearch(friend)}
-                    style={{
-                      backgroundColor: "#bf471b",
-                      padding: 10,
-                      borderRadius: 5,
-                      alignItems: "center",
-                      marginTop: 10,
-                    }}
-                  >
-                    <Text style={{ color: "white", fontSize: 16 }}>
-                      Add Friend
-                    </Text>
-                  </TouchableOpacity>
+        <View style={styles.divider} />
+
+        <TextInput
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Search by username or email"
+          placeholderTextColor={Colors.placeholder}
+          style={styles.input}
+        />
+        <FlatList
+          data={searchResults}
+          keyExtractor={(friend) =>
+            friend.id ? friend.id.toString() : Math.random().toString()
+          }
+          renderItem={({ item: friend }) => (
+            <View style={styles.resultCard}>
+              {friend?.profilePicture ? (
+                <Image
+                  style={styles.profileImage}
+                  source={{ uri: friend.profilePicture }}
+                />
+              ) : (
+                <View style={styles.placeholderImage}>
+                  <Text style={styles.placeholderText}>No Image Available</Text>
                 </View>
+              )}
+              <View style={styles.resultContent}>
+                <Text style={styles.nameText}>
+                  Name: {friend?.username}
+                </Text>
+                <Text style={styles.emailText}>
+                  Email: {friend?.email}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => handleAddFriendFromSearch(friend)}
+                  style={styles.addButton}
+                >
+                  <Text style={styles.addButtonText}>Add Friend</Text>
+                </TouchableOpacity>
               </View>
-            )}
-            keyboardShouldPersistTaps="handled"
-          />
-        </View>
-      </LinearGradient>
-    </ImageBackground>
+            </View>
+          )}
+          keyboardShouldPersistTaps="handled"
+        />
+      </View>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+    padding: 16,
+  },
+  formCard: {
+    flex: 1,
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  input: {
+    height: 48,
+    borderColor: Colors.border,
+    borderWidth: 1,
+    borderRadius: 12,
+    marginBottom: 16,
+    paddingHorizontal: 14,
+    fontSize: 15,
+    color: Colors.text,
+    backgroundColor: Colors.surface,
+  },
+  primaryButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  primaryButtonText: {
+    color: Colors.white,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: Colors.border,
+    marginVertical: 24,
+  },
+  resultCard: {
+    flexDirection: "row",
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    marginBottom: 12,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  profileImage: {
+    width: 100,
+    height: 144,
+  },
+  placeholderImage: {
+    width: 100,
+    height: 144,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: Colors.surfaceAlt,
+    borderRightWidth: 1,
+    borderRightColor: Colors.border,
+  },
+  placeholderText: {
+    color: Colors.textSecondary,
+    fontSize: 12,
+    lineHeight: 16,
+    textAlign: "center",
+  },
+  resultContent: {
+    flex: 1,
+    justifyContent: "space-between",
+    padding: 12,
+  },
+  nameText: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: Colors.text,
+  },
+  emailText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+  },
+  addButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  addButtonText: {
+    color: Colors.white,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+});
 
 export default AddFriend;

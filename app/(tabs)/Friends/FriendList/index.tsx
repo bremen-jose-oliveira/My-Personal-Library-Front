@@ -1,20 +1,18 @@
 import { useFriendContext } from "@/utils/Context/FriendContext";
-import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   Image,
   FlatList,
-  ActivityIndicator,
-  Button,
   RefreshControl,
   Alert,
   Platform,
-  ImageBackground,
   TouchableOpacity,
+  StyleSheet,
 } from "react-native";
 import { router } from "expo-router";
+import { Colors } from "@/constants/Colors";
 
 export default function FriendList() {
   const { friends, removeFriend, fetchCurrentUserFriends } = useFriendContext();
@@ -31,11 +29,10 @@ export default function FriendList() {
     } catch (error) {
       console.error("Error refreshing books:", error);
     }
-    setRefreshing(false); // Ensure this happens last
+    setRefreshing(false);
   };
   const handleRemoveFriend = (id: number) => {
     if (Platform.OS === "web") {
-      // Web-specific alert
       if (window.confirm("Are you sure you want to delete this book?")) {
         removeFriend(id);
       }
@@ -52,141 +49,150 @@ export default function FriendList() {
   };
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
-      style={{
-        flex: 1, // Take full screen
-        width: "100%", // Make sure it spans full width
-        height: "100%", // Make sure it spans full height
-        justifyContent: "center", // Center content vertically
-        alignItems: "center", // Center content horizontally
-      }}
-      resizeMode="cover" // Ensures the image covers the screen
-    >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
-        style={{
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-          justifyContent: "flex-start",
-        }}
-      >
-        <FlatList
-          data={friends}
-          keyExtractor={(friend) =>
-            friend.id ? friend.id.toString() : Math.random().toString()
-          }
-          renderItem={({ item: friend }) => (
-            <View
-              style={{
-                flexDirection: "row",
-                marginTop: 3,
-                padding: 1,
-                borderRadius: 10,
-                width: "100%",
-                backgroundColor: "rgba(0,0,0,0.4)",
-              }}
-            >
-              {friend.profilePicture ? (
-                <Image
-                  style={{ width: 100, height: 144 }}
-                  source={{ uri: friend.profilePicture }}
-                />
-              ) : (
-                <View
-                  style={{
-                    width: 100,
-                    height: 144,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginRight: 16,
-                    backgroundColor: "#d1d5db",
-                    borderRadius: 8,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#f0dcc7",
-                      fontSize: 12,
-                      lineHeight: 16,
-                      textAlign: "center",
-                    }}
-                  >
-                    No Image Available
-                  </Text>
-                </View>
-              )}
-
-              <View style={{ flex: 1, justifyContent: "space-around" }}>
-                <TouchableOpacity
-                  onPress={() => {
-                    const friendEmail = friend.email || friend.friendEmail;
-                    if (friendEmail) {
-                      router.push(
-                        `/FriendBooks/${encodeURIComponent(friendEmail)}`
-                      );
-                    } else {
-                      Alert.alert("Error", "Friend email not available");
-                    }
-                  }}
-                  style={{ flex: 1 }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 20,
-                      fontWeight: "bold",
-                      color: "#f0dcc7",
-                    }}
-                  >
-                    Name:{" "}
-                    {friend.name
-                      ? friend.name
-                      : friend.email || friend.friendEmail}
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 20,
-                      fontWeight: "bold",
-                      color: "#f0dcc7",
-                    }}
-                  >
-                    Email:{" "}
-                    {friend.email || friend.friendEmail || "No Email Provided"}
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color: "#bf471b",
-                      marginTop: 8,
-                      textDecorationLine: "underline",
-                    }}
-                  >
-                    View{" "}
-                    {friend.name ||
-                      friend.email ||
-                      friend.friendEmail ||
-                      "Friend"}
-                    's Books →
-                  </Text>
-                </TouchableOpacity>
-
-                <Button
-                  title="Remove Friend"
-                  onPress={() => handleRemoveFriend(friend.id)}
-                  color="#bf471b"
-                />
+    <View style={styles.container}>
+      <FlatList
+        data={friends}
+        contentContainerStyle={styles.listContent}
+        keyExtractor={(friend) =>
+          friend.id ? friend.id.toString() : Math.random().toString()
+        }
+        renderItem={({ item: friend }) => (
+          <View style={styles.card}>
+            {friend.profilePicture ? (
+              <Image
+                style={styles.profileImage}
+                source={{ uri: friend.profilePicture }}
+              />
+            ) : (
+              <View style={styles.placeholderImage}>
+                <Text style={styles.placeholderText}>No Image Available</Text>
               </View>
+            )}
+
+            <View style={styles.cardContent}>
+              <TouchableOpacity
+                onPress={() => {
+                  const friendEmail = friend.email || friend.friendEmail;
+                  if (friendEmail) {
+                    router.push(
+                      `/FriendBooks/${encodeURIComponent(friendEmail)}`
+                    );
+                  } else {
+                    Alert.alert("Error", "Friend email not available");
+                  }
+                }}
+                style={{ flex: 1 }}
+              >
+                <Text style={styles.nameText}>
+                  Name:{" "}
+                  {friend.name
+                    ? friend.name
+                    : friend.email || friend.friendEmail}
+                </Text>
+                <Text style={styles.emailText}>
+                  Email:{" "}
+                  {friend.email || friend.friendEmail || "No Email Provided"}
+                </Text>
+                <Text style={styles.linkText}>
+                  View{" "}
+                  {friend.name ||
+                    friend.email ||
+                    friend.friendEmail ||
+                    "Friend"}
+                  's Books →
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.removeButton}
+                onPress={() => handleRemoveFriend(friend.id)}
+              >
+                <Text style={styles.removeButtonText}>Remove Friend</Text>
+              </TouchableOpacity>
             </View>
-          )}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-          keyboardShouldPersistTaps="handled"
-        />
-      </LinearGradient>
-    </ImageBackground>
+          </View>
+        )}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />
+        }
+        keyboardShouldPersistTaps="handled"
+      />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  listContent: {
+    padding: 16,
+    paddingTop: 8,
+  },
+  card: {
+    flexDirection: "row",
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    marginBottom: 12,
+    overflow: "hidden",
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  profileImage: {
+    width: 100,
+    height: 144,
+  },
+  placeholderImage: {
+    width: 100,
+    height: 144,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: Colors.surfaceAlt,
+    borderRightWidth: 1,
+    borderRightColor: Colors.border,
+  },
+  placeholderText: {
+    color: Colors.textSecondary,
+    fontSize: 12,
+    lineHeight: 16,
+    textAlign: "center",
+  },
+  cardContent: {
+    flex: 1,
+    justifyContent: "space-around",
+    padding: 12,
+  },
+  nameText: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  emailText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+  },
+  linkText: {
+    fontSize: 14,
+    color: Colors.primary,
+    marginTop: 8,
+    fontWeight: "600",
+  },
+  removeButton: {
+    backgroundColor: Colors.error,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 8,
+  },
+  removeButtonText: {
+    color: Colors.white,
+    fontWeight: "600",
+    fontSize: 14,
+  },
+});
