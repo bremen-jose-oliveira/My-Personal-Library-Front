@@ -5,11 +5,10 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
-  ImageBackground,
   ActivityIndicator,
   Image,
+  StyleSheet,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BookStatus } from "@/Interfaces/userBookStatus";
@@ -17,11 +16,18 @@ import type { UserBookStatus } from "@/Interfaces/userBookStatus";
 import { fetchCoverImage } from "@/utils/fetchBookData";
 import { Platform } from "react-native";
 import { useCallback } from "react";
+import { Colors } from "@/constants/Colors";
 
 const statusLabels: Record<BookStatus, string> = {
   [BookStatus.NOT_READ]: "Not Read",
   [BookStatus.READING]: "Reading",
   [BookStatus.READ]: "Finished",
+};
+
+const statusColors: Record<BookStatus, string> = {
+  [BookStatus.READ]: Colors.success,
+  [BookStatus.READING]: Colors.warning,
+  [BookStatus.NOT_READ]: Colors.textSecondary,
 };
 
 export default function ReadingListScreen() {
@@ -117,18 +123,12 @@ export default function ReadingListScreen() {
     return (
       <TouchableOpacity
         onPress={() => router.push(`/BookDetails/${item.book!.id}`)}
-        style={{
-          flexDirection: "row",
-          backgroundColor: "rgba(0,0,0,0.4)",
-          borderRadius: 12,
-          padding: 12,
-          marginBottom: 12,
-        }}
+        style={styles.bookCard}
       >
         {item.book.cover ? (
           <Image
             source={{ uri: item.book.cover }}
-            style={{ width: 60, height: 90, borderRadius: 8, marginRight: 12 }}
+            style={styles.coverImage}
             resizeMode="cover"
             onError={(error) => {
               console.error(
@@ -141,51 +141,20 @@ export default function ReadingListScreen() {
             }}
           />
         ) : (
-          <View
-            style={{
-              width: 60,
-              height: 90,
-              borderRadius: 8,
-              backgroundColor: "#d1d5db",
-              justifyContent: "center",
-              alignItems: "center",
-              marginRight: 12,
-            }}
-          >
-            <Text style={{ color: "#666", fontSize: 10, textAlign: "center" }}>
-              No Cover
-            </Text>
+          <View style={styles.noCover}>
+            <Text style={styles.noCoverText}>No Cover</Text>
           </View>
         )}
-        <View style={{ flex: 1 }}>
-          <Text
-            style={{
-              color: "#f0dcc7",
-              fontSize: 16,
-              fontWeight: "600",
-              marginBottom: 4,
-            }}
-          >
-            {item.book.title}
-          </Text>
-          <Text style={{ color: "#f0dcc7", fontSize: 14, marginBottom: 4 }}>
-            {item.book.author}
-          </Text>
+        <View style={styles.bookInfo}>
+          <Text style={styles.bookTitle}>{item.book.title}</Text>
+          <Text style={styles.bookAuthor}>{item.book.author}</Text>
           <View
-            style={{
-              backgroundColor:
-                item.status === BookStatus.READ
-                  ? "#10b981"
-                  : item.status === BookStatus.READING
-                  ? "#f59e0b"
-                  : "#6b7280",
-              paddingHorizontal: 8,
-              paddingVertical: 4,
-              borderRadius: 6,
-              alignSelf: "flex-start",
-            }}
+            style={[
+              styles.statusBadge,
+              { backgroundColor: statusColors[item.status as BookStatus] || Colors.textSecondary },
+            ]}
           >
-            <Text style={{ color: "#fff", fontSize: 12, fontWeight: "600" }}>
+            <Text style={styles.statusText}>
               {statusLabels[item.status as BookStatus] || item.status}
             </Text>
           </View>
@@ -195,114 +164,206 @@ export default function ReadingListScreen() {
   };
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
-      style={{
-        flex: 1,
-        width: "100%",
-        height: "100%",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-      resizeMode="cover"
-    >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
-        style={{
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-        }}
-      >
-        <View style={{ paddingTop: 60 }}>
-          <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
-            <Text
-              style={{
-                fontSize: 24,
-                fontWeight: "bold",
-                color: "#f0dcc7",
-                marginBottom: 12,
-              }}
+    <View style={styles.container}>
+      <View style={styles.headerArea}>
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>Reading List</Text>
+          <View style={styles.filterRow}>
+            <TouchableOpacity
+              onPress={() => setSelectedFilter("ALL")}
+              style={[
+                styles.filterButton,
+                selectedFilter === "ALL" ? styles.filterActive : styles.filterInactive,
+              ]}
             >
-              Reading List
-            </Text>
-            <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-              <TouchableOpacity
-                onPress={() => setSelectedFilter("ALL")}
-                style={{
-                  paddingHorizontal: 12,
-                  paddingVertical: 6,
-                  borderRadius: 8,
-                  backgroundColor:
-                    selectedFilter === "ALL" ? "#bf471b" : "rgba(0,0,0,0.4)",
-                }}
+              <Text
+                style={[
+                  styles.filterText,
+                  selectedFilter === "ALL" ? styles.filterTextActive : styles.filterTextInactive,
+                ]}
               >
-                <Text style={{ color: "#fff", fontSize: 12 }}>All</Text>
+                All
+              </Text>
+            </TouchableOpacity>
+            {Object.values(BookStatus).map((status) => (
+              <TouchableOpacity
+                key={status}
+                onPress={() => setSelectedFilter(status)}
+                style={[
+                  styles.filterButton,
+                  selectedFilter === status ? styles.filterActive : styles.filterInactive,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.filterText,
+                    selectedFilter === status ? styles.filterTextActive : styles.filterTextInactive,
+                  ]}
+                >
+                  {statusLabels[status]}
+                </Text>
               </TouchableOpacity>
-              {Object.values(BookStatus).map((status) => (
-                <TouchableOpacity
-                  key={status}
-                  onPress={() => setSelectedFilter(status)}
-                  style={{
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    borderRadius: 8,
-                    backgroundColor:
-                      selectedFilter === status ? "#bf471b" : "rgba(0,0,0,0.4)",
-                  }}
-                >
-                  <Text style={{ color: "#fff", fontSize: 12 }}>
-                    {statusLabels[status]}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            ))}
           </View>
-
-          {loading ? (
-            <ActivityIndicator
-              size="large"
-              color="#bf471b"
-              style={{ marginTop: 40 }}
-            />
-          ) : (
-            <FlatList
-              contentContainerStyle={{ padding: 16, paddingTop: 0 }}
-              data={filteredStatuses}
-              keyExtractor={(item) => item.id.toString()}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                  tintColor="#bf471b"
-                />
-              }
-              renderItem={renderBookItem}
-              ListEmptyComponent={
-                <View
-                  style={{
-                    alignItems: "center",
-                    marginTop: 40,
-                    padding: 20,
-                    backgroundColor: "rgba(0,0,0,0.4)",
-                    borderRadius: 10,
-                  }}
-                >
-                  <Text style={{ color: "#f0dcc7", fontSize: 16 }}>
-                    {selectedFilter === "ALL"
-                      ? "No books in your reading list yet."
-                      : `No books with status "${
-                          statusLabels[selectedFilter as BookStatus]
-                        }".`}
-                  </Text>
-                </View>
-              }
-            />
-          )}
         </View>
-      </LinearGradient>
-    </ImageBackground>
+
+        {loading ? (
+          <ActivityIndicator
+            size="large"
+            color={Colors.primary}
+            style={{ marginTop: 40 }}
+          />
+        ) : (
+          <FlatList
+            contentContainerStyle={styles.listContent}
+            data={filteredStatuses}
+            keyExtractor={(item) => item.id.toString()}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={Colors.primary}
+              />
+            }
+            renderItem={renderBookItem}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>
+                  {selectedFilter === "ALL"
+                    ? "No books in your reading list yet."
+                    : `No books with status "${
+                        statusLabels[selectedFilter as BookStatus]
+                      }".`}
+                </Text>
+              </View>
+            }
+          />
+        )}
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  headerArea: {
+    paddingTop: 60,
+    flex: 1,
+  },
+  headerContent: {
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: Colors.text,
+    marginBottom: 12,
+  },
+  filterRow: {
+    flexDirection: "row",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+  filterButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  filterActive: {
+    backgroundColor: Colors.primary,
+  },
+  filterInactive: {
+    backgroundColor: Colors.surfaceAlt,
+  },
+  filterText: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  filterTextActive: {
+    color: Colors.white,
+  },
+  filterTextInactive: {
+    color: Colors.textSecondary,
+  },
+  listContent: {
+    padding: 16,
+    paddingTop: 0,
+  },
+  bookCard: {
+    flexDirection: "row",
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  coverImage: {
+    width: 60,
+    height: 90,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  noCover: {
+    width: 60,
+    height: 90,
+    borderRadius: 8,
+    backgroundColor: Colors.surfaceAlt,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  noCoverText: {
+    color: Colors.placeholder,
+    fontSize: 10,
+    textAlign: "center",
+  },
+  bookInfo: {
+    flex: 1,
+  },
+  bookTitle: {
+    color: Colors.text,
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  bookAuthor: {
+    color: Colors.textSecondary,
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: "flex-start",
+  },
+  statusText: {
+    color: Colors.white,
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  emptyContainer: {
+    alignItems: "center",
+    marginTop: 40,
+    padding: 20,
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  emptyText: {
+    color: Colors.textSecondary,
+    fontSize: 16,
+  },
+});

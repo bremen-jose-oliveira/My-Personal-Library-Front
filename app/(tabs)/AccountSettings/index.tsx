@@ -11,8 +11,10 @@ import {
   Platform,
   ScrollView,
   Linking,
+  StyleSheet,
 } from "react-native";
 import { getToken, removeToken } from "@/utils/Context/storageUtils";
+import { Colors } from "@/constants/Colors";
 
 const AccountSettings = () => {
   const { logout } = useContext(AuthContext);
@@ -236,105 +238,42 @@ const AccountSettings = () => {
         }}
       />
 
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "flex-start",
-          alignItems: "center",
-          paddingHorizontal: 20,
-          paddingVertical: 20,
-          backgroundColor: "#f3f4f6",
-        }}
-      >
+      <View style={styles.container}>
         <ScrollView
-          style={{ width: "100%", maxWidth: 600 }}
-          contentContainerStyle={{ paddingBottom: 40 }}
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
           {/* Current User Information */}
-          <View
-            style={{
-              backgroundColor: "#fff",
-              borderRadius: 8,
-              padding: 16,
-              marginBottom: 24,
-              width: "100%",
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.1,
-              shadowRadius: 2,
-              elevation: 2,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "600",
-                color: "#6b7280",
-                marginBottom: 8,
-              }}
-            >
-              Current Account Information
-            </Text>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Current Account Information</Text>
             {currentUser ? (
               <>
                 {currentUser.username && (
-                  <View style={{ marginBottom: 8 }}>
-                    <Text
-                      style={{
-                        fontSize: 14,
-                        color: "#9ca3af",
-                        marginBottom: 4,
-                      }}
-                    >
-                      Username
-                    </Text>
-                    <Text
-                      style={{ fontSize: 18, fontWeight: "600", color: "#000" }}
-                    >
+                  <View style={styles.infoRow}>
+                    <Text style={styles.infoLabel}>Username</Text>
+                    <Text style={styles.infoValue}>
                       {currentUser.username}
                     </Text>
                   </View>
                 )}
                 {currentUser.email && (
                   <View>
-                    <Text
-                      style={{
-                        fontSize: 14,
-                        color: "#9ca3af",
-                        marginBottom: 4,
-                      }}
-                    >
-                      Email
-                    </Text>
-                    <Text
-                      style={{ fontSize: 18, fontWeight: "600", color: "#000" }}
-                    >
+                    <Text style={styles.infoLabel}>Email</Text>
+                    <Text style={styles.infoValue}>
                       {currentUser.email}
                     </Text>
                   </View>
                 )}
               </>
             ) : (
-              <Text style={{ fontSize: 14, color: "#9ca3af" }}>
+              <Text style={styles.loadingText}>
                 Loading user information...
               </Text>
             )}
           </View>
 
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: "600",
-              letterSpacing: 0.5,
-              color: "#000",
-              marginBottom: 24,
-              marginTop: 10,
-              textAlign: "center",
-            }}
-          >
-            Change Username
-          </Text>
+          <Text style={styles.sectionTitle}>Change Username</Text>
 
           <InputField
             value={username}
@@ -344,36 +283,13 @@ const AccountSettings = () => {
             autoCapitalize="none"
           />
           <TouchableOpacity
-            style={{
-              backgroundColor: "#bf471b",
-              alignItems: "center",
-              borderRadius: 5,
-              alignSelf: "stretch",
-              paddingVertical: 14,
-              paddingHorizontal: 18,
-              marginBottom: 30,
-              minHeight: 48,
-            }}
+            style={styles.primaryButton}
             onPress={handleUpdateUsername}
           >
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "600" }}>
-              Update Username
-            </Text>
+            <Text style={styles.primaryButtonText}>Update Username</Text>
           </TouchableOpacity>
 
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: "600",
-              letterSpacing: 0.5,
-              color: "#000",
-              marginBottom: 24,
-              marginTop: 10,
-              textAlign: "center",
-            }}
-          >
-            Change Password
-          </Text>
+          <Text style={styles.sectionTitle}>Change Password</Text>
           <InputField
             secureTextEntry={secureText}
             value={oldPassword}
@@ -397,122 +313,43 @@ const AccountSettings = () => {
             placeholderTextColor="gray"
           />
           <TouchableOpacity onPress={() => setSecureText(!secureText)}>
-            <Text
-              style={{
-                color: "#bf471b",
-                fontWeight: "600",
-                marginBottom: 20,
-                fontSize: 14,
-              }}
-            >
+            <Text style={styles.togglePasswordText}>
               {secureText ? "Show Password" : "Hide Password"}
             </Text>
           </TouchableOpacity>
 
           {passwordError && (
-            <Text
-              style={{
-                color: "#ef4444",
-                marginTop: 4,
-                marginBottom: 8,
-                fontSize: 14,
-              }}
-            >
-              {passwordError}
-            </Text>
+            <Text style={styles.errorText}>{passwordError}</Text>
           )}
 
           <TouchableOpacity
-            style={{
-              backgroundColor: "#bf471b",
-              alignItems: "center",
-              borderRadius: 5,
-              alignSelf: "stretch",
-              paddingVertical: 14,
-              paddingHorizontal: 18,
-              marginBottom: 30,
-              minHeight: 48,
-            }}
+            style={styles.primaryButton}
             onPress={handleUpdatePassword}
           >
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "600" }}>
-              Update Password
-            </Text>
+            <Text style={styles.primaryButtonText}>Update Password</Text>
           </TouchableOpacity>
 
           {/* Legal & Support Section */}
-          <View
-            style={{
-              marginTop: 40,
-              paddingTop: 30,
-              borderTopWidth: 1,
-              borderTopColor: "#e0e0e0",
-              width: "100%",
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: "600",
-                letterSpacing: 0.5,
-                color: "#000",
-                marginBottom: 8,
-                textAlign: "center",
-              }}
-            >
-              Legal & Support
-            </Text>
+          <View style={styles.sectionDivider}>
+            <Text style={styles.sectionHeading}>Legal & Support</Text>
 
             {/* Privacy Policy Link */}
             <TouchableOpacity
-              style={{
-                backgroundColor: "#6b7280",
-                alignItems: "center",
-                borderRadius: 5,
-                alignSelf: "stretch",
-                paddingVertical: 14,
-                paddingHorizontal: 18,
-                marginBottom: 12,
-                minHeight: 48,
-              }}
+              style={styles.privacyButton}
               onPress={() => {
                 // @ts-ignore
                 router.push("/PrivacyPolicy");
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
-                📄 Privacy Policy
-              </Text>
+              <Text style={styles.privacyButtonText}>📄 Privacy Policy</Text>
             </TouchableOpacity>
 
-            <Text
-              style={{
-                fontSize: 14,
-                color: "#4b5563",
-                marginTop: 20,
-                marginBottom: 12,
-                textAlign: "center",
-                paddingHorizontal: 16,
-                lineHeight: 20,
-              }}
-            >
+            <Text style={styles.supportText}>
               If you enjoy using My Library, consider supporting its
               development. Every contribution helps the server to stay online!
             </Text>
             <TouchableOpacity
-              style={{
-                backgroundColor: "#0070ba",
-                alignItems: "center",
-                borderRadius: 5,
-                alignSelf: "stretch",
-                paddingVertical: 14,
-                paddingHorizontal: 18,
-                marginBottom: 30,
-                minHeight: 48,
-                flexDirection: "row",
-                justifyContent: "center",
-                gap: 8,
-              }}
+              style={styles.paypalButton}
               onPress={async () => {
                 const paypalUrl = "https://paypal.me/MyPersonalLibrary";
                 try {
@@ -531,63 +368,24 @@ const AccountSettings = () => {
                 }
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 18, fontWeight: "600" }}>
+              <Text style={styles.paypalButtonText}>
                 💙 Support with PayPal
               </Text>
             </TouchableOpacity>
           </View>
 
-          <View
-            style={{
-              marginTop: 40,
-              paddingTop: 30,
-              borderTopWidth: 1,
-              borderTopColor: "#e0e0e0",
-              width: "100%",
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: "600",
-                letterSpacing: 0.5,
-                color: "#dc2626",
-                marginBottom: 16,
-                textAlign: "center",
-              }}
-            >
-              Danger Zone
-            </Text>
-            <Text
-              style={{
-                fontSize: 14,
-                color: "#4b5563",
-                marginBottom: 24,
-                textAlign: "center",
-                paddingHorizontal: 16,
-                lineHeight: 20,
-              }}
-            >
+          <View style={styles.dangerSection}>
+            <Text style={styles.dangerTitle}>Danger Zone</Text>
+            <Text style={styles.dangerDescription}>
               Deleting your account will permanently remove all your data
               including books, reviews, exchanges, and friendships. This action
               cannot be undone.
             </Text>
             <TouchableOpacity
-              style={{
-                backgroundColor: "#dc2626",
-                alignItems: "center",
-                borderRadius: 5,
-                alignSelf: "stretch",
-                paddingVertical: 14,
-                paddingHorizontal: 18,
-                marginBottom: 20,
-                minHeight: 48,
-              }}
+              style={styles.dangerButton}
               onPress={handleDeleteAccount}
             >
-              <Text style={{ color: "#fff", fontSize: 18, fontWeight: "600" }}>
-                Delete Account
-              </Text>
+              <Text style={styles.dangerButtonText}>Delete Account</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -595,5 +393,189 @@ const AccountSettings = () => {
     </>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "flex-start",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    backgroundColor: Colors.background,
+  },
+  scrollView: {
+    width: "100%",
+    maxWidth: 600,
+  },
+  scrollContent: {
+    paddingBottom: 40,
+  },
+  card: {
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    width: "100%",
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: Colors.textSecondary,
+    marginBottom: 8,
+  },
+  infoRow: {
+    marginBottom: 8,
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: Colors.placeholder,
+    marginBottom: 4,
+  },
+  infoValue: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: Colors.text,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: Colors.placeholder,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: "600",
+    letterSpacing: 0.5,
+    color: Colors.text,
+    marginBottom: 24,
+    marginTop: 10,
+    textAlign: "center",
+  },
+  primaryButton: {
+    backgroundColor: Colors.primary,
+    alignItems: "center",
+    borderRadius: 12,
+    alignSelf: "stretch",
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    marginBottom: 30,
+    minHeight: 48,
+  },
+  primaryButtonText: {
+    color: Colors.white,
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  togglePasswordText: {
+    color: Colors.primary,
+    fontWeight: "600",
+    marginBottom: 20,
+    fontSize: 14,
+  },
+  errorText: {
+    color: Colors.error,
+    marginTop: 4,
+    marginBottom: 8,
+    fontSize: 14,
+  },
+  sectionDivider: {
+    marginTop: 40,
+    paddingTop: 30,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    width: "100%",
+  },
+  sectionHeading: {
+    fontSize: 20,
+    fontWeight: "600",
+    letterSpacing: 0.5,
+    color: Colors.text,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  privacyButton: {
+    backgroundColor: Colors.textSecondary,
+    alignItems: "center",
+    borderRadius: 12,
+    alignSelf: "stretch",
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    marginBottom: 12,
+    minHeight: 48,
+  },
+  privacyButtonText: {
+    color: Colors.white,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  supportText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginTop: 20,
+    marginBottom: 12,
+    textAlign: "center",
+    paddingHorizontal: 16,
+    lineHeight: 20,
+  },
+  paypalButton: {
+    backgroundColor: "#0070ba",
+    alignItems: "center",
+    borderRadius: 12,
+    alignSelf: "stretch",
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    marginBottom: 30,
+    minHeight: 48,
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+  },
+  paypalButtonText: {
+    color: Colors.white,
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  dangerSection: {
+    marginTop: 40,
+    paddingTop: 30,
+    borderTopWidth: 1,
+    borderTopColor: Colors.error,
+    width: "100%",
+  },
+  dangerTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    letterSpacing: 0.5,
+    color: Colors.error,
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  dangerDescription: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginBottom: 24,
+    textAlign: "center",
+    paddingHorizontal: 16,
+    lineHeight: 20,
+  },
+  dangerButton: {
+    backgroundColor: Colors.error,
+    alignItems: "center",
+    borderRadius: 12,
+    alignSelf: "stretch",
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    marginBottom: 20,
+    minHeight: 48,
+  },
+  dangerButtonText: {
+    color: Colors.white,
+    fontSize: 18,
+    fontWeight: "600",
+  },
+});
 
 export default AccountSettings;

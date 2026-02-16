@@ -5,17 +5,16 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
-  ImageBackground,
   ActivityIndicator,
   Alert,
   Modal,
   TextInput,
   StyleSheet,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { useReviewContext } from "@/utils/Context/ReviewContext";
 import { router } from "expo-router";
 import type { Review } from "@/Interfaces/review";
+import { Colors } from "@/constants/Colors";
 
 export default function MyReviewsScreen() {
   const { myReviews, fetchMyReviews, deleteReview, updateReview, loading } = useReviewContext();
@@ -77,21 +76,17 @@ export default function MyReviewsScreen() {
     <View style={styles.reviewCard}>
       <TouchableOpacity
         onPress={() => router.push(`/BookDetails/${item.bookId}`)}
-        style={{ marginBottom: 8 }}
+        style={styles.viewBookLink}
       >
-        <Text style={{ color: "#bf471b", fontSize: 16, fontWeight: "600" }}>
-          View Book →
-        </Text>
+        <Text style={styles.viewBookText}>View Book →</Text>
       </TouchableOpacity>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-        <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "bold" }}>
-          Rating: {item.rating}/5
-        </Text>
-        <Text style={{ color: "#f0dcc7", fontSize: 12 }}>
+      <View style={styles.ratingRow}>
+        <Text style={styles.ratingText}>Rating: {item.rating}/5</Text>
+        <Text style={styles.dateText}>
           {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}
         </Text>
       </View>
-      <Text style={{ color: "#f0dcc7", marginBottom: 12 }}>{item.comment}</Text>
+      <Text style={styles.commentText}>{item.comment}</Text>
       <View style={styles.buttonRow}>
         <TouchableOpacity
           onPress={() => handleEditReview(item)}
@@ -110,56 +105,27 @@ export default function MyReviewsScreen() {
   );
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
-      style={{
-        flex: 1,
-        width: "100%",
-        height: "100%",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-      resizeMode="cover"
-    >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
-        style={{
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-        }}
-      >
-        <FlatList
-          contentContainerStyle={{ padding: 16, paddingTop: 60 }}
-          data={myReviews}
-          keyExtractor={(item) => item.id.toString()}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#bf471b" />
-          }
-          renderItem={renderReviewItem}
-          ListEmptyComponent={
-            !loading ? (
-              <View
-                style={{
-                  alignItems: "center",
-                  marginTop: 40,
-                  padding: 20,
-                  backgroundColor: "rgba(0,0,0,0.4)",
-                  borderRadius: 10,
-                }}
-              >
-                <Text style={{ color: "#f0dcc7", fontSize: 16 }}>
-                  You haven't written any reviews yet.
-                </Text>
-              </View>
-            ) : (
-              <ActivityIndicator size="large" color="#bf471b" style={{ marginTop: 40 }} />
-            )
-          }
-        />
-      </LinearGradient>
+    <View style={styles.container}>
+      <FlatList
+        contentContainerStyle={styles.listContent}
+        data={myReviews}
+        keyExtractor={(item) => item.id.toString()}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />
+        }
+        renderItem={renderReviewItem}
+        ListEmptyComponent={
+          !loading ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>
+                You haven't written any reviews yet.
+              </Text>
+            </View>
+          ) : (
+            <ActivityIndicator size="large" color={Colors.primary} style={{ marginTop: 40 }} />
+          )
+        }
+      />
 
       {/* Edit Review Modal */}
       <Modal
@@ -178,7 +144,7 @@ export default function MyReviewsScreen() {
               keyboardType="numeric"
               maxLength={1}
               style={styles.modalInput}
-              placeholderTextColor="#d1d5db"
+              placeholderTextColor={Colors.placeholder}
             />
             <Text style={styles.modalLabel}>Comment:</Text>
             <TextInput
@@ -187,7 +153,7 @@ export default function MyReviewsScreen() {
               multiline={true}
               numberOfLines={4}
               style={[styles.modalInput, styles.modalTextArea]}
-              placeholderTextColor="#d1d5db"
+              placeholderTextColor={Colors.placeholder}
             />
             <View style={styles.modalButtonRow}>
               <TouchableOpacity
@@ -206,15 +172,54 @@ export default function MyReviewsScreen() {
           </View>
         </View>
       </Modal>
-    </ImageBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  listContent: {
+    padding: 16,
+    paddingTop: 60,
+  },
   reviewCard: {
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: Colors.surface,
     borderRadius: 12,
     padding: 16,
+    marginBottom: 12,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  viewBookLink: {
+    marginBottom: 8,
+  },
+  viewBookText: {
+    color: Colors.primary,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  ratingRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  ratingText: {
+    color: Colors.text,
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  dateText: {
+    color: Colors.textSecondary,
+    fontSize: 12,
+  },
+  commentText: {
+    color: Colors.textSecondary,
     marginBottom: 12,
   },
   buttonRow: {
@@ -226,27 +231,43 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 8,
     paddingHorizontal: 16,
-    borderRadius: 6,
+    borderRadius: 8,
     alignItems: "center",
   },
   editButton: {
-    backgroundColor: "#bf471b",
+    backgroundColor: Colors.primary,
   },
   deleteButton: {
-    backgroundColor: "#b91c1c",
+    backgroundColor: Colors.error,
   },
   buttonText: {
-    color: "#fff",
+    color: Colors.white,
     fontWeight: "600",
+  },
+  emptyContainer: {
+    alignItems: "center",
+    marginTop: 40,
+    padding: 20,
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  emptyText: {
+    color: Colors.textSecondary,
+    fontSize: 16,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.7)",
+    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
   },
   modalContent: {
-    backgroundColor: "#2d2d2d",
+    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 20,
     width: "90%",
@@ -255,22 +276,22 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#f0dcc7",
+    color: Colors.text,
     marginBottom: 16,
   },
   modalLabel: {
     fontSize: 14,
-    color: "#f0dcc7",
+    color: Colors.textSecondary,
     marginBottom: 8,
     marginTop: 12,
   },
   modalInput: {
-    backgroundColor: "rgba(255,255,255,0.1)",
-    color: "#fff",
+    backgroundColor: Colors.surfaceAlt,
+    color: Colors.text,
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#bf471b",
+    borderColor: Colors.primary,
   },
   modalTextArea: {
     height: 100,
@@ -288,13 +309,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cancelButton: {
-    backgroundColor: "#6b7280",
+    backgroundColor: Colors.textSecondary,
   },
   saveButton: {
-    backgroundColor: "#bf471b",
+    backgroundColor: Colors.primary,
   },
   modalButtonText: {
-    color: "#fff",
+    color: Colors.white,
     fontWeight: "600",
   },
 });
