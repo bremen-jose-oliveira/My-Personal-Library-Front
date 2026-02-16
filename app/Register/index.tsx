@@ -1,6 +1,6 @@
 import InputField from "@/components/inputField";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
-import Colors from "@/constants/Colors";
+import { Colors } from "@/constants/Colors";
 import { AuthContext } from "@/utils/Context/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, router, Stack } from "expo-router";
