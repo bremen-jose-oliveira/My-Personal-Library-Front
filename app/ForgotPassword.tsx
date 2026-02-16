@@ -1,10 +1,9 @@
 import InputField from "@/components/inputField";
-import SocialLoginButtons from "@/components/SocialLoginButtons";
-import { AuthContext } from "@/utils/Context/AuthContext";
-import { Link, router, Stack } from "expo-router";
-import React, { useState, useContext } from "react";
-import { Alert, TouchableOpacity, View, Text } from "react-native";
-import Ioicons from "react-native-vector-icons/Ionicons";
+import { Colors } from "@/constants/Colors";
+import { Ionicons } from "@expo/vector-icons";
+import { router, Stack } from "expo-router";
+import React, { useState } from "react";
+import { Alert, TouchableOpacity, View, Text, StyleSheet } from "react-native";
 
 export default function ForgotPassword() {
 
@@ -30,41 +29,66 @@ export default function ForgotPassword() {
     <>
       <Stack.Screen
         options={{
-          headerTitle: "Sign Up",
+          headerTitle: "Forgot Password",
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>
-              <Ioicons name="close" size={24} color="black" />
+              <Ionicons name="close" size={24} color={Colors.text} />
             </TouchableOpacity>
           ),
         }}
       />
 
-      <View className="flex-1 justify-center items-center px-5 bg-gray-100">
-        <Text className="text-2xl font-semibold tracking-wide text-black mb-12">
+      <View style={styles.container}>
+        <Text style={styles.title}>
           Reset Password
         </Text>
-
-
 
         <InputField
           value={email}
           onChangeText={setEmail}
           placeholder="Enter Email..."
-          placeholderTextColor="gray"
+          placeholderTextColor={Colors.placeholder}
           autoCapitalize="none"
         />
 
-
         <TouchableOpacity
-         style={{  backgroundColor: "#bf471b", alignItems:"center", borderRadius: 5, alignSelf: "stretch",   paddingVertical: 14,paddingHorizontal: 18,  marginBottom: 30,}}
-       
+          style={styles.button}
           onPress={handleForgotPassword}
         >
-          <Text className="text-white text-lg font-semibold">Reset</Text>
+          <Text style={styles.buttonText}>Reset</Text>
         </TouchableOpacity>
-
-      
       </View>
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    backgroundColor: Colors.background,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "600",
+    letterSpacing: 0.5,
+    color: Colors.text,
+    marginBottom: 48,
+  },
+  button: {
+    backgroundColor: Colors.primary,
+    alignItems: "center",
+    borderRadius: 12,
+    alignSelf: "stretch",
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    marginBottom: 30,
+  },
+  buttonText: {
+    color: Colors.white,
+    fontSize: 18,
+    fontWeight: "600",
+  },
+});

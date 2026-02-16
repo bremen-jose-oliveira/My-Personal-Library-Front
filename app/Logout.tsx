@@ -2,11 +2,13 @@ import "react-native-reanimated";
 
 import { Link, Stack, Redirect } from "expo-router";
 import "../global.css";
-import { TouchableOpacity, View, Text, ImageBackground } from "react-native";
+import { TouchableOpacity, View, Text, StyleSheet } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 import React, { useContext } from "react";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
 import { AuthContext } from "@/utils/Context/AuthContext";
+import { Colors } from "@/constants/Colors";
 
 export default function LogoutScreen() {
   const authContext = useContext(AuthContext);
@@ -23,120 +25,88 @@ export default function LogoutScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "#f5f5f5",
-          width: "100%",
-          height: "100%",
-        }}
-      >
-        <ImageBackground
-          source={require("@/assets/images/login.png")}
-          style={{
-            flex: 1,
-            width: "100%",
-            height: "100%",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-          resizeMode="cover"
-          onError={(error) => {
-            console.error("ImageBackground failed to load:", error);
-          }}
+      <View style={styles.container}>
+        <LinearGradient
+          colors={[Colors.primary, Colors.primaryDark]}
+          style={styles.header}
         >
-          <LinearGradient
-            colors={[
-              "transparent",
-              "rgba(255,255,255,0.1)",
-              "rgba(255,255,255,0.8)",
-            ]}
-            style={{
-              position: "absolute",
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: 0,
-              justifyContent: "flex-end",
-              alignItems: "center",
-              paddingBottom: 12,
-            }}
-          >
-            <View
-              style={{
-                alignItems: "center",
-                paddingHorizontal: 20,
-                width: "100%",
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 24,
-                  fontWeight: "bold",
-                  letterSpacing: 2.4,
-                  color: "#FF6347",
-                  marginBottom: 5,
-                }}
-              >
-                My Library
-              </Text>
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  letterSpacing: 1.2,
-                  color: "#808080",
-                  lineHeight: 21,
-                  marginBottom: 15,
-                  textAlign: "center",
-                }}
-              >
-                Your Own Private Book Collection
-              </Text>
+          <Ionicons name="book" size={48} color={Colors.white} style={styles.icon} />
+          <Text style={styles.headerTitle}>My Library</Text>
+          <Text style={styles.headerSubtitle}>Your Own Private Book Collection</Text>
+        </LinearGradient>
 
-              <SocialLoginButtons emailHref="/Register" />
+        <View style={styles.card}>
+          <SocialLoginButtons emailHref="/Register" />
 
-              <Text
-                style={{
-                  marginTop: 5,
-                  marginBottom: 35,
-                  fontSize: 14,
-                  color: "black",
-                  textAlign: "center",
-                }}
-              >
-                Have an Account?{" "}
-                <Link href="/Login" asChild>
-                  <TouchableOpacity>
-                    <Text style={{ color: "#FF6347", fontWeight: "600" }}>
-                      SignIn
-                    </Text>
-                  </TouchableOpacity>
-                </Link>
-              </Text>
+          <Text style={styles.linkRow}>
+            Have an Account?{" "}
+            <Link href="/Login" asChild>
+              <TouchableOpacity>
+                <Text style={styles.linkText}>Sign In</Text>
+              </TouchableOpacity>
+            </Link>
+          </Text>
 
-              <Text
-                style={{
-                  marginTop: 5,
-                  marginBottom: 35,
-                  fontSize: 14,
-                  color: "black",
-                  textAlign: "center",
-                }}
-              >
-                Forgot Passord?{" "}
-                <Link href="/ForgotPassword" asChild>
-                  <TouchableOpacity>
-                    <Text style={{ color: "#FF6347", fontWeight: "600" }}>
-                      ResetPassword
-                    </Text>
-                  </TouchableOpacity>
-                </Link>
-              </Text>
-            </View>
-          </LinearGradient>
-        </ImageBackground>
+          <Text style={styles.linkRow}>
+            Forgot Password?{" "}
+            <Link href="/ForgotPassword" asChild>
+              <TouchableOpacity>
+                <Text style={styles.linkText}>Reset Password</Text>
+              </TouchableOpacity>
+            </Link>
+          </Text>
+        </View>
       </View>
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  header: {
+    paddingTop: 80,
+    paddingBottom: 40,
+    alignItems: "center",
+  },
+  icon: {
+    marginBottom: 12,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    letterSpacing: 2,
+    color: Colors.white,
+    marginBottom: 6,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    letterSpacing: 1,
+    color: Colors.primaryLight,
+    textAlign: "center",
+  },
+  card: {
+    flex: 1,
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    marginTop: -20,
+    paddingTop: 32,
+    paddingHorizontal: 24,
+    alignItems: "center",
+  },
+  linkRow: {
+    marginTop: 8,
+    marginBottom: 16,
+    fontSize: 14,
+    color: Colors.text,
+    textAlign: "center",
+  },
+  linkText: {
+    color: Colors.primary,
+    fontWeight: "600",
+  },
+});

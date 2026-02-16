@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, Button, Alert, TouchableOpacity } from "react-native";
+import { View, Text, Alert, TouchableOpacity, StyleSheet } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import InputField from "@/components/inputField";
-
-
-
-
+import { Colors } from "@/constants/Colors";
 
 export default function ResetPassword() {
   const router = useRouter();
@@ -14,11 +11,6 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [secureText, setSecureText] = useState(true);
   const [passwordError, setPasswordError] = useState(""); // for confirming passwords
-
-
-
-
-
 
   useEffect(() => {
     if (!token) {
@@ -59,54 +51,85 @@ export default function ResetPassword() {
       }}
     />
 
-    <View className="flex-1 justify-center items-center px-5 bg-gray-100">
-
-<Text className="text-2xl font-semibold tracking-wide text-black mb-12">
-       Update Password
+    <View style={styles.container}>
+      <Text style={styles.title}>
+        Update Password
       </Text>
 
-         <InputField
-     secureTextEntry={secureText}
-      value={password}
+      <InputField
+        secureTextEntry={secureText}
+        value={password}
         onChangeText={setPassword}
         placeholder="Enter New Password..."
-        placeholderTextColor="gray"
+        placeholderTextColor={Colors.placeholder}
       />
-
 
       <InputField
-       secureTextEntry={secureText}
-       value={confirmPassword}
+        secureTextEntry={secureText}
+        value={confirmPassword}
         onChangeText={setConfirmPassword}
         placeholder="Confirm New Password..."
-        placeholderTextColor="gray"
+        placeholderTextColor={Colors.placeholder}
       />
+
       <TouchableOpacity onPress={() => setSecureText(!secureText)}>
-        <Text
-          style={{
-            color: "#bf471b",
-            fontWeight: "600",
-            marginBottom: 20,
-          }}
-        >
+        <Text style={styles.toggleText}>
           {secureText ? "Show Password" : "Hide Password"}
         </Text>
-        
       </TouchableOpacity>
 
       {passwordError && (
-        <Text className="text-red-500 mt-1 mb-2">{passwordError}</Text>
+        <Text style={styles.errorText}>{passwordError}</Text>
       )}
 
-<TouchableOpacity
-style={{ backgroundColor: "#bf471b", alignItems: "center", borderRadius: 5, alignSelf: "stretch", paddingVertical: 14, paddingHorizontal: 18, marginBottom: 30 }}
-onPress={handleResetPassword}
->
-<Text className="text-white text-lg font-semibold">Update Password</Text>
-</TouchableOpacity>
-
- 
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleResetPassword}
+      >
+        <Text style={styles.buttonText}>Update Password</Text>
+      </TouchableOpacity>
     </View>
   </>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    backgroundColor: Colors.background,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "600",
+    letterSpacing: 0.5,
+    color: Colors.text,
+    marginBottom: 48,
+  },
+  toggleText: {
+    color: Colors.primary,
+    fontWeight: "600",
+    marginBottom: 20,
+  },
+  errorText: {
+    color: Colors.error,
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  button: {
+    backgroundColor: Colors.primary,
+    alignItems: "center",
+    borderRadius: 12,
+    alignSelf: "stretch",
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    marginBottom: 30,
+  },
+  buttonText: {
+    color: Colors.white,
+    fontSize: 18,
+    fontWeight: "600",
+  },
+});
