@@ -2,15 +2,16 @@ import { AuthContext } from "@/utils/Context/AuthContext";
 import { useBookContext } from "@/utils/Context/BookContext";
 import { useFriendContext } from "@/utils/Context/FriendContext";
 import { useUserContext } from "@/utils/Context/UserContext";
-import { LinearGradient } from "expo-linear-gradient";
-import { Link, useRouter } from "expo-router";
+import { Colors } from "@/constants/Colors";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useState, useContext, useEffect } from "react";
 import {
   View,
   Text,
-  ImageBackground,
   ScrollView,
   RefreshControl,
+  StyleSheet,
 } from "react-native";
 
 const HomeScreen = () => {
@@ -62,139 +63,120 @@ const HomeScreen = () => {
   };
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
-      style={{
-        flex: 1,
-        width: "100%",
-        height: "100%",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-      resizeMode="cover"
-    >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
-        style={{
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-          justifyContent: "flex-start",
-          alignItems: "center",
-        }}
+    <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.primary}
+            colors={[Colors.primary]}
+          />
+        }
       >
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: "flex-start",
-            alignItems: "center",
-            paddingTop: 50,
-            paddingBottom: 20,
-          }}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor="#bf471b"
-              colors={["#bf471b"]}
-            />
-          }
-        >
-          <View
-            style={{
-              width: "80%",
-              alignItems: "center",
-            }}
-          >
-            {/* Total Amount of Books */}
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: 10,
-                backgroundColor: "rgba(0,0,0,0.4)",
-                borderRadius: 10,
-                width: "100%",
-                marginBottom: 20, // Space between books and friends card
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 15,
-                  fontWeight: "bold",
-                  marginRight: 10,
-                  flexGrow: 1,
-                  textAlign: "center",
-                  color: "#f0dcc7",
-                }}
-              >
-                Total Amount of Books
-              </Text>
-              <View
-                style={{
-                  minWidth: 30,
-                  paddingHorizontal: 10,
-                  height: 25,
-                  borderRadius: 15,
-                  backgroundColor: "gray",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Text style={{ color: "#f5eee6", fontWeight: "bold" }}>
-                  {numberOfBooks}
-                </Text>
-              </View>
-            </View>
+        <View style={styles.header}>
+          <Text style={styles.greeting}>Welcome back 👋</Text>
+          <Text style={styles.subtitle}>Here's your library overview</Text>
+        </View>
 
-            {/* Total Amount of Friends */}
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: 10,
-                backgroundColor: "rgba(0,0,0,0.4)",
-                borderRadius: 10,
-                width: "100%",
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 15,
-                  fontWeight: "bold",
-                  marginRight: 10,
-                  flexGrow: 1,
-                  textAlign: "center",
-                  color: "#f0dcc7",
-                }}
-              >
-                Total Amount of Friends
-              </Text>
-              <View
-                style={{
-                  minWidth: 30,
-                  paddingHorizontal: 10,
-                  height: 25,
-                  borderRadius: 15,
-                  backgroundColor: "gray",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Text style={{ color: "#f5eee6", fontWeight: "bold" }}>
-                  {numberOfFriends}
-                </Text>
-              </View>
+        <View style={styles.cardRow}>
+          <View style={styles.card}>
+            <View style={[styles.iconContainer, styles.booksIconBg]}>
+              <MaterialCommunityIcons
+                name="book-multiple"
+                size={28}
+                color={Colors.primary}
+              />
             </View>
+            <Text style={[styles.statNumber, { color: Colors.primary }]}>
+              {numberOfBooks}
+            </Text>
+            <Text style={styles.statLabel}>Books</Text>
           </View>
-        </ScrollView>
-      </LinearGradient>
-    </ImageBackground>
+
+          <View style={styles.card}>
+            <View style={[styles.iconContainer, styles.friendsIconBg]}>
+              <MaterialCommunityIcons
+                name="account-group"
+                size={28}
+                color={Colors.info}
+              />
+            </View>
+            <Text style={[styles.statNumber, { color: Colors.info }]}>
+              {numberOfFriends}
+            </Text>
+            <Text style={styles.statLabel}>Friends</Text>
+          </View>
+        </View>
+      </ScrollView>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  header: {
+    marginBottom: 32,
+  },
+  greeting: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: Colors.text,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    marginTop: 4,
+  },
+  cardRow: {
+    flexDirection: "row",
+    gap: 16,
+  },
+  card: {
+    flex: 1,
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    padding: 20,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  iconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+  booksIconBg: {
+    backgroundColor: Colors.primaryFaded,
+  },
+  friendsIconBg: {
+    backgroundColor: Colors.infoLight,
+  },
+  statNumber: {
+    fontSize: 32,
+    fontWeight: "bold",
+  },
+  statLabel: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginTop: 4,
+  },
+});
 
 export default HomeScreen;
