@@ -6,14 +6,16 @@ import {
   TouchableOpacity,
   View,
   Text,
-  ImageBackground,
   ActivityIndicator,
+  StyleSheet,
+  ScrollView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useContext } from "react";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import React, { useContext, useEffect } from "react";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
-import { useEffect } from "react";
 import { AuthContext } from "@/utils/Context/AuthContext";
+import { Colors } from "@/constants/Colors";
 
 // Only import dev-client in development builds (prevents TestFlight crashes)
 if (__DEV__) {
@@ -96,32 +98,18 @@ export default function WelcomeScreen() {
 
   if (loading && !loadingTimeout) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#f5f5f5",
-        }}
-      >
-        <ActivityIndicator size="large" color="#FF6347" />
-        <Text style={{ marginTop: 10, color: "#666" }}>Loading...</Text>
+      <View style={styles.centeredContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+        <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
   }
 
   if (isLoggedIn) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#f5f5f5",
-        }}
-      >
-        <ActivityIndicator size="large" color="#FF6347" />
-        <Text style={{ marginTop: 10, color: "#666" }}>Redirecting...</Text>
+      <View style={styles.centeredContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+        <Text style={styles.loadingText}>Redirecting...</Text>
       </View>
     );
   }
@@ -129,121 +117,135 @@ export default function WelcomeScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <View
+      <ScrollView
         key={refreshKey}
-        style={{
-          flex: 1,
-          backgroundColor: "#f5f5f5",
-          width: "100%",
-          height: "100%",
-        }}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        bounces={false}
       >
-        <ImageBackground
-          source={require("@/assets/images/login.png")}
-          style={{
-            flex: 1,
-            width: "100%",
-            height: "100%",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-          resizeMode="cover"
-          onError={(error) => {
-            console.error("ImageBackground failed to load:", error);
-          }}
+        <LinearGradient
+          colors={[Colors.primary, Colors.primaryDark]}
+          style={styles.heroGradient}
         >
-          <LinearGradient
-            colors={[
-              "transparent",
-              "rgba(255,255,255,0.1)",
-              "rgba(255,255,255,0.8)",
-            ]}
-            style={{
-              position: "absolute",
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: 0,
-              justifyContent: "flex-end",
-              alignItems: "center",
-              paddingBottom: 12,
-            }}
-          >
-            <View
-              style={{
-                alignItems: "center",
-                paddingHorizontal: 20,
-                width: "100%",
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 24,
-                  fontWeight: "bold",
-                  letterSpacing: 2.4,
-                  color: "#FF6347",
-                  marginBottom: 5,
-                }}
-              >
-                My Library
-              </Text>
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  letterSpacing: 1.2,
-                  color: "#808080",
-                  lineHeight: 21,
-                  marginBottom: 15,
-                  textAlign: "center",
-                }}
-              >
-                Your Own Private Book Collection
-              </Text>
+          <View style={styles.iconContainer}>
+            <MaterialCommunityIcons
+              name="book-open-page-variant"
+              size={56}
+              color={Colors.white}
+            />
+          </View>
+          <Text style={styles.heroTitle}>My Library</Text>
+          <Text style={styles.heroSubtitle}>
+            Your Personal Book Collection
+          </Text>
+        </LinearGradient>
 
-              <SocialLoginButtons emailHref="/Register" />
+        <View style={styles.cardContainer}>
+          <View style={styles.card}>
+            <SocialLoginButtons emailHref="/Register" />
 
-              <Text
-                style={{
-                  marginTop: 5,
-                  marginBottom: 35,
-                  fontSize: 14,
-                  color: "black",
-                  textAlign: "center",
-                }}
-              >
-                Have an Account?{" "}
-                <Link href="/Login" asChild>
-                  <TouchableOpacity>
-                    <Text style={{ color: "#FF6347", fontWeight: "600" }}>
-                      SignIn
-                    </Text>
-                  </TouchableOpacity>
-                </Link>
-              </Text>
-
-              <Text
-                style={{
-                  marginTop: 5,
-                  marginBottom: 35,
-                  fontSize: 14,
-                  color: "black",
-                  textAlign: "center",
-                }}
-              >
-                Forgot Passord?{" "}
-                <Link href="/ForgotPassword" asChild>
-                  <TouchableOpacity>
-                    <Text style={{ color: "#FF6347", fontWeight: "600" }}>
-                      ResetPassword
-                    </Text>
-                  </TouchableOpacity>
-                </Link>
-              </Text>
+            <View style={styles.linkRow}>
+              <Text style={styles.linkLabel}>Have an Account?{" "}</Text>
+              <Link href="/Login" asChild>
+                <TouchableOpacity>
+                  <Text style={styles.linkAction}>Sign In</Text>
+                </TouchableOpacity>
+              </Link>
             </View>
-          </LinearGradient>
-        </ImageBackground>
-      </View>
+
+            <View style={styles.linkRow}>
+              <Text style={styles.linkLabel}>Forgot Password?{" "}</Text>
+              <Link href="/ForgotPassword" asChild>
+                <TouchableOpacity>
+                  <Text style={styles.linkAction}>Reset Password</Text>
+                </TouchableOpacity>
+              </Link>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  centeredContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: Colors.background,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 15,
+    color: Colors.textSecondary,
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  heroGradient: {
+    paddingTop: 80,
+    paddingBottom: 60,
+    alignItems: "center",
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+  },
+  iconContainer: {
+    width: 96,
+    height: 96,
+    borderRadius: 24,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  heroTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    letterSpacing: 1.5,
+    color: Colors.white,
+    marginBottom: 8,
+  },
+  heroSubtitle: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: Colors.primaryLight,
+    letterSpacing: 0.5,
+  },
+  cardContainer: {
+    flex: 1,
+    marginTop: -24,
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+  },
+  card: {
+    backgroundColor: Colors.card,
+    borderRadius: 20,
+    paddingVertical: 32,
+    paddingHorizontal: 24,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 6,
+    alignItems: "center",
+  },
+  linkRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 16,
+  },
+  linkLabel: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+  },
+  linkAction: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: Colors.primary,
+  },
+});
