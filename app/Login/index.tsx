@@ -1,10 +1,11 @@
 import { useContext, useState } from "react";
-import { Alert, TouchableOpacity, View, Text } from "react-native";
+import { Alert, TouchableOpacity, View, Text, StyleSheet } from "react-native";
 import { Link, Stack, useRouter } from "expo-router";
 import { AuthContext } from "@/utils/Context/AuthContext";
-import Ioicons from "react-native-vector-icons/Ionicons";
+import { Ionicons } from "@expo/vector-icons";
 import InputField from "@/components/inputField";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
+import { Colors } from "@/constants/Colors";
 import React from "react";
 
 export default function Login() {
@@ -22,13 +23,9 @@ export default function Login() {
 
     try {
       await login(email, password);
-      // Only navigate if login was successful (no exception thrown)
-      // The AuthContext will set isLoggedIn=true, and the app will redirect automatically
       router.dismissAll();
       router.push("/(tabs)");
     } catch (error: any) {
-      // Login failed - don't navigate, stay on login screen
-      // Alert is already shown in AuthContext.login()
       console.error("Login failed, staying on login screen");
     }
   };
@@ -37,73 +34,136 @@ export default function Login() {
     <>
       <Stack.Screen
         options={{
-          headerTitle: "Sign Up",
+          headerTitle: "Sign In",
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>
-              <Ioicons name="close" size={24} color="black" />
+              <Ionicons name="close" size={24} color={Colors.text} />
             </TouchableOpacity>
           ),
         }}
       />
 
-      <View className="flex-1 justify-center items-center px-5 bg-gray-100">
-        <Text className="text-2xl font-semibold tracking-wide text-black mb-12">
-          Sign in your Account
-        </Text>
+      <View style={styles.container}>
+        <View style={styles.card}>
+          <Text style={styles.title}>Sign in to your Account</Text>
 
-        <InputField
-          value={email}
-          onChangeText={setEmail}
-          placeholder="Enter Email..."
-          placeholderTextColor="gray"
-          autoCapitalize="none"
-        />
+          <InputField
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Enter Email..."
+            placeholderTextColor={Colors.placeholder}
+            autoCapitalize="none"
+          />
 
-        <InputField
-          secureTextEntry={secureText}
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Enter Password..."
-          placeholderTextColor="gray"
-        />
-        <TouchableOpacity onPress={() => setSecureText(!secureText)}>
-          <Text
-            style={{
-              color: "#bf471b",
-              fontWeight: "600",
-              marginBottom: 20,
-            }}
+          <InputField
+            secureTextEntry={secureText}
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Enter Password..."
+            placeholderTextColor={Colors.placeholder}
+          />
+
+          <TouchableOpacity
+            style={styles.togglePassword}
+            onPress={() => setSecureText(!secureText)}
           >
-            {secureText ? "Show Password" : "Hide Password"}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleLogin}
-          style={{
-            backgroundColor: "#bf471b",
-            alignItems: "center",
-            borderRadius: 5,
-            alignSelf: "stretch",
-            paddingVertical: 14,
-            paddingHorizontal: 18,
-            marginBottom: 30,
-          }}
-        >
-          <Text className="text-white text-lg font-semibold">Sign In</Text>
-        </TouchableOpacity>
+            <Text style={styles.togglePasswordText}>
+              {secureText ? "Show Password" : "Hide Password"}
+            </Text>
+          </TouchableOpacity>
 
-        <Text className="mb-5 text-sm text-black">
-          Don't have an Account?{" "}
-          <Link href="/Register" asChild>
-            <TouchableOpacity>
-              <Text style={{ color: "#bf471b" }}>Sign Up</Text>
-            </TouchableOpacity>
-          </Link>
-        </Text>
+          <TouchableOpacity style={styles.signInButton} onPress={handleLogin}>
+            <Text style={styles.signInButtonText}>Sign In</Text>
+          </TouchableOpacity>
 
-        <View className="border-t border-gray-300 w-1/3 mb-8"></View>
-        <SocialLoginButtons emailHref="/Register" />
+          <View style={styles.signUpRow}>
+            <Text style={styles.signUpLabel}>Don't have an Account? </Text>
+            <Link href="/Register" asChild>
+              <TouchableOpacity>
+                <Text style={styles.signUpLink}>Sign Up</Text>
+              </TouchableOpacity>
+            </Link>
+          </View>
+
+          <View style={styles.divider} />
+
+          <SocialLoginButtons emailHref="/Register" />
+        </View>
       </View>
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: Colors.background,
+    paddingHorizontal: 20,
+  },
+  card: {
+    width: "100%",
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    paddingVertical: 32,
+    paddingHorizontal: 24,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: Colors.text,
+    textAlign: "center",
+    marginBottom: 28,
+    letterSpacing: 0.3,
+  },
+  togglePassword: {
+    alignSelf: "flex-end",
+    marginBottom: 20,
+  },
+  togglePasswordText: {
+    color: Colors.primary,
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  signInButton: {
+    backgroundColor: Colors.primary,
+    alignItems: "center",
+    borderRadius: 12,
+    alignSelf: "stretch",
+    paddingVertical: 15,
+    marginBottom: 24,
+  },
+  signInButtonText: {
+    color: Colors.white,
+    fontSize: 17,
+    fontWeight: "700",
+  },
+  signUpRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  signUpLabel: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+  },
+  signUpLink: {
+    fontSize: 14,
+    color: Colors.primary,
+    fontWeight: "600",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: Colors.border,
+    alignSelf: "center",
+    width: "40%",
+    marginBottom: 24,
+  },
+});
