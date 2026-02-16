@@ -4,18 +4,17 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  Image,
   FlatList,
   RefreshControl,
   Platform,
-  ImageBackground,
-  TouchableOpacity,
 } from "react-native";
-import { Link } from "expo-router";
+import { useRouter } from "expo-router";
+import { BookCard } from "@/components/BookCard";
 
 export default function DisplayBooks() {
   const { books, fetchCurrentUserBooks } = useBookContext();
   const [refreshing, setRefreshing] = useState(false);
+  const router = useRouter();
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -24,117 +23,52 @@ export default function DisplayBooks() {
     } catch (error) {
       console.error("Error refreshing books:", error);
     }
-    setRefreshing(false); // Ensure this happens last
+    setRefreshing(false);
   };
 
-  const statusMap: { [key: string]: string } = {
-    NOT_READ: "Not read",
-    READING: "Reading",
-    READ: "Finished",
-  };
+  const numColumns = Platform.OS === "web" ? 6 : 2;
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
-      style={{
-        flex: 1, // Take full screen
-        width: "100%", // Make sure it spans full width
-        height: "100%", // Make sure it spans full height
-        justifyContent: "center", // Center content vertically
-        alignItems: "center", // Center content horizontally
-      }}
-      resizeMode="cover" // Ensures the image covers the screen
+    <LinearGradient
+      colors={["#f5f5f5", "#ffffff"]}
+      className="flex-1"
     >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
-        style={{
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-        }}
-      >
+      {books.length === 0 ? (
+        <View className="flex-1 justify-center items-center px-5">
+          <Text className="text-gray-500 text-center text-lg mb-2">
+            No books in your library yet
+          </Text>
+          <Text className="text-gray-400 text-center">
+            Add your first book to get started!
+          </Text>
+        </View>
+      ) : (
         <FlatList
           contentContainerStyle={{
-            flex: 1,
-            width: "100%", // Make sure it spans full width
-            height: "100%", // Make sure it spans full height
+            paddingHorizontal: 8,
+            paddingVertical: 12,
           }}
           data={books}
-          numColumns={Platform.OS === "web" ? 8 : 4}
-          keyExtractor={(book: { id?: number }) =>
-            book.id ? book.id.toString() : Math.random().toString()
-          }
+          numColumns={numColumns}
+          key={numColumns}
+          keyExtractor={(book) => book.id ? book.id.toString() : Math.random().toString()}
           renderItem={({ item: book }) => (
-            <Link href={`/BookDetails/${book.id}`} asChild>
-              <TouchableOpacity
-                style={{
-                  flex: 1,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  margin: 4,
-                  backgroundColor: "rgba(0,0,0,0.4)",
-                  borderRadius: 10,
-                  overflow: "hidden",
-                  padding: 8,
-                  gap: 8,
-                }}
-              >
-                {book.cover ? (
-                  <Image
-                    style={{
-                      width: 100,
-                      height: 144,
-                      resizeMode: "contain",
-                    }}
-                    source={{ uri: book.cover }}
-                    onError={(error) => {
-                      console.error(
-                        `Failed to load cover image for "${book.title}":`,
-                        error.nativeEvent.error
-                      );
-                    }}
-                    onLoad={() => {}}
-                  />
-                ) : (
-                  <Image
-                    style={{
-                      width: 100,
-                      height: 144,
-                      resizeMode: "contain",
-                    }}
-                    source={{
-                      uri: "https://cdn-icons-png.flaticon.com/512/7340/7340665.png",
-                    }}
-                  />
-                )}
-                <View style={{ alignItems: "center" }}>
-                  <Text
-                    style={{
-                      color: "#f8f0e5",
-                      fontWeight: "600",
-                      textAlign: "center",
-                    }}
-                  >
-                    {book.title}
-                  </Text>
-                  {book.readingStatus && (
-                    <Text style={{ color: "#cbd5f5", fontSize: 12 }}>
-                      Status:{" "}
-                      {statusMap[book.readingStatus] ?? book.readingStatus}
-                    </Text>
-                  )}
-                </View>
-              </TouchableOpacity>
-            </Link>
+            <BookCard
+              book={book}
+              onPress={() => router.push(`/BookDetails/${book.id}`)}
+            />
           )}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl 
+              refreshing={refreshing} 
+              onRefresh={onRefresh}
+              tintColor="#bf471b"
+              colors={["#bf471b"]}
+            />
           }
           keyboardShouldPersistTaps="handled"
         />
-      </LinearGradient>
-    </ImageBackground>
+      )}
+    </LinearGradient>
   );
 }
