@@ -3,25 +3,26 @@ import {
   View,
   Text,
   FlatList,
-  TouchableOpacity,
   RefreshControl,
-  ImageBackground,
   ActivityIndicator,
   Alert,
   Modal,
   TextInput,
-  StyleSheet,
+  TouchableOpacity,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useReviewContext } from "@/utils/Context/ReviewContext";
 import { router } from "expo-router";
 import type { Review } from "@/Interfaces/review";
+import { ReviewCard } from "@/components/ReviewCard";
+import { FontAwesome } from "@expo/vector-icons";
 
 export default function MyReviewsScreen() {
-  const { myReviews, fetchMyReviews, deleteReview, updateReview, loading } = useReviewContext();
+  const { myReviews, fetchMyReviews, deleteReview, updateReview, loading } =
+    useReviewContext();
   const [refreshing, setRefreshing] = useState(false);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
-  const [editRating, setEditRating] = useState("5");
+  const [editRating, setEditRating] = useState(5);
   const [editComment, setEditComment] = useState("");
 
   useEffect(() => {
@@ -36,7 +37,7 @@ export default function MyReviewsScreen() {
 
   const handleEditReview = (review: Review) => {
     setEditingReview(review);
-    setEditRating(review.rating.toString());
+    setEditRating(review.rating);
     setEditComment(review.comment);
   };
 
@@ -44,7 +45,7 @@ export default function MyReviewsScreen() {
     if (!editingReview) return;
     try {
       await updateReview(editingReview.id, {
-        rating: parseInt(editRating) || 5,
+        rating: editRating,
         comment: editComment,
       });
       Alert.alert("Success", "Review updated successfully!");
@@ -56,246 +57,160 @@ export default function MyReviewsScreen() {
   };
 
   const handleDeleteReview = async (reviewId: number) => {
-    Alert.alert("Delete Review", "Are you sure you want to delete this review?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await deleteReview(reviewId);
-            await fetchMyReviews();
-          } catch (error: any) {
-            Alert.alert("Error", error.message || "Failed to delete review");
-          }
+    Alert.alert(
+      "Delete Review",
+      "Are you sure you want to delete this review?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteReview(reviewId);
+              await fetchMyReviews();
+            } catch (error: any) {
+              Alert.alert("Error", error.message || "Failed to delete review");
+            }
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
-  const renderReviewItem = ({ item }: { item: Review }) => (
-    <View style={styles.reviewCard}>
-      <TouchableOpacity
-        onPress={() => router.push(`/BookDetails/${item.bookId}`)}
-        style={{ marginBottom: 8 }}
-      >
-        <Text style={{ color: "#bf471b", fontSize: 16, fontWeight: "600" }}>
-          View Book →
-        </Text>
-      </TouchableOpacity>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-        <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "bold" }}>
-          Rating: {item.rating}/5
-        </Text>
-        <Text style={{ color: "#f0dcc7", fontSize: 12 }}>
-          {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}
-        </Text>
-      </View>
-      <Text style={{ color: "#f0dcc7", marginBottom: 12 }}>{item.comment}</Text>
-      <View style={styles.buttonRow}>
-        <TouchableOpacity
-          onPress={() => handleEditReview(item)}
-          style={[styles.actionButton, styles.editButton]}
-        >
-          <Text style={styles.buttonText}>Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => handleDeleteReview(item.id)}
-          style={[styles.actionButton, styles.deleteButton]}
-        >
-          <Text style={styles.buttonText}>Delete</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+  if (loading && myReviews.length === 0) {
+    return (
+      <LinearGradient colors={["#f5f5f5", "#ffffff"]} className="flex-1">
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#bf471b" />
+          <Text className="text-gray-600 mt-3">Loading reviews...</Text>
+        </View>
+      </LinearGradient>
+    );
+  }
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
-      style={{
-        flex: 1,
-        width: "100%",
-        height: "100%",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-      resizeMode="cover"
-    >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
-        style={{
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-        }}
-      >
+    <LinearGradient colors={["#f5f5f5", "#ffffff"]} className="flex-1">
+      {myReviews.length === 0 ? (
+        <View className="flex-1 justify-center items-center px-5">
+          <Text className="text-gray-500 text-center text-lg mb-2">
+            No reviews yet
+          </Text>
+          <Text className="text-gray-400 text-center">
+            Start reviewing books from your library
+          </Text>
+        </View>
+      ) : (
         <FlatList
-          contentContainerStyle={{ padding: 16, paddingTop: 60 }}
+          contentContainerStyle={{ paddingTop: 16, paddingBottom: 20 }}
           data={myReviews}
           keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <ReviewCard
+              review={item}
+              onEdit={() => handleEditReview(item)}
+              onDelete={() => handleDeleteReview(item.id)}
+              onBookPress={() => router.push(`/BookDetails/${item.bookId}`)}
+            />
+          )}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#bf471b" />
-          }
-          renderItem={renderReviewItem}
-          ListEmptyComponent={
-            !loading ? (
-              <View
-                style={{
-                  alignItems: "center",
-                  marginTop: 40,
-                  padding: 20,
-                  backgroundColor: "rgba(0,0,0,0.4)",
-                  borderRadius: 10,
-                }}
-              >
-                <Text style={{ color: "#f0dcc7", fontSize: 16 }}>
-                  You haven't written any reviews yet.
-                </Text>
-              </View>
-            ) : (
-              <ActivityIndicator size="large" color="#bf471b" style={{ marginTop: 40 }} />
-            )
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#bf471b"
+              colors={["#bf471b"]}
+            />
           }
         />
-      </LinearGradient>
+      )}
 
       {/* Edit Review Modal */}
       <Modal
-        visible={Boolean(editingReview !== null)}
-        transparent={true}
+        visible={!!editingReview}
         animationType="slide"
+        transparent={true}
         onRequestClose={() => setEditingReview(null)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Edit Review</Text>
-            <Text style={styles.modalLabel}>Rating (1-5):</Text>
-            <TextInput
-              value={editRating}
-              onChangeText={setEditRating}
-              keyboardType="numeric"
-              maxLength={1}
-              style={styles.modalInput}
-              placeholderTextColor="#d1d5db"
-            />
-            <Text style={styles.modalLabel}>Comment:</Text>
+        <View className="flex-1 justify-end bg-black/50">
+          <View className="bg-white rounded-t-3xl p-6">
+            <View className="flex-row items-center justify-between mb-6">
+              <Text className="text-xl font-bold text-gray-800">
+                Edit Review
+              </Text>
+              <TouchableOpacity
+                onPress={() => setEditingReview(null)}
+                activeOpacity={0.7}
+              >
+                <FontAwesome name="times" size={24} color="#999" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Book ID */}
+            {editingReview && (
+              <Text className="text-gray-700 font-semibold mb-4">
+                Book ID: {editingReview.bookId || "Unknown"}
+              </Text>
+            )}
+
+            {/* Rating Selector */}
+            <Text className="text-gray-700 font-semibold mb-2">Rating</Text>
+            <View className="flex-row mb-4">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <TouchableOpacity
+                  key={star}
+                  onPress={() => setEditRating(star)}
+                  activeOpacity={0.7}
+                  className="mr-2"
+                >
+                  <FontAwesome
+                    name={star <= editRating ? "star" : "star-o"}
+                    size={32}
+                    color="#f39c12"
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Comment Input */}
+            <Text className="text-gray-700 font-semibold mb-2">Comment</Text>
             <TextInput
               value={editComment}
               onChangeText={setEditComment}
-              multiline={true}
+              placeholder="Write your review..."
+              multiline
               numberOfLines={4}
-              style={[styles.modalInput, styles.modalTextArea]}
-              placeholderTextColor="#d1d5db"
+              className="bg-gray-100 rounded-xl p-4 mb-6 text-gray-800"
+              style={{
+                height: 100,
+                textAlignVertical: "top",
+              }}
             />
-            <View style={styles.modalButtonRow}>
+
+            {/* Action Buttons */}
+            <View className="flex-row">
               <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setEditingReview(null)}
+                activeOpacity={0.7}
+                className="flex-1 bg-gray-200 py-4 rounded-xl mr-2"
               >
-                <Text style={styles.modalButtonText}>Cancel</Text>
+                <Text className="text-gray-700 text-center font-semibold">
+                  Cancel
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton, styles.saveButton]}
                 onPress={handleSaveEdit}
+                activeOpacity={0.7}
+                className="flex-1 py-4 rounded-xl ml-2"
+                style={{ backgroundColor: "#bf471b" }}
               >
-                <Text style={styles.modalButtonText}>Save</Text>
+                <Text className="text-white text-center font-semibold">
+                  Save Changes
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
-    </ImageBackground>
+    </LinearGradient>
   );
 }
-
-const styles = StyleSheet.create({
-  reviewCard: {
-    backgroundColor: "rgba(0,0,0,0.4)",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-  },
-  buttonRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 8,
-  },
-  actionButton: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    alignItems: "center",
-  },
-  editButton: {
-    backgroundColor: "#bf471b",
-  },
-  deleteButton: {
-    backgroundColor: "#b91c1c",
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "600",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.7)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContent: {
-    backgroundColor: "#2d2d2d",
-    borderRadius: 16,
-    padding: 20,
-    width: "90%",
-    maxWidth: 400,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#f0dcc7",
-    marginBottom: 16,
-  },
-  modalLabel: {
-    fontSize: 14,
-    color: "#f0dcc7",
-    marginBottom: 8,
-    marginTop: 12,
-  },
-  modalInput: {
-    backgroundColor: "rgba(255,255,255,0.1)",
-    color: "#fff",
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#bf471b",
-  },
-  modalTextArea: {
-    height: 100,
-    textAlignVertical: "top",
-  },
-  modalButtonRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 20,
-  },
-  modalButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  cancelButton: {
-    backgroundColor: "#6b7280",
-  },
-  saveButton: {
-    backgroundColor: "#bf471b",
-  },
-  modalButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-  },
-});
-
