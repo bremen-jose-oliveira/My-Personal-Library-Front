@@ -1,12 +1,12 @@
 import React, { useContext, useCallback, useRef } from "react";
-import { Platform, Alert, Button } from "react-native";
+import { Platform, Alert, TouchableOpacity } from "react-native";
 import "../../global.css";
 import { AuthContext } from "@/utils/Context/AuthContext";
-import { Tabs, Redirect } from "expo-router";
-import Entypo from "@expo/vector-icons/Entypo";
+import { Tabs } from "expo-router";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import NotificationBell from "@/components/NotificationBell";
+import { Colors } from "@/constants/Colors";
 
 function AppTabs() {
   const authContext = useContext(AuthContext);
@@ -62,16 +62,47 @@ function AppTabs() {
   }
 
   return (
-    <Tabs>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: Colors.tabInactive,
+        tabBarStyle: {
+          backgroundColor: Colors.white,
+          borderTopColor: Colors.border,
+          borderTopWidth: 1,
+          elevation: 8,
+          shadowColor: Colors.black,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.06,
+          shadowRadius: 6,
+          paddingBottom: 4,
+          paddingTop: 4,
+          height: 56,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: "600",
+        },
+        headerStyle: {
+          backgroundColor: Colors.white,
+          borderBottomColor: Colors.border,
+          borderBottomWidth: 1,
+        },
+        headerTintColor: Colors.text,
+        headerTitleStyle: {
+          fontWeight: "700",
+        },
+        headerShadowVisible: false,
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
           headerTitle: "Home",
           headerRight: () => <NotificationBell />,
           tabBarLabel: "Home",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons name="home" size={24} color="black" />
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="home" size={24} color={color} />
           ),
         }}
       />
@@ -81,12 +112,11 @@ function AppTabs() {
           headerTitle: "Library",
           headerRight: () => <NotificationBell />,
           tabBarLabel: "Library",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
+          tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons
               name="bank-outline"
               size={24}
-              color="black"
+              color={color}
             />
           ),
         }}
@@ -98,12 +128,11 @@ function AppTabs() {
           headerTitle: "Borrowed",
           headerRight: () => <NotificationBell />,
           tabBarLabel: "Borrowed",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
+          tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons
               name="book-arrow-down"
               size={24}
-              color="black"
+              color={color}
             />
           ),
         }}
@@ -115,12 +144,11 @@ function AppTabs() {
           headerTitle: "Lending",
           headerRight: () => <NotificationBell />,
           tabBarLabel: "Lending",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
+          tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons
               name="book-arrow-up"
               size={24}
-              color="black"
+              color={color}
             />
           ),
         }}
@@ -130,13 +158,12 @@ function AppTabs() {
         name="MyReviews/index"
         options={{
           headerTitle: "My Reviews",
-          tabBarLabel: "My Reviews",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
+          tabBarLabel: "Reviews",
+          tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons
               name="star-outline"
               size={24}
-              color="black"
+              color={color}
             />
           ),
         }}
@@ -146,13 +173,12 @@ function AppTabs() {
         name="ReadingList/index"
         options={{
           headerTitle: "Reading List",
-          tabBarLabel: "Reading List",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
+          tabBarLabel: "Reading",
+          tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons
               name="book-open-variant"
               size={24}
-              color="black"
+              color={color}
             />
           ),
         }}
@@ -163,12 +189,11 @@ function AppTabs() {
         options={{
           headerTitle: "Browse Books",
           tabBarLabel: "Browse",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
+          tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons
               name="book-search"
               size={24}
-              color="black"
+              color={color}
             />
           ),
         }}
@@ -180,12 +205,11 @@ function AppTabs() {
           headerTitle: "Friends",
           headerRight: () => <NotificationBell />,
           tabBarLabel: "Friends",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
+          tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons
               name="account-group"
               size={24}
-              color="black"
+              color={color}
             />
           ),
         }}
@@ -195,14 +219,21 @@ function AppTabs() {
         name="AccountSettings/index"
         options={{
           headerRight: () => (
-            <Button title="Logout" onPress={handleLogout} color="#bf471b" />
+            <TouchableOpacity
+              onPress={handleLogout}
+              style={{ marginRight: 16, padding: 4 }}
+            >
+              <Ionicons
+                name="log-out-outline"
+                size={24}
+                color={Colors.primary}
+              />
+            </TouchableOpacity>
           ),
-
           headerTitle: "Account Settings",
-          tabBarLabel: "",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <Ionicons name="settings-sharp" size={24} color="black" />
+          tabBarLabel: "Settings",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="settings-sharp" size={24} color={color} />
           ),
         }}
       />
