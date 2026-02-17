@@ -9,6 +9,7 @@ import "../global.css";
 import * as SecureStore from "expo-secure-store";
 import { getToken, storeToken } from "@/utils/Context/storageUtils";
 import { AuthContext } from "@/utils/Context/AuthContext";
+import { Colors } from "@/constants/Colors";
 
 type Props = {
   emailHref: Href;
@@ -26,13 +27,14 @@ const SocialLoginButtons = (props: Props) => {
     <View
       style={{
         alignSelf: "stretch",
+        paddingHorizontal: 8,
       }}
     >
       <Animated.View
         style={{
           alignSelf: "stretch",
         }}
-        entering={FadeInDown.delay(300).duration(500)}
+        entering={FadeInDown.delay(200).duration(500)}
       >
         <Link href={emailHref} asChild>
           <TouchableOpacity
@@ -40,20 +42,26 @@ const SocialLoginButtons = (props: Props) => {
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              borderWidth: 1,
-              borderColor: "#666",
-              padding: 10,
-              borderRadius: 25,
-              gap: 5,
-              marginBottom: 15,
+              backgroundColor: Colors.surface,
+              borderWidth: 2,
+              borderColor: Colors.lightGray,
+              padding: 16,
+              borderRadius: 16,
+              gap: 10,
+              marginBottom: 12,
+              shadowColor: Colors.shadow,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 2,
             }}
           >
-            <Ionicons name="mail-outline" size={20} color="black" />
+            <Ionicons name="mail-outline" size={24} color={Colors.primary} />
             <Text
               style={{
-                fontSize: 14,
-                fontWeight: "600",
-                color: "#333",
+                fontSize: 16,
+                fontWeight: "700",
+                color: Colors.textPrimary,
               }}
             >
               Continue with Email
@@ -66,7 +74,7 @@ const SocialLoginButtons = (props: Props) => {
         style={{
           alignSelf: "stretch",
         }}
-        entering={FadeInDown.delay(700).duration(500)}
+        entering={FadeInDown.delay(400).duration(500)}
       >
        
         <TouchableOpacity
@@ -74,17 +82,23 @@ const SocialLoginButtons = (props: Props) => {
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "center",
-            borderWidth: 1,
-            borderColor: "#666",
-            padding: 10,
-            borderRadius: 25,
-            gap: 5,
-            marginBottom: 15,
+            backgroundColor: Colors.surface,
+            borderWidth: 2,
+            borderColor: Colors.lightGray,
+            padding: 16,
+            borderRadius: 16,
+            gap: 10,
+            marginBottom: 12,
+            shadowColor: Colors.shadow,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 2,
           }}
           onPress={handleGoogleLogin}
         >
-          <GoogleLogo width={20} height={20} />
-          <Text style={{ fontSize: 14, fontWeight: "600", color: "#333" }}>
+          <GoogleLogo width={24} height={24} />
+          <Text style={{ fontSize: 16, fontWeight: "700", color: Colors.textPrimary }}>
             Continue with Google
           </Text>
         </TouchableOpacity>
@@ -94,7 +108,7 @@ const SocialLoginButtons = (props: Props) => {
         style={{
           alignSelf: "stretch",
         }}
-        entering={FadeInDown.delay(1100).duration(500)}
+        entering={FadeInDown.delay(600).duration(500)}
       >
 
    
@@ -103,18 +117,24 @@ const SocialLoginButtons = (props: Props) => {
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "center",
-            borderWidth: 1,
-            borderColor: "#666",
-            padding: 10,
-            gap: 5,
-            borderRadius: 25,
-            marginBottom: 15,
+            backgroundColor: Colors.surface,
+            borderWidth: 2,
+            borderColor: Colors.lightGray,
+            padding: 16,
+            gap: 10,
+            borderRadius: 16,
+            marginBottom: 12,
+            shadowColor: Colors.shadow,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 2,
           }}
           // onPress={() => {appleLogin();}}
           onPress={appleLogin}
         >
-          <Ionicons name="logo-apple" size={20} color="black" />
-          <Text style={{ fontSize: 14, fontWeight: "600", color: "#333" }}>
+          <Ionicons name="logo-apple" size={24} color={Colors.textPrimary} />
+          <Text style={{ fontSize: 16, fontWeight: "700", color: Colors.textPrimary }}>
             Continue with Apple
           </Text>
         </TouchableOpacity>

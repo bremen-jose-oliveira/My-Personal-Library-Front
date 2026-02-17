@@ -14,6 +14,7 @@ import React, { useContext } from "react";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
 import { useEffect } from "react";
 import { AuthContext } from "@/utils/Context/AuthContext";
+import { Colors } from "@/constants/Colors";
 
 // Only import dev-client in development builds (prevents TestFlight crashes)
 if (__DEV__) {
@@ -101,11 +102,11 @@ export default function WelcomeScreen() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#f5f5f5",
+          backgroundColor: Colors.background,
         }}
       >
-        <ActivityIndicator size="large" color="#FF6347" />
-        <Text style={{ marginTop: 10, color: "#666" }}>Loading...</Text>
+        <ActivityIndicator size="large" color={Colors.primary} />
+        <Text style={{ marginTop: 10, color: Colors.textSecondary }}>Loading...</Text>
       </View>
     );
   }
@@ -117,11 +118,11 @@ export default function WelcomeScreen() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#f5f5f5",
+          backgroundColor: Colors.background,
         }}
       >
-        <ActivityIndicator size="large" color="#FF6347" />
-        <Text style={{ marginTop: 10, color: "#666" }}>Redirecting...</Text>
+        <ActivityIndicator size="large" color={Colors.primary} />
+        <Text style={{ marginTop: 10, color: Colors.textSecondary }}>Redirecting...</Text>
       </View>
     );
   }
@@ -133,7 +134,7 @@ export default function WelcomeScreen() {
         key={refreshKey}
         style={{
           flex: 1,
-          backgroundColor: "#f5f5f5",
+          backgroundColor: Colors.background,
           width: "100%",
           height: "100%",
         }}
@@ -154,9 +155,9 @@ export default function WelcomeScreen() {
         >
           <LinearGradient
             colors={[
-              "transparent",
-              "rgba(255,255,255,0.1)",
-              "rgba(255,255,255,0.8)",
+              "rgba(0,0,0,0.3)",
+              "rgba(0,0,0,0.5)",
+              "rgba(247,249,252,0.95)",
             ]}
             style={{
               position: "absolute",
@@ -166,76 +167,81 @@ export default function WelcomeScreen() {
               right: 0,
               justifyContent: "flex-end",
               alignItems: "center",
-              paddingBottom: 12,
+              paddingBottom: 40,
             }}
           >
             <View
               style={{
                 alignItems: "center",
-                paddingHorizontal: 20,
+                paddingHorizontal: 24,
                 width: "100%",
               }}
             >
+              {/* App Title */}
+              <View style={{ marginBottom: 8 }}>
+                <Text
+                  style={{
+                    fontSize: 40,
+                    fontWeight: "800",
+                    letterSpacing: 1,
+                    color: Colors.primary,
+                    textAlign: "center",
+                  }}
+                >
+                  My Library
+                </Text>
+              </View>
+              
+              {/* Subtitle */}
               <Text
                 style={{
-                  fontSize: 24,
-                  fontWeight: "bold",
-                  letterSpacing: 2.4,
-                  color: "#FF6347",
-                  marginBottom: 5,
-                }}
-              >
-                My Library
-              </Text>
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  letterSpacing: 1.2,
-                  color: "#808080",
-                  lineHeight: 21,
-                  marginBottom: 15,
+                  fontSize: 16,
+                  fontWeight: "500",
+                  letterSpacing: 0.5,
+                  color: Colors.textSecondary,
+                  marginBottom: 40,
                   textAlign: "center",
                 }}
               >
-                Your Own Private Book Collection
+                Your Personal Book Collection
               </Text>
 
+              {/* Social Login Buttons */}
               <SocialLoginButtons emailHref="/Register" />
 
+              {/* Sign In Link */}
               <Text
                 style={{
-                  marginTop: 5,
-                  marginBottom: 35,
-                  fontSize: 14,
-                  color: "black",
+                  marginTop: 20,
+                  marginBottom: 12,
+                  fontSize: 15,
+                  color: Colors.textSecondary,
                   textAlign: "center",
                 }}
               >
-                Have an Account?{" "}
+                Already have an account?{" "}
                 <Link href="/Login" asChild>
                   <TouchableOpacity>
-                    <Text style={{ color: "#FF6347", fontWeight: "600" }}>
-                      SignIn
+                    <Text style={{ color: Colors.primary, fontWeight: "700" }}>
+                      Sign In
                     </Text>
                   </TouchableOpacity>
                 </Link>
               </Text>
 
+              {/* Forgot Password Link */}
               <Text
                 style={{
-                  marginTop: 5,
-                  marginBottom: 35,
                   fontSize: 14,
-                  color: "black",
+                  color: Colors.textSecondary,
                   textAlign: "center",
                 }}
               >
-                Forgot Passord?{" "}
+                Forgot Password?{" "}
                 <Link href="/ForgotPassword" asChild>
                   <TouchableOpacity>
-                    <Text style={{ color: "#FF6347", fontWeight: "600" }}>
-                      ResetPassword
+                    <Text style={{ color: Colors.primary, fontWeight: "600" }}>
+                      Reset Password
                     </Text>
                   </TouchableOpacity>
                 </Link>
