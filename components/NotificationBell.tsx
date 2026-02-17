@@ -12,7 +12,7 @@ export default function NotificationBell() {
       onPress={() => router.push("/Notifications")}
       style={styles.container}
     >
-      <MaterialCommunityIcons name="bell" size={24} color="#bf471b" />
+      <MaterialCommunityIcons name="bell-outline" size={26} color="#667eea" />
       {unreadCount > 0 && (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>
@@ -31,20 +31,22 @@ const styles = StyleSheet.create({
   },
   badge: {
     position: "absolute",
-    top: -8,
-    right: -8,
-    backgroundColor: "#ef4444",
+    top: -6,
+    right: -6,
+    backgroundColor: "#f093fb",
     borderRadius: 10,
     minWidth: 20,
     height: 20,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: "#ffffff",
   },
   badgeText: {
     color: "#fff",
-    fontSize: 12,
-    fontWeight: "bold",
+    fontSize: 11,
+    fontWeight: "700",
   },
 });
 

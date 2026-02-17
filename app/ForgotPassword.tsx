@@ -30,40 +30,123 @@ export default function ForgotPassword() {
     <>
       <Stack.Screen
         options={{
-          headerTitle: "Sign Up",
+          headerTitle: "Reset Password",
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>
-              <Ioicons name="close" size={24} color="black" />
+              <Ioicons name="close" size={24} color="#667eea" />
             </TouchableOpacity>
           ),
+          headerStyle: {
+            backgroundColor: "#ffffff",
+          },
+          headerTintColor: "#667eea",
+          headerShadowVisible: true,
         }}
       />
 
-      <View className="flex-1 justify-center items-center px-5 bg-gray-100">
-        <Text className="text-2xl font-semibold tracking-wide text-black mb-12">
-          Reset Password
-        </Text>
-
-
-
-        <InputField
-          value={email}
-          onChangeText={setEmail}
-          placeholder="Enter Email..."
-          placeholderTextColor="gray"
-          autoCapitalize="none"
-        />
-
-
-        <TouchableOpacity
-         style={{  backgroundColor: "#bf471b", alignItems:"center", borderRadius: 5, alignSelf: "stretch",   paddingVertical: 14,paddingHorizontal: 18,  marginBottom: 30,}}
-       
-          onPress={handleForgotPassword}
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#f8f9fa",
+        }}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            paddingHorizontal: 30,
+            paddingVertical: 40,
+          }}
         >
-          <Text className="text-white text-lg font-semibold">Reset</Text>
-        </TouchableOpacity>
+          {/* Title Section */}
+          <View style={{ alignItems: "center", marginBottom: 40 }}>
+            <Text
+              style={{
+                fontSize: 32,
+                fontWeight: "800",
+                color: "#667eea",
+                marginBottom: 8,
+              }}
+            >
+              Forgot Password?
+            </Text>
+            <Text
+              style={{
+                fontSize: 16,
+                color: "#666",
+                textAlign: "center",
+                paddingHorizontal: 20,
+              }}
+            >
+              Enter your email and we'll send you a link to reset your password
+            </Text>
+          </View>
 
-      
+          {/* Input Field */}
+          <View
+            style={{
+              backgroundColor: "#ffffff",
+              borderRadius: 16,
+              padding: 20,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.08,
+              shadowRadius: 8,
+              elevation: 3,
+              marginBottom: 20,
+            }}
+          >
+            <InputField
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Email address"
+              placeholderTextColor="#999"
+              autoCapitalize="none"
+            />
+
+            <TouchableOpacity
+              onPress={handleForgotPassword}
+              style={{
+                backgroundColor: "#667eea",
+                alignItems: "center",
+                borderRadius: 12,
+                paddingVertical: 16,
+                shadowColor: "#667eea",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 4,
+              }}
+            >
+              <Text
+                style={{
+                  color: "#ffffff",
+                  fontSize: 16,
+                  fontWeight: "600",
+                }}
+              >
+                Send Reset Link
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Back to Login */}
+          <View style={{ alignItems: "center", marginTop: 20 }}>
+            <Link href="/Login" asChild>
+              <TouchableOpacity>
+                <Text
+                  style={{
+                    color: "#667eea",
+                    fontSize: 14,
+                    fontWeight: "600",
+                  }}
+                >
+                  Back to Sign In
+                </Text>
+              </TouchableOpacity>
+            </Link>
+          </View>
+        </View>
       </View>
     </>
   );
