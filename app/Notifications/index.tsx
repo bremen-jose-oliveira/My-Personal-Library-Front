@@ -61,7 +61,7 @@ export default function NotificationsScreen() {
 
     // Navigate based on notification type
     if (notification.type === NotificationType.FRIEND_REQUEST) {
-      router.push("/(tabs)/Friends/FriendRequests");
+      router.push("/(tabs)/Friends");
     } else if (notification.type === NotificationType.EXCHANGE_REQUEST) {
       // Someone wants to borrow your book -> Lending tab
       router.push("/(tabs)/Lending");
