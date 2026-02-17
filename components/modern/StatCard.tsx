@@ -16,7 +16,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   title, 
   value, 
   icon, 
-  gradient = theme.gradients.primary,
+  gradient = theme.gradients.primary as any,
   subtitle,
 }) => {
   return (
@@ -66,13 +66,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: theme.fontSize.sm,
     color: 'rgba(255, 255, 255, 0.9)',
-    fontWeight: theme.fontWeight.medium,
+    fontWeight: theme.fontWeight.medium as any,
     marginBottom: theme.spacing.xs,
   },
   value: {
     fontSize: theme.fontSize['3xl'],
     color: '#fff',
-    fontWeight: theme.fontWeight.bold,
+    fontWeight: theme.fontWeight.bold as any,
   },
   subtitle: {
     fontSize: theme.fontSize.xs,

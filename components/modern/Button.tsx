@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   text: {
-    fontWeight: theme.fontWeight.semibold,
+    fontWeight: theme.fontWeight.semibold as any,
   },
   text_primary: {
     color: theme.colors.text.inverse,

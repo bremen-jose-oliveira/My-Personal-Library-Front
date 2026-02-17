@@ -116,7 +116,7 @@ const HomeScreen = () => {
             <View>
               <Text style={styles.greeting}>Hello!</Text>
               <Text style={styles.userName}>
-                {currentUser?.name || "Book Lover"}
+                {currentUser?.username || "Book Lover"}
               </Text>
             </View>
             <View style={styles.avatar}>

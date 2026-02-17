@@ -6,6 +6,7 @@ import Ioicons from "react-native-vector-icons/Ionicons";
 import InputField from "@/components/inputField";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
 import React from "react";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function Login() {
   const { login } = useContext(AuthContext);
@@ -60,41 +61,35 @@ export default function Login() {
 
       <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
         {/* Gradient Header */}
-        <View
+        <LinearGradient
+          colors={["#ff6b35", "#ff9166"] as any}
           style={{
             height: 200,
-            background: "linear-gradient(180deg, #ff6b35 0%, #ff9166 100%)",
+            justifyContent: "center",
+            alignItems: "center",
+            paddingTop: 60,
           }}
         >
-          <View
+          <Text
             style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-              paddingTop: 60,
+              fontSize: 32,
+              fontWeight: "800",
+              color: "#fff",
+              marginBottom: 8,
             }}
           >
-            <Text
-              style={{
-                fontSize: 32,
-                fontWeight: "800",
-                color: "#fff",
-                marginBottom: 8,
-              }}
-            >
-              Welcome Back
-            </Text>
-            <Text
-              style={{
-                fontSize: 16,
-                color: "rgba(255, 255, 255, 0.95)",
-                fontWeight: "500",
-              }}
-            >
-              Sign in to continue
-            </Text>
-          </View>
-        </View>
+            Welcome Back
+          </Text>
+          <Text
+            style={{
+              fontSize: 16,
+              color: "rgba(255, 255, 255, 0.95)",
+              fontWeight: "500",
+            }}
+          >
+            Sign in to continue
+          </Text>
+        </LinearGradient>
 
         {/* Login Card */}
         <View
