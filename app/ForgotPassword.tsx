@@ -1,5 +1,5 @@
 import InputField from "@/components/inputField";
-import { router, Stack } from "expo-router";
+import { Link, router, Stack } from "expo-router";
 import React, { useState } from "react";
 import { Alert, TouchableOpacity, View, Text } from "react-native";
 import Ioicons from "react-native-vector-icons/Ionicons";
