@@ -48,7 +48,7 @@ export default function DisplayBooks() {
           paddingBottom: 16,
         }}
         data={books}
-        numColumns={Platform.OS === "web" ? 8 : 4}
+        numColumns={Platform.OS === "web" ? 6 : 4}
         keyExtractor={(book: { id?: number }) =>
           book.id ? book.id.toString() : Math.random().toString()
         }
