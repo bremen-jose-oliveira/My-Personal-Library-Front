@@ -77,7 +77,7 @@ const HomeScreen = () => {
     color,
     onPress,
   }: {
-    icon: string;
+    icon: keyof typeof MaterialCommunityIcons.glyphMap;
     title: string;
     value: number;
     color: string;
@@ -101,7 +101,7 @@ const HomeScreen = () => {
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-        <MaterialCommunityIcons name={icon as any} size={28} color={color} />
+        <MaterialCommunityIcons name={icon} size={28} color={color} />
       </View>
       <Text
         style={{
@@ -126,7 +126,7 @@ const HomeScreen = () => {
     onPress,
     color,
   }: {
-    icon: string;
+    icon: keyof typeof MaterialCommunityIcons.glyphMap;
     label: string;
     onPress: () => void;
     color: string;
@@ -148,7 +148,7 @@ const HomeScreen = () => {
         elevation: 3,
       }}
     >
-      <MaterialCommunityIcons name={icon as any} size={32} color="white" />
+      <MaterialCommunityIcons name={icon} size={32} color="white" />
       <Text
         style={{
           color: "white",
