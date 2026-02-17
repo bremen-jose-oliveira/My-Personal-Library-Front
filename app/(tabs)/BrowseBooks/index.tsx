@@ -73,7 +73,6 @@ export default function BrowseBooksScreen() {
         ) : (
           <FlatList
             contentContainerStyle={{
-              flex: 1,
               width: "100%",
             }}
             data={books}
