@@ -4,7 +4,6 @@ import {
   Text,
   FlatList,
   RefreshControl,
-  ImageBackground,
   TouchableOpacity,
   Alert,
   StyleSheet,
@@ -92,19 +91,14 @@ export default function LendingScreen() {
   };
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
-      style={styles.backgroundImage}
-      resizeMode="cover"
+    <LinearGradient
+      colors={["#667eea", "#764ba2"]}
+      style={styles.container}
     >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
-        style={styles.gradientOverlay}
-      >
         <Text style={styles.header}>Lending Books</Text>
         {(loading || localLoading) && lendingBooks.length === 0 ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#bf471b" />
+            <ActivityIndicator size="large" color="#ffffff" />
             <Text style={styles.loadingText}>Loading lending books...</Text>
           </View>
         ) : (
@@ -120,7 +114,8 @@ export default function LendingScreen() {
                 await refreshLending();
                 setLocalLoading(false);
               }}
-              tintColor="#bf471b"
+              tintColor="#ffffff"
+              colors={["#ffffff"]}
             />
           }
           renderItem={({ item }) => {
@@ -215,33 +210,19 @@ export default function LendingScreen() {
           }
         />
         )}
-      </LinearGradient>
-    </ImageBackground>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  backgroundImage: {
+  container: {
     flex: 1,
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  gradientOverlay: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    justifyContent: "flex-start",
     paddingTop: 60,
-    zIndex: 1,
   },
   header: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#f0dcc7",
+    color: "#ffffff",
     textAlign: "center",
     marginBottom: 20,
     paddingHorizontal: 16,
@@ -251,13 +232,16 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   exchangeCard: {
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(255,255,255,0.95)",
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 12,
     marginBottom: 10,
-    borderWidth: 1,
-    borderColor: "#bf471b",
     flexDirection: "row",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
   },
   bookCover: {
     width: 80,
@@ -271,12 +255,12 @@ const styles = StyleSheet.create({
   bookTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#f0dcc7",
+    color: "#333",
     marginBottom: 8,
   },
   detailText: {
     fontSize: 14,
-    color: "#f0dcc7",
+    color: "#666",
     marginBottom: 4,
   },
   label: {
@@ -322,11 +306,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 40,
     padding: 20,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.95)",
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
   },
   emptyText: {
-    color: "#f0dcc7",
+    color: "#666",
     fontSize: 16,
   },
   loadingContainer: {
@@ -338,7 +327,7 @@ const styles = StyleSheet.create({
     elevation: 100,
   },
   loadingText: {
-    color: "#f0dcc7",
+    color: "#ffffff",
     fontSize: 16,
     marginTop: 12,
   },
