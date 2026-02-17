@@ -138,8 +138,8 @@ export default function WelcomeScreen() {
           height: "100%",
         }}
       >
-        <ImageBackground
-          source={require("@/assets/images/login.png")}
+        <LinearGradient
+          colors={["#667eea", "#764ba2", "#f093fb"]}
           style={{
             flex: 1,
             width: "100%",
@@ -147,102 +147,153 @@ export default function WelcomeScreen() {
             justifyContent: "center",
             alignItems: "center",
           }}
-          resizeMode="cover"
-          onError={(error) => {
-            console.error("ImageBackground failed to load:", error);
-          }}
         >
-          <LinearGradient
-            colors={[
-              "transparent",
-              "rgba(255,255,255,0.1)",
-              "rgba(255,255,255,0.8)",
-            ]}
+          <View
             style={{
-              position: "absolute",
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: 0,
-              justifyContent: "flex-end",
+              flex: 1,
+              justifyContent: "space-between",
               alignItems: "center",
-              paddingBottom: 12,
+              paddingTop: 80,
+              paddingBottom: 40,
+              paddingHorizontal: 30,
+              width: "100%",
             }}
           >
-            <View
-              style={{
-                alignItems: "center",
-                paddingHorizontal: 20,
-                width: "100%",
-              }}
-            >
+            {/* Hero Section */}
+            <View style={{ alignItems: "center", marginTop: 20 }}>
               <Text
                 style={{
-                  fontSize: 24,
-                  fontWeight: "bold",
-                  letterSpacing: 2.4,
-                  color: "#FF6347",
-                  marginBottom: 5,
+                  fontSize: 48,
+                  fontWeight: "800",
+                  color: "#ffffff",
+                  marginBottom: 10,
+                  textAlign: "center",
+                  textShadowColor: "rgba(0, 0, 0, 0.3)",
+                  textShadowOffset: { width: 0, height: 2 },
+                  textShadowRadius: 8,
                 }}
               >
                 My Library
               </Text>
               <Text
                 style={{
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  letterSpacing: 1.2,
-                  color: "#808080",
-                  lineHeight: 21,
-                  marginBottom: 15,
+                  fontSize: 18,
+                  fontWeight: "500",
+                  color: "rgba(255,255,255,0.95)",
+                  lineHeight: 26,
+                  marginBottom: 20,
                   textAlign: "center",
+                  paddingHorizontal: 20,
                 }}
               >
-                Your Own Private Book Collection
+                Your Personal Book Collection
               </Text>
-
-              <SocialLoginButtons emailHref="/Register" />
-
               <Text
                 style={{
-                  marginTop: 5,
-                  marginBottom: 35,
                   fontSize: 14,
-                  color: "black",
+                  fontWeight: "400",
+                  color: "rgba(255,255,255,0.85)",
+                  lineHeight: 22,
                   textAlign: "center",
+                  paddingHorizontal: 30,
                 }}
               >
-                Have an Account?{" "}
-                <Link href="/Login" asChild>
-                  <TouchableOpacity>
-                    <Text style={{ color: "#FF6347", fontWeight: "600" }}>
-                      SignIn
-                    </Text>
-                  </TouchableOpacity>
-                </Link>
-              </Text>
-
-              <Text
-                style={{
-                  marginTop: 5,
-                  marginBottom: 35,
-                  fontSize: 14,
-                  color: "black",
-                  textAlign: "center",
-                }}
-              >
-                Forgot Passord?{" "}
-                <Link href="/ForgotPassword" asChild>
-                  <TouchableOpacity>
-                    <Text style={{ color: "#FF6347", fontWeight: "600" }}>
-                      ResetPassword
-                    </Text>
-                  </TouchableOpacity>
-                </Link>
+                Organize, track, and share your favorite books with friends
               </Text>
             </View>
-          </LinearGradient>
-        </ImageBackground>
+
+            {/* Login Options */}
+            <View
+              style={{
+                width: "100%",
+                maxWidth: 400,
+                backgroundColor: "rgba(255,255,255,0.95)",
+                borderRadius: 24,
+                padding: 30,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: 0.25,
+                shadowRadius: 16,
+                elevation: 8,
+              }}
+            >
+              <SocialLoginButtons emailHref="/Register" />
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginVertical: 20,
+                }}
+              >
+                <View
+                  style={{
+                    flex: 1,
+                    height: 1,
+                    backgroundColor: "#e0e0e0",
+                  }}
+                />
+                <Text
+                  style={{
+                    marginHorizontal: 10,
+                    color: "#666",
+                    fontSize: 14,
+                  }}
+                >
+                  OR
+                </Text>
+                <View
+                  style={{
+                    flex: 1,
+                    height: 1,
+                    backgroundColor: "#e0e0e0",
+                  }}
+                />
+              </View>
+
+              <Link href="/Login" asChild>
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: "#667eea",
+                    alignItems: "center",
+                    borderRadius: 12,
+                    paddingVertical: 16,
+                    marginBottom: 15,
+                    shadowColor: "#667eea",
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                    elevation: 4,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "#ffffff",
+                      fontSize: 16,
+                      fontWeight: "600",
+                    }}
+                  >
+                    Sign In to Your Account
+                  </Text>
+                </TouchableOpacity>
+              </Link>
+
+              <Link href="/ForgotPassword" asChild>
+                <TouchableOpacity style={{ alignItems: "center", marginTop: 5 }}>
+                  <Text
+                    style={{
+                      color: "#667eea",
+                      fontSize: 14,
+                      fontWeight: "500",
+                    }}
+                  >
+                    Forgot Password?
+                  </Text>
+                </TouchableOpacity>
+              </Link>
+            </View>
+          </View>
+        </LinearGradient>
       </View>
     </>
   );

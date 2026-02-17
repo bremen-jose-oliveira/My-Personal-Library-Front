@@ -52,14 +52,15 @@ export default inputField;
 
 const styles = StyleSheet.create({
   inputField: {
-    backgroundColor: Colors.white,
-    borderWidth: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 18,
+    backgroundColor: "#f8f9fa",
+    borderWidth: 2,
+    borderColor: "#e9ecef",
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     alignSelf: "stretch",
-    borderRadius: 5,
+    borderRadius: 10,
     fontSize: 16,
-    color: Colors.black,
-    marginBottom: 20,
+    color: "#333",
+    marginBottom: 16,
   },
 });
