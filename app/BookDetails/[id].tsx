@@ -87,7 +87,7 @@ export default function BookDetails() {
 
     const confirmDelete = async () => {
       await deleteBook(selectedBook.id);
-      router.push("/Library/DisplayBooks");
+      router.push("/(tabs)/Library");
     };
 
     if (Platform.OS === "web") {

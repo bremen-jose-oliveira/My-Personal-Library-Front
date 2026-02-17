@@ -90,6 +90,13 @@ export default function Layout() {
                       name="Notifications/index"
                       options={{ headerTitle: "Notifications" }}
                     />
+                    <Stack.Screen
+                      name="Library/AddBookForm/index"
+                      options={{
+                        headerTitle: "Add Book",
+                        presentation: "modal",
+                      }}
+                    />
                   </Stack>
                 </BookProvider>
               </ReviewProvider>
