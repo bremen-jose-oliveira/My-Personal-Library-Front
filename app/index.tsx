@@ -1,249 +1,126 @@
-import "react-native-reanimated";
+// app/index.tsx
 
-import { Link, Stack, Redirect, useRouter, useSegments } from "expo-router";
+import { Link, Stack, useRouter } from "expo-router";
 import "../global.css";
-import {
-  TouchableOpacity,
-  View,
-  Text,
-  ImageBackground,
-  ActivityIndicator,
-} from "react-native";
+import { TouchableOpacity, View, Text, ImageBackground, StyleSheet } from "react-native";
+import Animated, { FadeInDown, FadeInRight }  from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useContext } from "react";
+import React from "react";
+import { Colors } from "@/constants/Colors";
+import { Ionicons } from "@expo/vector-icons";
+import GoogleLogo from '@/assets/images/google-icon.svg';
 import SocialLoginButtons from "@/components/SocialLoginButtons";
-import { useEffect } from "react";
-import { AuthContext } from "@/utils/Context/AuthContext";
 
-// Only import dev-client in development builds (prevents TestFlight crashes)
-if (__DEV__) {
-  require("expo-dev-client");
-}
+
+
 
 export default function WelcomeScreen() {
-  const authContext = useContext(AuthContext);
-  const router = useRouter();
-  const segments = useSegments();
-  const [loadingTimeout, setLoadingTimeout] = React.useState(false);
-  const [refreshKey, setRefreshKey] = React.useState(0);
-
-  // Safety check - if AuthContext is not available, show welcome screen
-  if (!authContext) {
-    console.error("❌ AuthContext is not available!");
-    // Still show the welcome screen
-  }
-
-  const { isLoggedIn, loading } = authContext || {
-    isLoggedIn: false,
-    loading: false,
-  };
-
-  // Force re-render when logout happens by watching isLoggedIn change to false
-  // Use a ref to prevent multiple updates
-  const prevIsLoggedInRef = React.useRef(isLoggedIn);
-  useEffect(() => {
-    // Only update refreshKey when transitioning from logged in to logged out
-    if (
-      !loading &&
-      prevIsLoggedInRef.current === true &&
-      isLoggedIn === false
-    ) {
-      // When user logs out, increment refresh key to force component re-render
-      // Use a longer delay to ensure navigation and app reload have completed
-      setTimeout(() => {
-        setRefreshKey((prev) => prev + 1);
-      }, 600);
-    }
-    prevIsLoggedInRef.current = isLoggedIn;
-  }, [isLoggedIn, loading]);
-
-  const hasNavigatedRef = React.useRef(false);
-  useEffect(() => {
-    if (
-      !loading &&
-      !isLoggedIn &&
-      segments.length > 0 &&
-      segments[0] === "(tabs)" &&
-      !hasNavigatedRef.current
-    ) {
-      hasNavigatedRef.current = true;
-      setTimeout(() => {
-        try {
-          router.replace("/");
-        } catch (error) {
-          console.error("Navigation error:", error);
-          hasNavigatedRef.current = false;
-        }
-      }, 100);
-    } else if (isLoggedIn) {
-      hasNavigatedRef.current = false;
-    }
-  }, [isLoggedIn, loading, segments, router]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (loading) {
-        setLoadingTimeout(true);
-      }
-    }, 5000);
-
-    return () => clearTimeout(timer);
-  }, [loading]);
-
-  if (!loading && isLoggedIn) {
-    return <Redirect href="/(tabs)" />;
-  }
-
-  if (loading && !loadingTimeout) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#f5f5f5",
-        }}
-      >
-        <ActivityIndicator size="large" color="#FF6347" />
-        <Text style={{ marginTop: 10, color: "#666" }}>Loading...</Text>
-      </View>
-    );
-  }
-
-  if (isLoggedIn) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#f5f5f5",
-        }}
-      >
-        <ActivityIndicator size="large" color="#FF6347" />
-        <Text style={{ marginTop: 10, color: "#666" }}>Redirecting...</Text>
-      </View>
-    );
-  }
-
   return (
+    
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <View
-        key={refreshKey}
-        style={{
-          flex: 1,
-          backgroundColor: "#f5f5f5",
-          width: "100%",
-          height: "100%",
-        }}
+      <ImageBackground
+        source={require("@/assets/images/Background.jpg")}
+        style={{ flex: 1 }}
+       resizeMode="cover"
       >
-        <ImageBackground
-          source={require("@/assets/images/login.png")}
-          style={{
-            flex: 1,
-            width: "100%",
-            height: "100%",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-          resizeMode="cover"
-          onError={(error) => {
-            console.error("ImageBackground failed to load:", error);
-          }}
+        <View
+          style={styles.container}
         >
-          <LinearGradient
-            colors={[
-              "transparent",
-              "rgba(255,255,255,0.1)",
-              "rgba(255,255,255,0.8)",
-            ]}
-            style={{
-              position: "absolute",
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: 0,
-              justifyContent: "flex-end",
-              alignItems: "center",
-              paddingBottom: 12,
-            }}
-          >
-            <View
-              style={{
-                alignItems: "center",
-                paddingHorizontal: 20,
-                width: "100%",
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 24,
-                  fontWeight: "bold",
-                  letterSpacing: 2.4,
-                  color: "#FF6347",
-                  marginBottom: 5,
-                }}
+          <LinearGradient colors={["transparent",
+             "rgba(255,255,255,0.5)",
+             "rgba(255,255,255,1)"]}
+              style={ styles.background }
               >
-                My Library
-              </Text>
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  letterSpacing: 1.2,
-                  color: "#808080",
-                  lineHeight: 21,
-                  marginBottom: 15,
-                  textAlign: "center",
-                }}
-              >
-                Your Own Private Book Collection
-              </Text>
+            <View style={styles.wrapper}>
 
-              <SocialLoginButtons emailHref="/Register" />
+            <Animated.Text  style={ styles.title} entering={FadeInRight.delay(300).duration(300).springify()} > My Library </Animated.Text>
+            <Animated.Text style={ styles.description}  entering={FadeInRight.delay(500).duration(300).springify()}> Your Own Private Book Colection  </Animated.Text>
 
-              <Text
-                style={{
-                  marginTop: 5,
-                  marginBottom: 35,
-                  fontSize: 14,
-                  color: "black",
-                  textAlign: "center",
-                }}
-              >
-                Have an Account?{" "}
-                <Link href="/Login" asChild>
-                  <TouchableOpacity>
-                    <Text style={{ color: "#FF6347", fontWeight: "600" }}>
-                      SignIn
-                    </Text>
-                  </TouchableOpacity>
-                </Link>
-              </Text>
-
-              <Text
-                style={{
-                  marginTop: 5,
-                  marginBottom: 35,
-                  fontSize: 14,
-                  color: "black",
-                  textAlign: "center",
-                }}
-              >
-                Forgot Passord?{" "}
-                <Link href="/ForgotPassword" asChild>
-                  <TouchableOpacity>
-                    <Text style={{ color: "#FF6347", fontWeight: "600" }}>
-                      ResetPassword
-                    </Text>
-                  </TouchableOpacity>
-                </Link>
-              </Text>
+            <SocialLoginButtons emailHref={"/Register"} />
+           <Text style={styles.loginTxt}>
+            Have an Account? {" "}
+            <Link href={"/Login"} asChild>
+              <TouchableOpacity>
+                <Text style={styles.loginTxtSpan}> SignIn </Text>
+              </TouchableOpacity>
+            </Link>
+            </Text>
             </View>
           </LinearGradient>
-        </ImageBackground>
-      </View>
+        </View>
+      </ImageBackground>
     </>
   );
 }
+
+const styles = StyleSheet.create({  
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  background: { 
+    flex: 1, 
+    position: 'absolute',
+    justifyContent: 'flex-end', 
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  wrapper: { 
+    paddingBottom: 50,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  title: {  
+    fontSize: 24,
+    color: Colors.primary,
+    fontWeight: '700',
+    letterSpacing: 2.4,
+
+    marginBottom: 5,
+  },
+  description: {  
+    fontSize: 14,
+    color: Colors.gray,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    lineHeight: 30,
+    marginBottom: 20,
+  },
+  socialLoginWrapper:{
+    alignSelf: 'stretch',
+
+  },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: Colors.gray,
+    padding: 10,
+    borderRadius:25,
+    gap: 5,
+    marginBottom: 15,
+  },
+  btnTxt: {
+    fontSize:14,
+    fontWeight: '600',
+    color: Colors.black,
+    
+  },
+  loginTxt: {
+    marginTop: 30,
+    fontSize: 14,
+    lineHeight: 24,
+    color: Colors.black,
+    
+  },
+  loginTxtSpan: {
+    color: Colors.primary,
+    fontWeight: '600',
+  
+  }
+});

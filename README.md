@@ -1,120 +1,50 @@
-# My Personal Library (Expo App)
+# Welcome to your Expo app 👋
 
-A cross-platform mobile and web app to manage your personal book collection, connect with friends, and discover new books. Built with [Expo](https://expo.dev), React Native, and TypeScript.
+This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
----
+## Get started
 
-## Features
+1. Install dependencies
 
-- **User Authentication**: Register, login, and social login (Google, Apple).
-- **Book Library**: Add, view, and delete books in your personal collection.
-- **Book Details**: View detailed information about each book.
-- **Barcode Scanning**: Scan ISBN barcodes to quickly add books.
-- **Book Search**: Search for books using the Google Books API.
-- **Friends System**: Add friends, view friend list, and manage friend requests.
-- **Account Settings**: Manage your account and logout securely.
-- **Password Reset**: Forgot/reset password via email.
-- **Responsive UI**: Works on Android, iOS, and web.
-
----
-
-## Getting Started
-
-### Prerequisites
-- [Node.js](https://nodejs.org/) (v16 or later recommended)
-- [Expo CLI](https://docs.expo.dev/get-started/installation/)
-
-### Installation
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/your-username/My-Personal-Library-Front.git
-   cd My-Personal-Library-Front
-   ```
-2. **Install dependencies:**
    ```bash
    npm install
    ```
-3. **Start the app:**
+
+2. Start the app
+
    ```bash
-   npx expo start
+    npx expo start
    ```
-   - Use the QR code to open on your device with Expo Go, or run on an emulator/simulator.
 
----
+In the output, you'll find options to open the app in a
 
-## Project Structure
+- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
+- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
+- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
+- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
+You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+
+## Get a fresh project
+
+When you're ready, run:
+
+```bash
+npm run reset-project
 ```
-app/                # Main app screens and navigation (file-based routing)
-  (tabs)/           # Tab navigation: Home, Library, Friends, AccountSettings
-    Library/        # Book library features (add, display books)
-    Friends/        # Friend list, add friend, friend requests
-  BookDetails/      # Book details screen
-  Login/, Register/ # Auth screens
-  ForgotPassword.tsx, ResetPassword.tsx
-components/         # Reusable UI components (Avatar, BarcodeScanner, etc.)
-utils/              # Context providers, API utilities, storage helpers
-assets/             # Images, fonts, and static assets
-constants/          # App-wide constants (colors, etc.)
-Interfaces/         # TypeScript interfaces for data models
-```
-> Uses [Expo Router](https://docs.expo.dev/router/introduction/) for navigation.
 
----
+This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-## API & Backend Integration
+## Learn more
 
-- **Authentication**: Uses JWT tokens stored securely. Supports Google and Apple OAuth.
-- **Book Data**: Fetches book info from Google Books API and your own backend (set `EXPO_PUBLIC_API_URL` in your environment).
-- **Friends**: All friend operations (add, remove, requests) are handled via backend API endpoints.
-- **Password Reset**: Email-based reset via backend API.
+To learn more about developing your project with Expo, look at the following resources:
 
-> **Note:** You must configure the `EXPO_PUBLIC_API_URL` and OAuth client IDs in your environment for full functionality.
+- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
+- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
 
----
+## Join the community
 
-## Customization & Theming
+Join our community of developers creating universal apps.
 
-- Uses [Tailwind CSS](https://tailwindcss.com/) for styling via `nativewind`.
-- Custom colors and fonts are defined in `constants/Colors.ts` and `assets/fonts/`.
-
----
-
-## Scripts
-
-- `npm start` – Start Expo development server
-- `npm run android` – Run on Android device/emulator
-- `npm run ios` – Run on iOS simulator
-- `npm run web` – Run on web
-- `npm run reset-project` – Reset to a blank project (moves starter code to `app-example` and creates a blank `app` directory)
-
----
-
-## Learn More
-
-- [Expo Documentation](https://docs.expo.dev/)
-- [React Native](https://reactnative.dev/)
-- [Expo Router](https://docs.expo.dev/router/introduction/)
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
----
-
-## 🆘 Support
-
-For support and questions, please open an issue in the repository or contact the development team.
-
----
-
-## License
-
-MIT
+- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
+- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.

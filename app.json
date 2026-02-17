@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "My-Personal-Library-Front",
+    "slug": "my-personal-library-front",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs access to your camera to scan barcodes."
+      },
+      "bundleIdentifier": "app.netlify.p-lib"
+    },
+    "android": {
+      "permissions": [
+        "CAMERA"
+      ],
+      "adaptiveIcon": {
+      
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+ 
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "bb066308-1f75-49d3-afaa-b0e7d10de5b3"
+      }
+    },
+    "owner": "jose_oliv",
+    "newArchEnabled": true
+  }
+}

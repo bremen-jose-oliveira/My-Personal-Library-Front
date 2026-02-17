@@ -1,5 +1,5 @@
-const { getDefaultConfig } = require("@expo/metro-config");
-// const { withNativeWind } = require("nativewind/metro"); // DISABLED - causes CSS interop wrapping issues
+const { getDefaultConfig } = require('expo/metro-config');
+const { withNativeWind } = require("nativewind/metro");
 
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
@@ -8,74 +8,34 @@ const { transformer, resolver } = config;
 
 config.transformer = {
   ...transformer,
-  babelTransformerPath: require.resolve("react-native-svg-transformer/expo"), // SVG support
+  babelTransformerPath: require.resolve('react-native-svg-transformer/expo'), // SVG support
 };
 
 config.resolver = {
   ...resolver,
-  assetExts: resolver.assetExts.filter((ext) => ext !== "svg"),
+  assetExts: resolver.assetExts.filter(ext => ext !== 'svg'),
   sourceExts: [
     ...resolver.sourceExts,
-    "svg",
-    "web.js",
-    "web.jsx",
-    "web.ts",
-    "web.tsx",
+    'svg',
+    'web.js',
+    'web.jsx',
+    'web.ts',
+    'web.tsx',
   ],
   extraNodeModules: {
-    "react-native": require.resolve("react-native-web"),
+    'react-native': require.resolve('react-native-web'),
   },
   resolveRequest: (context, moduleName, platform) => {
-    // Handle Quagga2 and its dependencies FIRST - before other resolution
-    // Quagga2 is web-only, so stub it and its dependencies for iOS/Android
-    if (platform !== "web") {
-      // For native platforms (iOS/Android), stub Quagga2 and all its dependencies
-      if (
-        moduleName === "@ericblade/quagga2" ||
-        moduleName.startsWith("@ericblade/quagga2/") ||
-        moduleName === "ndarray-pixels" ||
-        moduleName === "ndarray" ||
-        moduleName === "typedarray-pool"
-      ) {
-        return {
-          filePath: require.resolve("identity-obj-proxy"),
-          type: "sourceFile",
-        };
-      }
-    }
-
-    // For web platform, let Quagga2 resolve normally
-    if (platform === "web") {
-      if (
-        moduleName === "@ericblade/quagga2" ||
-        moduleName.startsWith("@ericblade/quagga2/")
-      ) {
-        return context.resolveRequest(context, moduleName, platform);
-      }
-    }
-
     if (platform === "web") {
       if (moduleName.endsWith("BaseViewConfig")) {
-        return {
-          filePath: require.resolve("identity-obj-proxy"),
-          type: "sourceFile",
-        };
+        return { filePath: require.resolve("identity-obj-proxy"), type: "sourceFile" };
       }
       if (moduleName.endsWith("RCTNetworking")) {
-        return {
-          filePath: require.resolve("identity-obj-proxy"),
-          type: "sourceFile",
-        };
+        return { filePath: require.resolve("identity-obj-proxy"), type: "sourceFile" };
       }
-      if (
-        moduleName.endsWith(
-          "../Components/AccessibilityInfo/legacySendAccessibilityEvent"
-        )
-      ) {
+      if (moduleName.endsWith("../Components/AccessibilityInfo/legacySendAccessibilityEvent")) {
         return {
-          filePath: require.resolve(
-            "react-native-web/dist/exports/AccessibilityInfo"
-          ),
+          filePath: require.resolve("react-native-web/dist/exports/AccessibilityInfo"),
           type: "sourceFile",
         };
       }
@@ -98,22 +58,14 @@ config.resolver = {
         };
       }
       if (moduleName.endsWith("DevToolsSettings/DevToolsSettingsManager")) {
-        return {
-          filePath: require.resolve("identity-obj-proxy"),
-          type: "sourceFile",
-        };
+        return { filePath: require.resolve("identity-obj-proxy"), type: "sourceFile" };
       }
       if (moduleName.endsWith("Utilities/BackHandler")) {
-        return {
-          filePath: require.resolve("identity-obj-proxy"),
-          type: "sourceFile",
-        };
+        return { filePath: require.resolve("identity-obj-proxy"), type: "sourceFile" };
       }
       if (moduleName.endsWith("./Utilities/BackHandler")) {
         return {
-          filePath: require.resolve(
-            "react-native-web/dist/exports/Utilities/BackHandler"
-          ),
+          filePath: require.resolve("react-native-web/dist/exports/Utilities/BackHandler"),
           type: "sourceFile",
         };
       }
@@ -165,8 +117,4 @@ process.on("unhandledRejection", (error) => {
   throw error;
 });
 
-// NativeWind Metro wrapper DISABLED to prevent CSS interop wrapping
-// NativeWind v4's withNativeWind enables CSS interop which causes Screen component wrapping
-// The patch in wrap-jsx.js prevents wrapping, but removing withNativeWind is safer
-// You can still use className with tailwind-react-native-classnames (already installed)
-module.exports = config;
+module.exports = withNativeWind(config, { input: "./global.css" });

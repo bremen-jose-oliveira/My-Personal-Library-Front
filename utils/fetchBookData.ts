@@ -1,81 +1,46 @@
 // api.ts
 export async function fetchBooksFromGoogle(query: string) {
-  const googleBooksApiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
-    query
-  )}`;
+  const googleBooksApiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}`;
   try {
     const response = await fetch(googleBooksApiUrl);
     if (!response.ok) throw new Error(`Error: ${response.statusText}`);
     const data = await response.json();
     return data.items || [];
   } catch (error) {
-    console.error("Failed to fetch books from Google API", error);
+    console.error('Failed to fetch books from Google API', error);
     return [];
   }
 }
 
 export async function addBookToServer(bookData: any) {
   try {
-    const response = await fetch(
-      `${process.env.EXPO_PUBLIC_API_URL}/api/books`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(bookData),
-      }
-    );
+    const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/books`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(bookData),
+    });
 
     if (!response.ok) throw new Error(`Error: ${response.statusText}`);
     return { success: true };
   } catch (error) {
-    console.error("Failed to add book to server", error);
+    console.error('Failed to add book to server', error);
     return { success: false };
   }
 }
 
-export const fetchCoverImage = async (
-  title: string,
-  author: string
-): Promise<string | null> => {
-  const query = `${title} ${author}`.replace(/\s+/g, "+");
+export const fetchCoverImage = async (title: string, author: string): Promise<string | null> => {
+  const query = `${title} ${author}`.replace(/\s+/g, '+');
   const url = `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=40`;
-  // Fallback cover - using Flaticon book icon (restored from earlier version)
-  // If you want to use a local image, add it to assets/images/ and reference it in components
   const fallbackCover = `https://cdn-icons-png.flaticon.com/512/7340/7340665.png`;
 
   try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      return fallbackCover;
-    }
-
+    const response = await fetch(url);
     const data = await response.json();
-
-    // Simple: return thumbnail or fallback - always returns a cover
-    const coverUrl = data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail;
-
-    if (coverUrl) {
-      // Ensure HTTPS
-      const httpsUrl = coverUrl.startsWith("http://")
-        ? coverUrl.replace("http://", "https://")
-        : coverUrl;
-      return httpsUrl;
-    }
-    return fallbackCover;
-  } catch (error: any) {
-    console.error(
-      `❌ Failed to fetch cover image for "${title}":`,
-      error.message || error
-    );
-    // Always return fallback - ensures all books have a cover
+    return data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail || fallbackCover;
+  } catch (error) {
+    console.error('Failed to fetch cover image:', error);
     return fallbackCover;
   }
 };
