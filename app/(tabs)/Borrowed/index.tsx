@@ -272,7 +272,6 @@ const styles = StyleSheet.create({
     right: 0,
     justifyContent: "flex-start",
     paddingTop: 60,
-    zIndex: 1,
   },
   headerContainer: {
     paddingTop: 10,
@@ -355,8 +354,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingTop: 100,
-    zIndex: 100,
-    elevation: 100,
   },
   loadingText: {
     color: "#f0dcc7",

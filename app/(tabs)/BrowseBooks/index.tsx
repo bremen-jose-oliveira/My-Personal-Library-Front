@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   Image,
   Platform,
-  Dimensions,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
@@ -21,33 +20,6 @@ export default function BrowseBooksScreen() {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [numColumns, setNumColumns] = useState(2);
-
-  // Calculate number of columns based on screen width
-  const calculateNumColumns = () => {
-    if (Platform.OS === "web") {
-      const width = Dimensions.get("window").width;
-      if (width > 1200) return 6;
-      if (width > 768) return 4;
-      return 2;
-    }
-    // Mobile: 2 columns for better readability
-    return 2;
-  };
-
-  useEffect(() => {
-    // Set initial columns
-    setNumColumns(calculateNumColumns());
-
-    // Add resize listener for web
-    if (Platform.OS === "web") {
-      const handleResize = () => {
-        setNumColumns(calculateNumColumns());
-      };
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }
-  }, []);
 
   const loadBooks = async () => {
     try {
@@ -77,13 +49,19 @@ export default function BrowseBooksScreen() {
         flex: 1,
         width: "100%",
         height: "100%",
+        justifyContent: "center",
+        alignItems: "center",
       }}
       resizeMode="cover"
     >
       <LinearGradient
-        colors={["rgba(255,255,255,0.85)", "rgba(255,255,255,0.95)"]}
+        colors={["transparent", "rgba(255,255,255,0.9)"]}
         style={{
-          flex: 1,
+          position: "absolute",
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
         }}
       >
         {loading ? (
@@ -95,115 +73,91 @@ export default function BrowseBooksScreen() {
         ) : (
           <FlatList
             contentContainerStyle={{
-              padding: 16,
-              paddingTop: 8,
+              flex: 1,
+              width: "100%",
             }}
             data={books}
-            numColumns={numColumns}
-            key={numColumns} // Force re-render when columns change
+            numColumns={Platform.OS === "web" ? 8 : 4}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item: book }) => (
               <Link href={`/BookDetails/${book.id}`} asChild>
                 <TouchableOpacity
                   style={{
-                    flex: 1 / numColumns,
-                    margin: 8,
-                    backgroundColor: "rgba(255, 255, 255, 0.95)",
-                    borderRadius: 12,
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    margin: 4,
+                    backgroundColor: "rgba(0,0,0,0.4)",
+                    borderRadius: 10,
                     overflow: "hidden",
-                    padding: 12,
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 4,
-                    elevation: 3,
+                    padding: 8,
+                    gap: 8,
                   }}
                 >
-                  <View style={{ alignItems: "center" }}>
-                    {book.cover ? (
-                      <Image
-                        style={{
-                          width: 120,
-                          height: 180,
-                          resizeMode: "cover",
-                          borderRadius: 8,
-                        }}
-                        source={{ uri: book.cover }}
-                        onError={(error) => {
-                          console.error(
-                            `Failed to load cover image for "${book.title}":`,
-                            error.nativeEvent.error
-                          );
-                        }}
-                        onLoad={() => {
-                          console.log(
-                            `✅ Successfully loaded cover for: ${book.title}`
-                          );
-                        }}
-                      />
-                    ) : (
-                      <View
-                        style={{
-                          width: 120,
-                          height: 180,
-                          alignItems: "center",
-                          justifyContent: "center",
-                          backgroundColor: "#e5e7eb",
-                          borderRadius: 8,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: "#6b7280",
-                            fontSize: 12,
-                            textAlign: "center",
-                            paddingHorizontal: 8,
-                          }}
-                        >
-                          No Cover
-                        </Text>
-                      </View>
-                    )}
-                    <View style={{ marginTop: 12, width: "100%" }}>
+                  {book.cover ? (
+                    <Image
+                      style={{
+                        width: 100,
+                        height: 144,
+                        resizeMode: "contain",
+                      }}
+                      source={{ uri: book.cover }}
+                      onError={(error) => {
+                        console.error(
+                          `Failed to load cover image for "${book.title}":`,
+                          error.nativeEvent.error
+                        );
+                      }}
+                      onLoad={() => {
+                        console.log(
+                          `✅ Successfully loaded cover for: ${book.title}`
+                        );
+                      }}
+                    />
+                  ) : (
+                    <View
+                      style={{
+                        width: 100,
+                        height: 144,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "#d1d5db",
+                        borderRadius: 8,
+                      }}
+                    >
                       <Text
                         style={{
-                          color: "#1f2937",
-                          fontWeight: "700",
+                          color: "#f0dcc7",
+                          fontSize: 12,
+                          lineHeight: 16,
                           textAlign: "center",
-                          fontSize: 14,
-                          marginBottom: 4,
                         }}
-                        numberOfLines={2}
                       >
-                        {book.title}
+                        No Image Available
                       </Text>
-                      {book.author && (
-                        <Text
-                          style={{
-                            color: "#6b7280",
-                            fontSize: 12,
-                            textAlign: "center",
-                            marginBottom: 4,
-                          }}
-                          numberOfLines={1}
-                        >
-                          by {book.author}
-                        </Text>
-                      )}
-                      {book.ownerUsername && (
-                        <Text
-                          style={{
-                            color: "#bf471b",
-                            fontSize: 11,
-                            textAlign: "center",
-                            fontWeight: "600",
-                          }}
-                          numberOfLines={1}
-                        >
-                          Owner: {book.ownerUsername}
-                        </Text>
-                      )}
                     </View>
+                  )}
+                  <View style={{ alignItems: "center" }}>
+                    <Text
+                      style={{
+                        color: "#f8f0e5",
+                        fontWeight: "600",
+                        textAlign: "center",
+                      }}
+                    >
+                      {book.title}
+                    </Text>
+                    {book.ownerUsername && (
+                      <Text
+                        style={{
+                          color: "#bf471b",
+                          fontSize: 10,
+                          marginTop: 2,
+                        }}
+                      >
+                        by {book.ownerUsername}
+                      </Text>
+                    )}
                   </View>
                 </TouchableOpacity>
               </Link>
@@ -213,7 +167,6 @@ export default function BrowseBooksScreen() {
                 refreshing={refreshing}
                 onRefresh={onRefresh}
                 tintColor="#bf471b"
-                colors={["#bf471b"]}
               />
             }
             keyboardShouldPersistTaps="handled"
