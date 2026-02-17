@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, Button, Alert, TouchableOpacity } from "react-native";
+import { View, Text, Alert, TouchableOpacity } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import InputField from "@/components/inputField";
-
-
-
-
 
 export default function ResetPassword() {
   const router = useRouter();
@@ -14,11 +10,6 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [secureText, setSecureText] = useState(true);
   const [passwordError, setPasswordError] = useState(""); // for confirming passwords
-
-
-
-
-
 
   useEffect(() => {
     if (!token) {
@@ -56,56 +47,123 @@ export default function ResetPassword() {
     <Stack.Screen
       options={{
        headerTitle: "Reset Password",
+       headerStyle: {
+         backgroundColor: "#ffffff",
+       },
+       headerTintColor: "#667eea",
+       headerShadowVisible: true,
       }}
     />
 
-    <View className="flex-1 justify-center items-center px-5 bg-gray-100">
+    <View style={{ flex: 1, backgroundColor: "#f8f9fa" }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          paddingHorizontal: 30,
+          paddingVertical: 40,
+        }}
+      >
+        {/* Title Section */}
+        <View style={{ alignItems: "center", marginBottom: 40 }}>
+          <Text
+            style={{
+              fontSize: 32,
+              fontWeight: "800",
+              color: "#667eea",
+              marginBottom: 8,
+            }}
+          >
+            Update Password
+          </Text>
+          <Text
+            style={{
+              fontSize: 16,
+              color: "#666",
+              textAlign: "center",
+            }}
+          >
+            Enter your new password below
+          </Text>
+        </View>
 
-<Text className="text-2xl font-semibold tracking-wide text-black mb-12">
-       Update Password
-      </Text>
-
-         <InputField
-     secureTextEntry={secureText}
-      value={password}
-        onChangeText={setPassword}
-        placeholder="Enter New Password..."
-        placeholderTextColor="gray"
-      />
-
-
-      <InputField
-       secureTextEntry={secureText}
-       value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        placeholder="Confirm New Password..."
-        placeholderTextColor="gray"
-      />
-      <TouchableOpacity onPress={() => setSecureText(!secureText)}>
-        <Text
+        {/* Input Fields */}
+        <View
           style={{
-            color: "#bf471b",
-            fontWeight: "600",
+            backgroundColor: "#ffffff",
+            borderRadius: 16,
+            padding: 20,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.08,
+            shadowRadius: 8,
+            elevation: 3,
             marginBottom: 20,
           }}
         >
-          {secureText ? "Show Password" : "Hide Password"}
-        </Text>
-        
-      </TouchableOpacity>
+          <InputField
+            secureTextEntry={secureText}
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Enter New Password..."
+            placeholderTextColor="#999"
+          />
 
-      {passwordError && (
-        <Text className="text-red-500 mt-1 mb-2">{passwordError}</Text>
-      )}
+          <InputField
+            secureTextEntry={secureText}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            placeholder="Confirm New Password..."
+            placeholderTextColor="#999"
+          />
 
-<TouchableOpacity
-style={{ backgroundColor: "#bf471b", alignItems: "center", borderRadius: 5, alignSelf: "stretch", paddingVertical: 14, paddingHorizontal: 18, marginBottom: 30 }}
-onPress={handleResetPassword}
->
-<Text className="text-white text-lg font-semibold">Update Password</Text>
-</TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setSecureText(!secureText)}
+            style={{ marginBottom: 10 }}
+          >
+            <Text
+              style={{
+                color: "#667eea",
+                fontWeight: "600",
+                fontSize: 14,
+              }}
+            >
+              {secureText ? "Show Password" : "Hide Password"}
+            </Text>
+          </TouchableOpacity>
 
- 
+          {passwordError && (
+            <Text
+              style={{
+                color: "#dc3545",
+                fontSize: 14,
+                marginBottom: 10,
+              }}
+            >
+              {passwordError}
+            </Text>
+          )}
+
+          <TouchableOpacity
+            style={{
+              backgroundColor: "#667eea",
+              alignItems: "center",
+              borderRadius: 12,
+              paddingVertical: 16,
+              shadowColor: "#667eea",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 4,
+            }}
+            onPress={handleResetPassword}
+          >
+            <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "600" }}>
+              Update Password
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   </>
   );
