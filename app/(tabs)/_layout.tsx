@@ -7,6 +7,7 @@ import Entypo from "@expo/vector-icons/Entypo";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
 import NotificationBell from "@/components/NotificationBell";
+import { theme } from "@/constants/theme";
 
 function AppTabs() {
   const authContext = useContext(AuthContext);
@@ -61,98 +62,53 @@ function AppTabs() {
     return null;
   }
 
+  const tabBarColor = theme.colors.primary[500];
+
   return (
-    <Tabs>
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: tabBarColor,
+        tabBarInactiveTintColor: theme.colors.neutral[500],
+        tabBarStyle: {
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+          borderTopWidth: 1,
+          borderTopColor: theme.colors.neutral[200],
+          backgroundColor: "#fff",
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: "600",
+        },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
           headerTitle: "Home",
           headerRight: () => <NotificationBell />,
           tabBarLabel: "Home",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons name="home" size={24} color="black" />
+          tabBarIcon: ({ color, focused }) => (
+            <MaterialCommunityIcons
+              name={focused ? "home" : "home-outline"}
+              size={28}
+              color={color}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="Library"
         options={{
-          headerTitle: "Library",
+          headerTitle: "My Library",
           headerRight: () => <NotificationBell />,
           tabBarLabel: "Library",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
+          tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons
-              name="bank-outline"
-              size={24}
-              color="black"
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="Borrowed/index"
-        options={{
-          headerTitle: "Borrowed",
-          headerRight: () => <NotificationBell />,
-          tabBarLabel: "Borrowed",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons
-              name="book-arrow-down"
-              size={24}
-              color="black"
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="Lending/index"
-        options={{
-          headerTitle: "Lending",
-          headerRight: () => <NotificationBell />,
-          tabBarLabel: "Lending",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons
-              name="book-arrow-up"
-              size={24}
-              color="black"
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="MyReviews/index"
-        options={{
-          headerTitle: "My Reviews",
-          tabBarLabel: "My Reviews",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons
-              name="star-outline"
-              size={24}
-              color="black"
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="ReadingList/index"
-        options={{
-          headerTitle: "Reading List",
-          tabBarLabel: "Reading List",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons
-              name="book-open-variant"
-              size={24}
-              color="black"
+              name={focused ? "bookshelf" : "book-outline"}
+              size={28}
+              color={color}
             />
           ),
         }}
@@ -163,12 +119,11 @@ function AppTabs() {
         options={{
           headerTitle: "Browse Books",
           tabBarLabel: "Browse",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
+          tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons
-              name="book-search"
-              size={24}
-              color="black"
+              name={focused ? "book-search" : "book-search-outline"}
+              size={28}
+              color={color}
             />
           ),
         }}
@@ -180,12 +135,11 @@ function AppTabs() {
           headerTitle: "Friends",
           headerRight: () => <NotificationBell />,
           tabBarLabel: "Friends",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
+          tabBarIcon: ({ color, focused }) => (
             <MaterialCommunityIcons
-              name="account-group"
-              size={24}
-              color="black"
+              name={focused ? "account-group" : "account-group-outline"}
+              size={28}
+              color={color}
             />
           ),
         }}
@@ -195,15 +149,52 @@ function AppTabs() {
         name="AccountSettings/index"
         options={{
           headerRight: () => (
-            <Button title="Logout" onPress={handleLogout} color="#bf471b" />
+            <Button title="Logout" onPress={handleLogout} color={tabBarColor} />
           ),
+          headerTitle: "Settings",
+          tabBarLabel: "Settings",
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "settings" : "settings-outline"}
+              size={28}
+              color={color}
+            />
+          ),
+        }}
+      />
 
-          headerTitle: "Account Settings",
-          tabBarLabel: "",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <Ionicons name="settings-sharp" size={24} color="black" />
-          ),
+      {/* Hidden tabs - accessible through navigation but not visible in tab bar */}
+      <Tabs.Screen
+        name="Borrowed/index"
+        options={{
+          href: null, // Hide from tab bar
+          headerTitle: "Borrowed Books",
+          headerRight: () => <NotificationBell />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="Lending/index"
+        options={{
+          href: null, // Hide from tab bar
+          headerTitle: "Lending Books",
+          headerRight: () => <NotificationBell />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="MyReviews/index"
+        options={{
+          href: null, // Hide from tab bar
+          headerTitle: "My Reviews",
+        }}
+      />
+
+      <Tabs.Screen
+        name="ReadingList/index"
+        options={{
+          href: null, // Hide from tab bar
+          headerTitle: "Reading List",
         }}
       />
     </Tabs>
