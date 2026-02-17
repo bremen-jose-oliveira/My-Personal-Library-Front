@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Image,
   Platform,
+  Dimensions,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
@@ -42,6 +43,20 @@ export default function BrowseBooksScreen() {
     await loadBooks();
   };
 
+  // Calculate number of columns based on screen width
+  const getNumColumns = () => {
+    if (Platform.OS === "web") {
+      const width = Dimensions.get("window").width;
+      if (width > 1200) return 6;
+      if (width > 768) return 4;
+      return 2;
+    }
+    // Mobile: 2 columns for better readability
+    return 2;
+  };
+
+  const numColumns = getNumColumns();
+
   return (
     <ImageBackground
       source={require("@/assets/images/background2.png")}
@@ -49,19 +64,13 @@ export default function BrowseBooksScreen() {
         flex: 1,
         width: "100%",
         height: "100%",
-        justifyContent: "center",
-        alignItems: "center",
       }}
       resizeMode="cover"
     >
       <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
+        colors={["rgba(255,255,255,0.85)", "rgba(255,255,255,0.95)"]}
         style={{
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
+          flex: 1,
         }}
       >
         {loading ? (
@@ -71,50 +80,41 @@ export default function BrowseBooksScreen() {
             <ActivityIndicator size="large" color="#bf471b" />
           </View>
         ) : (
-          <>
-            <View
-              style={{ paddingTop: 60, paddingHorizontal: 16, marginBottom: 8 }}
-            >
-              <Text
-                style={{
-                  fontSize: 24,
-                  fontWeight: "bold",
-                  color: "#f0dcc7",
-                }}
-              >
-                Browse All Books
-              </Text>
-            </View>
-            <FlatList
-              contentContainerStyle={{
-                flex: 1,
-                width: "100%",
-                paddingTop: 0,
-              }}
-              data={books}
-              numColumns={Platform.OS === "web" ? 8 : 4}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item: book }) => (
-                <Link href={`/BookDetails/${book.id}`} asChild>
-                  <TouchableOpacity
-                    style={{
-                      flex: 1,
-                      justifyContent: "center",
-                      alignItems: "center",
-                      margin: 4,
-                      backgroundColor: "rgba(0,0,0,0.4)",
-                      borderRadius: 10,
-                      overflow: "hidden",
-                      padding: 8,
-                      gap: 8,
-                    }}
-                  >
+          <FlatList
+            contentContainerStyle={{
+              padding: 16,
+              paddingTop: 8,
+            }}
+            data={books}
+            numColumns={numColumns}
+            key={numColumns} // Force re-render when columns change
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item: book }) => (
+              <Link href={`/BookDetails/${book.id}`} asChild>
+                <TouchableOpacity
+                  style={{
+                    flex: 1,
+                    margin: 8,
+                    backgroundColor: "rgba(255, 255, 255, 0.95)",
+                    borderRadius: 12,
+                    overflow: "hidden",
+                    padding: 12,
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 3,
+                    maxWidth: Platform.OS === "web" ? "calc(50% - 16px)" : undefined,
+                  }}
+                >
+                  <View style={{ alignItems: "center" }}>
                     {book.cover ? (
                       <Image
                         style={{
-                          width: 100,
-                          height: 144,
-                          resizeMode: "contain",
+                          width: 120,
+                          height: 180,
+                          resizeMode: "cover",
+                          borderRadius: 8,
                         }}
                         source={{ uri: book.cover }}
                         onError={(error) => {
@@ -132,61 +132,80 @@ export default function BrowseBooksScreen() {
                     ) : (
                       <View
                         style={{
-                          width: 100,
-                          height: 144,
+                          width: 120,
+                          height: 180,
                           alignItems: "center",
                           justifyContent: "center",
-                          backgroundColor: "#d1d5db",
+                          backgroundColor: "#e5e7eb",
                           borderRadius: 8,
                         }}
                       >
                         <Text
                           style={{
-                            color: "#f0dcc7",
+                            color: "#6b7280",
                             fontSize: 12,
-                            lineHeight: 16,
                             textAlign: "center",
+                            paddingHorizontal: 8,
                           }}
                         >
-                          No Image Available
+                          No Cover
                         </Text>
                       </View>
                     )}
-                    <View style={{ alignItems: "center" }}>
+                    <View style={{ marginTop: 12, width: "100%" }}>
                       <Text
                         style={{
-                          color: "#f8f0e5",
-                          fontWeight: "600",
+                          color: "#1f2937",
+                          fontWeight: "700",
                           textAlign: "center",
+                          fontSize: 14,
+                          marginBottom: 4,
                         }}
+                        numberOfLines={2}
                       >
                         {book.title}
                       </Text>
+                      {book.author && (
+                        <Text
+                          style={{
+                            color: "#6b7280",
+                            fontSize: 12,
+                            textAlign: "center",
+                            marginBottom: 4,
+                          }}
+                          numberOfLines={1}
+                        >
+                          by {book.author}
+                        </Text>
+                      )}
                       {book.ownerUsername && (
                         <Text
                           style={{
                             color: "#bf471b",
-                            fontSize: 10,
-                            marginTop: 2,
+                            fontSize: 11,
+                            textAlign: "center",
+                            fontWeight: "600",
                           }}
+                          numberOfLines={1}
                         >
-                          by {book.ownerUsername}
+                          Owner: {book.ownerUsername}
                         </Text>
                       )}
                     </View>
-                  </TouchableOpacity>
-                </Link>
-              )}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                  tintColor="#bf471b"
-                />
-              }
-              keyboardShouldPersistTaps="handled"
-            />
-          </>
+                  </View>
+                </TouchableOpacity>
+              </Link>
+            )}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#bf471b"
+                colors={["#bf471b"]}
+              />
+            }
+            keyboardShouldPersistTaps="handled"
+          />
         )}
       </LinearGradient>
     </ImageBackground>

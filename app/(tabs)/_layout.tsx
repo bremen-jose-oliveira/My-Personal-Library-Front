@@ -74,37 +74,6 @@ function AppTabs() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="Library"
-        options={{
-          headerShown: false,
-          tabBarLabel: "Library",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons
-              name="bookshelf"
-              size={24}
-              color="black"
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="BrowseBooks/index"
-        options={{
-          headerTitle: "Browse Books",
-          tabBarLabel: "Browse",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons
-              name="book-search"
-              size={24}
-              color="black"
-            />
-          ),
-        }}
-      />
 
       <Tabs.Screen
         name="Friends"
@@ -139,6 +108,22 @@ function AppTabs() {
       />
 
       {/* Hidden tabs - accessible via navigation but not in tab bar */}
+      <Tabs.Screen
+        name="Library"
+        options={{
+          href: null, // Hide from tab bar
+          headerShown: false,
+        }}
+      />
+
+      <Tabs.Screen
+        name="BrowseBooks/index"
+        options={{
+          href: null, // Hide from tab bar
+          headerTitle: "Browse Books",
+        }}
+      />
+
       <Tabs.Screen
         name="Borrowed/index"
         options={{
