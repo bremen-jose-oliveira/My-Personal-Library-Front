@@ -17,6 +17,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
 import { StatCard } from "@/components/StatCard";
 import { Card } from "@/components/Card";
+import { hexToRgba } from "@/utils/colorUtils";
 
 const HomeScreen = () => {
   const authContext = useContext(AuthContext);
@@ -77,14 +78,6 @@ const HomeScreen = () => {
     onPress: () => void; 
     color?: string;
   }) => {
-    // Extract RGB values from hex color for opacity
-    const hexToRgba = (hex: string, alpha: number) => {
-      const r = parseInt(hex.slice(1, 3), 16);
-      const g = parseInt(hex.slice(3, 5), 16);
-      const b = parseInt(hex.slice(5, 7), 16);
-      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    };
-
     return (
       <TouchableOpacity
         onPress={onPress}
