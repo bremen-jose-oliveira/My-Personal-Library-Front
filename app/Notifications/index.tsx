@@ -5,15 +5,14 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  ImageBackground,
   RefreshControl,
   Alert,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { useNotificationContext } from "@/utils/Context/NotificationContext";
 import { NotificationType } from "@/Interfaces/notification";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Colors } from "@/constants/Colors";
 
 const typeLabels: Record<NotificationType, string> = {
   [NotificationType.FRIEND_REQUEST]: "Friend Request",
@@ -31,7 +30,7 @@ const typeIcons: Record<NotificationType, string> = {
   [NotificationType.EXCHANGE_REQUEST]: "swap-horizontal",
   [NotificationType.EXCHANGE_ACCEPTED]: "check-circle",
   [NotificationType.EXCHANGE_REJECTED]: "close-circle",
-  [NotificationType.EXCHANGE_RETURNED]: "book-return",
+  [NotificationType.EXCHANGE_RETURNED]: "book-arrow-left",
   [NotificationType.REVIEW_ADDED]: "star",
 };
 
@@ -103,181 +102,183 @@ export default function NotificationsScreen() {
   );
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
-      style={styles.backgroundImage}
-      resizeMode="cover"
-    >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
-        style={styles.gradientOverlay}
-      >
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Notifications</Text>
-          {unreadCount > 0 && (
-            <TouchableOpacity
-              onPress={async () => {
-                await markAllAsRead();
-              }}
-              style={styles.markAllButton}
-            >
-              <Text style={styles.markAllText}>Mark all as read</Text>
-            </TouchableOpacity>
-          )}
-          {notifications.length > 0 && (
-            <TouchableOpacity
-              onPress={handleClearAll}
-              style={styles.clearAllButton}
-            >
-              <Text style={styles.clearAllText}>Clear all</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        {unreadCount > 0 && (
+          <TouchableOpacity
+            onPress={async () => {
+              await markAllAsRead();
+            }}
+            style={styles.markAllButton}
+          >
+            <Text style={styles.markAllText}>Mark all as read</Text>
+          </TouchableOpacity>
+        )}
+        {notifications.length > 0 && (
+          <TouchableOpacity
+            onPress={handleClearAll}
+            style={styles.clearAllButton}
+          >
+            <Text style={styles.clearAllText}>Clear all</Text>
+          </TouchableOpacity>
+        )}
+      </View>
 
-        <FlatList
-          data={sortedNotifications}
-          keyExtractor={(item) => item.id}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor="#bf471b"
-            />
-          }
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[styles.notificationCard, !item.read && styles.unreadCard]}
-              onPress={() => handleNotificationPress(item)}
-            >
-              <View style={styles.iconContainer}>
-                <MaterialCommunityIcons
-                  name={typeIcons[item.type] as any}
-                  size={24}
-                  color="#bf471b"
-                />
-              </View>
-              <View style={styles.contentContainer}>
-                <Text style={styles.notificationTitle}>{item.title}</Text>
-                <Text style={styles.notificationMessage}>{item.message}</Text>
-                <Text style={styles.notificationTime}>
-                  {new Date(item.createdAt).toLocaleString()}
-                </Text>
-              </View>
-              {!item.read && <View style={styles.unreadDot} />}
-              <TouchableOpacity
-                onPress={() => clearNotification(item.id)}
-                style={styles.deleteButton}
-              >
-                <MaterialCommunityIcons
-                  name="close"
-                  size={20}
-                  color="#6b7280"
-                />
-              </TouchableOpacity>
-            </TouchableOpacity>
-          )}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
+      <FlatList
+        data={sortedNotifications}
+        keyExtractor={(item) => item.id}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.primary}
+            colors={[Colors.primary]}
+          />
+        }
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={[styles.notificationCard, !item.read && styles.unreadCard]}
+            onPress={() => handleNotificationPress(item)}
+          >
+            <View style={[styles.iconContainer, !item.read && styles.unreadIconContainer]}>
               <MaterialCommunityIcons
-                name="bell-off"
-                size={48}
-                color="#9ca3af"
+                name={typeIcons[item.type] as any}
+                size={24}
+                color={!item.read ? Colors.primary : Colors.textSecondary}
               />
-              <Text style={styles.emptyText}>No notifications</Text>
             </View>
-          }
-          contentContainerStyle={styles.listContent}
-        />
-      </LinearGradient>
-    </ImageBackground>
+            <View style={styles.contentContainer}>
+              <Text style={styles.notificationTitle}>{item.title}</Text>
+              <Text style={styles.notificationMessage}>{item.message}</Text>
+              <Text style={styles.notificationTime}>
+                {new Date(item.createdAt).toLocaleString()}
+              </Text>
+            </View>
+            {!item.read && <View style={styles.unreadDot} />}
+            <TouchableOpacity
+              onPress={() => clearNotification(item.id)}
+              style={styles.deleteButton}
+            >
+              <MaterialCommunityIcons
+                name="close"
+                size={20}
+                color={Colors.textSecondary}
+              />
+            </TouchableOpacity>
+          </TouchableOpacity>
+        )}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <MaterialCommunityIcons
+              name="bell-off-outline"
+              size={64}
+              color={Colors.lightGray}
+            />
+            <Text style={styles.emptyText}>No notifications yet</Text>
+            <Text style={styles.emptySubtext}>
+              You'll see notifications here when you have new activity
+            </Text>
+          </View>
+        }
+        contentContainerStyle={styles.listContent}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  backgroundImage: {
+  container: {
     flex: 1,
-    width: "100%",
-    height: "100%",
-  },
-  gradientOverlay: {
-    flex: 1,
-    paddingTop: 60,
+    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#f0dcc7",
-    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    gap: 12,
   },
   markAllButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: Colors.primaryLight + '30',
   },
   markAllText: {
-    color: "#bf471b",
+    color: Colors.primary,
     fontSize: 14,
     fontWeight: "600",
   },
   clearAllButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: Colors.error + '20',
   },
   clearAllText: {
-    color: "#ef4444",
+    color: Colors.error,
     fontSize: 14,
     fontWeight: "600",
   },
   listContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingBottom: 20,
   },
   notificationCard: {
-    backgroundColor: "rgba(0,0,0,0.6)",
-    borderRadius: 12,
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
     padding: 16,
     marginBottom: 12,
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "rgba(191, 71, 27, 0.3)",
+    borderColor: Colors.lightGray,
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   unreadCard: {
-    borderColor: "#bf471b",
-    backgroundColor: "rgba(191, 71, 27, 0.1)",
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primaryLight + '10',
   },
   iconContainer: {
     marginRight: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.lightGray + '30',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  unreadIconContainer: {
+    backgroundColor: Colors.primaryLight + '30',
   },
   contentContainer: {
     flex: 1,
   },
   notificationTitle: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#f0dcc7",
+    fontWeight: "700",
+    color: Colors.textPrimary,
     marginBottom: 4,
   },
   notificationMessage: {
     fontSize: 14,
-    color: "#f0dcc7",
+    color: Colors.textSecondary,
     marginBottom: 4,
   },
   notificationTime: {
     fontSize: 12,
-    color: "#9ca3af",
+    color: Colors.textSecondary,
   },
   unreadDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#bf471b",
+    backgroundColor: Colors.primary,
     marginRight: 8,
   },
   deleteButton: {
@@ -287,10 +288,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 100,
+    paddingHorizontal: 40,
   },
   emptyText: {
-    color: "#9ca3af",
-    fontSize: 16,
+    color: Colors.textPrimary,
+    fontSize: 20,
+    fontWeight: '700',
     marginTop: 16,
+  },
+  emptySubtext: {
+    color: Colors.textSecondary,
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: 'center',
   },
 });
