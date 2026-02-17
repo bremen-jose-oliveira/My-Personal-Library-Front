@@ -21,6 +21,33 @@ export default function BrowseBooksScreen() {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [numColumns, setNumColumns] = useState(2);
+
+  // Calculate number of columns based on screen width
+  const calculateNumColumns = () => {
+    if (Platform.OS === "web") {
+      const width = Dimensions.get("window").width;
+      if (width > 1200) return 6;
+      if (width > 768) return 4;
+      return 2;
+    }
+    // Mobile: 2 columns for better readability
+    return 2;
+  };
+
+  useEffect(() => {
+    // Set initial columns
+    setNumColumns(calculateNumColumns());
+
+    // Add resize listener for web
+    if (Platform.OS === "web") {
+      const handleResize = () => {
+        setNumColumns(calculateNumColumns());
+      };
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, []);
 
   const loadBooks = async () => {
     try {
@@ -42,20 +69,6 @@ export default function BrowseBooksScreen() {
     setRefreshing(true);
     await loadBooks();
   };
-
-  // Calculate number of columns based on screen width
-  const getNumColumns = () => {
-    if (Platform.OS === "web") {
-      const width = Dimensions.get("window").width;
-      if (width > 1200) return 6;
-      if (width > 768) return 4;
-      return 2;
-    }
-    // Mobile: 2 columns for better readability
-    return 2;
-  };
-
-  const numColumns = getNumColumns();
 
   return (
     <ImageBackground
@@ -93,7 +106,7 @@ export default function BrowseBooksScreen() {
               <Link href={`/BookDetails/${book.id}`} asChild>
                 <TouchableOpacity
                   style={{
-                    flex: 1,
+                    flex: 1 / numColumns,
                     margin: 8,
                     backgroundColor: "rgba(255, 255, 255, 0.95)",
                     borderRadius: 12,
@@ -104,7 +117,6 @@ export default function BrowseBooksScreen() {
                     shadowOpacity: 0.1,
                     shadowRadius: 4,
                     elevation: 3,
-                    maxWidth: Platform.OS === "web" ? "calc(50% - 16px)" : undefined,
                   }}
                 >
                   <View style={{ alignItems: "center" }}>
