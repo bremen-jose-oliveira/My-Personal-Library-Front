@@ -5,7 +5,6 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  ImageBackground,
   RefreshControl,
   Alert,
 } from "react-native";
@@ -103,15 +102,10 @@ export default function NotificationsScreen() {
   );
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
+    <LinearGradient
+      colors={["#667eea", "#764ba2"]}
       style={styles.backgroundImage}
-      resizeMode="cover"
     >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
-        style={styles.gradientOverlay}
-      >
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Notifications</Text>
           {unreadCount > 0 && (
@@ -141,7 +135,8 @@ export default function NotificationsScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#bf471b"
+              tintColor="#ffffff"
+              colors={["#ffffff"]}
             />
           }
           renderItem={({ item }) => (
@@ -153,7 +148,7 @@ export default function NotificationsScreen() {
                 <MaterialCommunityIcons
                   name={typeIcons[item.type] as any}
                   size={24}
-                  color="#bf471b"
+                  color="#667eea"
                 />
               </View>
               <View style={styles.contentContainer}>
@@ -181,15 +176,14 @@ export default function NotificationsScreen() {
               <MaterialCommunityIcons
                 name="bell-off"
                 size={48}
-                color="#9ca3af"
+                color="#ffffff"
               />
               <Text style={styles.emptyText}>No notifications</Text>
             </View>
           }
           contentContainerStyle={styles.listContent}
         />
-      </LinearGradient>
-    </ImageBackground>
+    </LinearGradient>
   );
 }
 
@@ -198,9 +192,6 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     height: "100%",
-  },
-  gradientOverlay: {
-    flex: 1,
     paddingTop: 60,
   },
   header: {
@@ -213,7 +204,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#f0dcc7",
+    color: "#ffffff",
     flex: 1,
   },
   markAllButton: {
@@ -221,7 +212,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   markAllText: {
-    color: "#bf471b",
+    color: "#ffffff",
     fontSize: 14,
     fontWeight: "600",
   },
@@ -230,7 +221,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   clearAllText: {
-    color: "#ef4444",
+    color: "#ffffff",
     fontSize: 14,
     fontWeight: "600",
   },
@@ -239,18 +230,23 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   notificationCard: {
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(255,255,255,0.95)",
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "rgba(191, 71, 27, 0.3)",
+    borderColor: "rgba(255,255,255,0.3)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
   },
   unreadCard: {
-    borderColor: "#bf471b",
-    backgroundColor: "rgba(191, 71, 27, 0.1)",
+    borderColor: "#667eea",
+    backgroundColor: "rgba(255,255,255,1)",
   },
   iconContainer: {
     marginRight: 12,
@@ -261,12 +257,12 @@ const styles = StyleSheet.create({
   notificationTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#f0dcc7",
+    color: "#333",
     marginBottom: 4,
   },
   notificationMessage: {
     fontSize: 14,
-    color: "#f0dcc7",
+    color: "#666",
     marginBottom: 4,
   },
   notificationTime: {
@@ -277,7 +273,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#bf471b",
+    backgroundColor: "#667eea",
     marginRight: 8,
   },
   deleteButton: {
@@ -289,7 +285,7 @@ const styles = StyleSheet.create({
     marginTop: 100,
   },
   emptyText: {
-    color: "#9ca3af",
+    color: "#ffffff",
     fontSize: 16,
     marginTop: 16,
   },

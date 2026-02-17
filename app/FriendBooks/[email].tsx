@@ -7,7 +7,6 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
-  ImageBackground,
   TouchableOpacity,
   Platform,
 } from "react-native";
@@ -89,15 +88,18 @@ export default function FriendBooksScreen() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#bf471b" />
-      </View>
+      <LinearGradient
+        colors={["#667eea", "#764ba2"]}
+        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+      >
+        <ActivityIndicator size="large" color="#ffffff" />
+      </LinearGradient>
     );
   }
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
+    <LinearGradient
+      colors={["#667eea", "#764ba2"]}
       style={{
         flex: 1,
         width: "100%",
@@ -105,19 +107,8 @@ export default function FriendBooksScreen() {
         justifyContent: "center",
         alignItems: "center",
       }}
-      resizeMode="cover"
     >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
-        style={{
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-        }}
-      >
-        {books.length === 0 ? (
+      {books.length === 0 ? (
           <View
             style={{
               flex: 1,
@@ -133,17 +124,17 @@ export default function FriendBooksScreen() {
                 top: 60,
                 left: 16,
                 padding: 8,
-                backgroundColor: "rgba(0,0,0,0.4)",
-                borderRadius: 8,
+                backgroundColor: "rgba(255,255,255,0.2)",
+                borderRadius: 12,
               }}
             >
-              <Text style={{ color: "#f0dcc7", fontSize: 16 }}>← Back</Text>
+              <Text style={{ color: "#ffffff", fontSize: 16 }}>← Back</Text>
             </TouchableOpacity>
             <Text
               style={{
                 fontSize: 24,
                 fontWeight: "bold",
-                color: "#f0dcc7",
+                color: "#ffffff",
                 marginBottom: 16,
               }}
             >
@@ -152,12 +143,17 @@ export default function FriendBooksScreen() {
             <View
               style={{
                 padding: 20,
-                backgroundColor: "rgba(0,0,0,0.4)",
-                borderRadius: 10,
+                backgroundColor: "rgba(255,255,255,0.95)",
+                borderRadius: 12,
                 alignItems: "center",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 6,
+                elevation: 3,
               }}
             >
-              <Text style={{ color: "#f0dcc7", fontSize: 16 }}>
+              <Text style={{ color: "#333", fontSize: 16 }}>
                 {friendName} hasn't added any books yet.
               </Text>
             </View>
@@ -181,17 +177,17 @@ export default function FriendBooksScreen() {
                 onPress={() => router.back()}
                 style={{
                   padding: 8,
-                  backgroundColor: "rgba(0,0,0,0.4)",
-                  borderRadius: 8,
+                  backgroundColor: "rgba(255,255,255,0.2)",
+                  borderRadius: 12,
                 }}
               >
-                <Text style={{ color: "#f0dcc7", fontSize: 16 }}>← Back</Text>
+                <Text style={{ color: "#ffffff", fontSize: 16 }}>← Back</Text>
               </TouchableOpacity>
               <Text
                 style={{
                   fontSize: 20,
                   fontWeight: "bold",
-                  color: "#f0dcc7",
+                  color: "#ffffff",
                   flex: 1,
                   textAlign: "center",
                 }}
@@ -218,11 +214,16 @@ export default function FriendBooksScreen() {
                       justifyContent: "center",
                       alignItems: "center",
                       margin: 4,
-                      backgroundColor: "rgba(0,0,0,0.4)",
-                      borderRadius: 10,
+                      backgroundColor: "rgba(255,255,255,0.95)",
+                      borderRadius: 12,
                       overflow: "hidden",
                       padding: 8,
                       gap: 8,
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 6,
+                      elevation: 3,
                     }}
                   >
                     {book.cover ? (
@@ -258,7 +259,7 @@ export default function FriendBooksScreen() {
                       >
                         <Text
                           style={{
-                            color: "#f0dcc7",
+                            color: "#333",
                             fontSize: 12,
                             lineHeight: 16,
                             textAlign: "center",
@@ -271,7 +272,7 @@ export default function FriendBooksScreen() {
                     <View style={{ alignItems: "center" }}>
                       <Text
                         style={{
-                          color: "#f8f0e5",
+                          color: "#333",
                           fontWeight: "600",
                           textAlign: "center",
                         }}
@@ -281,7 +282,7 @@ export default function FriendBooksScreen() {
                       {book.ownerUsername && (
                         <Text
                           style={{
-                            color: "#bf471b",
+                            color: "#667eea",
                             fontSize: 10,
                             marginTop: 4,
                             textAlign: "center",
@@ -295,13 +296,17 @@ export default function FriendBooksScreen() {
                 </Link>
               )}
               refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  tintColor="#ffffff"
+                  colors={["#ffffff"]}
+                />
               }
               keyboardShouldPersistTaps="handled"
             />
           </>
         )}
-      </LinearGradient>
-    </ImageBackground>
+    </LinearGradient>
   );
 }

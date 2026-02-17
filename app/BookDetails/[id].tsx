@@ -155,15 +155,18 @@ export default function BookDetails() {
 
   if (loadingDetails || !selectedBook) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#bf471b" />
-      </View>
+      <LinearGradient
+        colors={["#667eea", "#764ba2"]}
+        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+      >
+        <ActivityIndicator size="large" color="#ffffff" />
+      </LinearGradient>
     );
   }
 
   return (
     <LinearGradient
-      colors={["#1f1f1f", "#3d2c29"]}
+      colors={["#667eea", "#764ba2"]}
       style={{ flex: 1, padding: 16, paddingTop: 32 }}
     >
       <KeyboardAvoidingView
@@ -177,18 +180,24 @@ export default function BookDetails() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={handleRefresh}
-              tintColor="#fff"
+              tintColor="#ffffff"
+              colors={["#ffffff"]}
             />
           }
           keyboardShouldPersistTaps="handled"
         >
           <View
             style={{
-              backgroundColor: "rgba(0,0,0,0.4)",
-              borderRadius: 16,
+              backgroundColor: "rgba(255,255,255,0.95)",
+              borderRadius: 12,
               padding: 16,
               flexDirection: "row",
               gap: 16,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 6,
+              elevation: 3,
             }}
           >
             {selectedBook.cover ? (
@@ -218,33 +227,33 @@ export default function BookDetails() {
             )}
             <View style={{ flex: 1 }}>
               <Text
-                style={{ color: "#f0dcc7", fontSize: 22, fontWeight: "bold" }}
+                style={{ color: "#333", fontSize: 22, fontWeight: "bold" }}
               >
                 {selectedBook.title}
               </Text>
-              <Text style={{ color: "#f0dcc7", marginTop: 4 }}>
+              <Text style={{ color: "#666", marginTop: 4 }}>
                 Author: {selectedBook.author}
               </Text>
-              <Text style={{ color: "#f0dcc7" }}>
+              <Text style={{ color: "#666" }}>
                 Year: {selectedBook.year}
               </Text>
-              <Text style={{ color: "#f0dcc7" }}>
+              <Text style={{ color: "#666" }}>
                 Publisher: {selectedBook.publisher}
               </Text>
-              <Text style={{ color: "#f0dcc7" }}>
+              <Text style={{ color: "#666" }}>
                 ISBN: {selectedBook.isbn}
               </Text>
-              <Text style={{ color: "#f0dcc7", fontWeight: "600" }}>
+              <Text style={{ color: "#333", fontWeight: "600" }}>
                 Owner: {selectedBook.ownerUsername || "Unknown"}
               </Text>
-              <Text style={{ color: "#f0dcc7" }}>
+              <Text style={{ color: "#666" }}>
                 Reading Status:{" "}
                 {selectedBook.readingStatus
                   ? statusLabels[selectedBook.readingStatus as BookStatus] ??
                     selectedBook.readingStatus
                   : "Not set"}
               </Text>
-              <Text style={{ color: "#f0dcc7" }}>
+              <Text style={{ color: "#666" }}>
                 Exchange Status: {selectedBook.exchangeStatus ?? "N/A"}
               </Text>
             </View>
@@ -259,15 +268,20 @@ export default function BookDetails() {
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  backgroundColor: "rgba(0,0,0,0.4)",
-                  borderRadius: 10,
+                  backgroundColor: "rgba(255,255,255,0.95)",
+                  borderRadius: 12,
                   padding: 12,
                   marginBottom: descriptionExpanded ? 8 : 0,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 6,
+                  elevation: 3,
                 }}
               >
                 <Text
                   style={{
-                    color: "#f0dcc7",
+                    color: "#333",
                     fontSize: 18,
                     fontWeight: "600",
                     flex: 1,
@@ -275,21 +289,26 @@ export default function BookDetails() {
                 >
                   Description
                 </Text>
-                <Text style={{ color: "#f0dcc7", fontSize: 16 }}>
+                <Text style={{ color: "#667eea", fontSize: 16 }}>
                   {descriptionExpanded ? "▼" : "▶"}
                 </Text>
               </TouchableOpacity>
               {descriptionExpanded && (
                 <View
                   style={{
-                    backgroundColor: "rgba(0,0,0,0.35)",
-                    borderRadius: 10,
+                    backgroundColor: "rgba(255,255,255,0.95)",
+                    borderRadius: 12,
                     padding: 12,
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 6,
+                    elevation: 3,
                   }}
                 >
                   <Text
                     style={{
-                      color: "#f0dcc7",
+                      color: "#333",
                       lineHeight: 20,
                       fontSize: 14,
                     }}
@@ -302,7 +321,7 @@ export default function BookDetails() {
           )}
 
           <View style={{ marginTop: 24, gap: 12 }}>
-            <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "600" }}>
+            <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "600" }}>
               Update Reading Status
             </Text>
             <View style={{ flexDirection: "row", gap: 8 }}>
@@ -312,11 +331,11 @@ export default function BookDetails() {
                   style={{
                     paddingVertical: 8,
                     paddingHorizontal: 12,
-                    borderRadius: 8,
+                    borderRadius: 12,
                     backgroundColor:
                       selectedBook.readingStatus === status
-                        ? "#bf471b"
-                        : "rgba(255,255,255,0.1)",
+                        ? "#667eea"
+                        : "rgba(255,255,255,0.2)",
                   }}
                   onPress={() => handleUpdateReadingStatus(status)}
                 >
@@ -327,15 +346,15 @@ export default function BookDetails() {
           </View>
 
           <View style={{ marginTop: 24, gap: 12 }}>
-            <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "600" }}>
+            <Text style={{ color: "#ffffff", fontSize: 18, fontWeight: "600" }}>
               Actions
             </Text>
             {!isOwner && (
               <TouchableOpacity
                 style={{
-                  backgroundColor: "#bf471b",
+                  backgroundColor: "#667eea",
                   padding: 12,
-                  borderRadius: 8,
+                  borderRadius: 12,
                   alignItems: "center",
                 }}
                 onPress={handleRequestExchange}
@@ -352,7 +371,7 @@ export default function BookDetails() {
                   style={{
                     backgroundColor: "#b91c1c",
                     padding: 12,
-                    borderRadius: 8,
+                    borderRadius: 12,
                     alignItems: "center",
                   }}
                   onPress={handleDeleteBook}
@@ -375,7 +394,7 @@ export default function BookDetails() {
             >
               <Text
                 style={{
-                  color: "#f0dcc7",
+                  color: "#ffffff",
                   fontSize: 18,
                   fontWeight: "600",
                 }}
@@ -384,14 +403,14 @@ export default function BookDetails() {
               </Text>
               {reviewsLoading && (
                 <ActivityIndicator
-                  color="#bf471b"
+                  color="#ffffff"
                   size="small"
                   style={{ marginLeft: 8 }}
                 />
               )}
             </View>
             {!reviewsLoading && reviews.length === 0 ? (
-              <Text style={{ color: "#f0dcc7", fontStyle: "italic" }}>
+              <Text style={{ color: "#ffffff", fontStyle: "italic" }}>
                 No reviews yet. Be the first to review this book!
               </Text>
             ) : !reviewsLoading && reviews.length > 0 ? (
@@ -399,16 +418,21 @@ export default function BookDetails() {
                 <View
                   key={review.id}
                   style={{
-                    backgroundColor: "rgba(0,0,0,0.35)",
-                    borderRadius: 10,
+                    backgroundColor: "rgba(255,255,255,0.95)",
+                    borderRadius: 12,
                     padding: 12,
                     marginBottom: 10,
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 6,
+                    elevation: 3,
                   }}
                 >
-                  <Text style={{ color: "#f0dcc7", fontWeight: "600" }}>
+                  <Text style={{ color: "#333", fontWeight: "600" }}>
                     {review.user?.username ?? "Anonymous"} • {review.rating}/5
                   </Text>
-                  <Text style={{ color: "#f0dcc7", marginTop: 4 }}>
+                  <Text style={{ color: "#666", marginTop: 4 }}>
                     {review.comment}
                   </Text>
                   {review.user?.email === currentUser?.email && (
@@ -422,10 +446,10 @@ export default function BookDetails() {
                           setEditComment(review.comment);
                         }}
                         style={{
-                          backgroundColor: "#bf471b",
+                          backgroundColor: "#667eea",
                           paddingVertical: 6,
                           paddingHorizontal: 12,
-                          borderRadius: 6,
+                          borderRadius: 12,
                         }}
                       >
                         <Text style={{ color: "#fff", fontWeight: "600" }}>
@@ -438,7 +462,7 @@ export default function BookDetails() {
                           backgroundColor: "#b91c1c",
                           paddingVertical: 6,
                           paddingHorizontal: 12,
-                          borderRadius: 6,
+                          borderRadius: 12,
                         }}
                       >
                         <Text style={{ color: "#fff", fontWeight: "600" }}>
@@ -455,7 +479,7 @@ export default function BookDetails() {
           <View style={{ marginTop: 24 }}>
             <Text
               style={{
-                color: "#f0dcc7",
+                color: "#ffffff",
                 fontSize: 18,
                 fontWeight: "600",
                 marginBottom: 12,
@@ -470,10 +494,10 @@ export default function BookDetails() {
                 keyboardType="numeric"
                 maxLength={1}
                 style={{
-                  backgroundColor: "rgba(255,255,255,0.1)",
+                  backgroundColor: "rgba(255,255,255,0.2)",
                   color: "#fff",
                   padding: 10,
-                  borderRadius: 8,
+                  borderRadius: 12,
                   width: 60,
                   textAlign: "center",
                 }}
@@ -486,10 +510,10 @@ export default function BookDetails() {
                 multiline={true}
                 style={{
                   flex: 1,
-                  backgroundColor: "rgba(255,255,255,0.1)",
+                  backgroundColor: "rgba(255,255,255,0.2)",
                   color: "#fff",
                   padding: 10,
-                  borderRadius: 8,
+                  borderRadius: 12,
                 }}
               />
             </View>
@@ -497,8 +521,8 @@ export default function BookDetails() {
               style={{
                 marginTop: 12,
                 padding: 12,
-                backgroundColor: "#bf471b",
-                borderRadius: 8,
+                backgroundColor: "#667eea",
+                borderRadius: 12,
                 alignItems: "center",
               }}
               onPress={handleReviewSubmit}
@@ -585,8 +609,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalContent: {
-    backgroundColor: "#2d2d2d",
-    borderRadius: 16,
+    backgroundColor: "rgba(255,255,255,0.95)",
+    borderRadius: 12,
     padding: 20,
     width: "90%",
     maxWidth: 400,
@@ -594,22 +618,22 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#f0dcc7",
+    color: "#333",
     marginBottom: 16,
   },
   modalLabel: {
     fontSize: 14,
-    color: "#f0dcc7",
+    color: "#666",
     marginBottom: 8,
     marginTop: 12,
   },
   modalInput: {
-    backgroundColor: "rgba(255,255,255,0.1)",
-    color: "#fff",
+    backgroundColor: "#fff",
+    color: "#333",
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#bf471b",
+    borderColor: "#667eea",
   },
   modalTextArea: {
     height: 100,
@@ -630,7 +654,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#6b7280",
   },
   saveButton: {
-    backgroundColor: "#bf471b",
+    backgroundColor: "#667eea",
   },
   modalButtonText: {
     color: "#fff",
