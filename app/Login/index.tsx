@@ -26,7 +26,7 @@ export default function Login() {
       // The AuthContext will set isLoggedIn=true, and the app will redirect automatically
       router.dismissAll();
       router.push("/(tabs)");
-    } catch (error: any) {
+    } catch {
       // Login failed - don't navigate, stay on login screen
       // Alert is already shown in AuthContext.login()
       console.error("Login failed, staying on login screen");

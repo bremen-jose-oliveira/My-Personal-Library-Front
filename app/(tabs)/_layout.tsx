@@ -2,10 +2,9 @@ import React, { useContext, useCallback, useRef } from "react";
 import { Platform, Alert, Button } from "react-native";
 import "../../global.css";
 import { AuthContext } from "@/utils/Context/AuthContext";
-import { Tabs, Redirect } from "expo-router";
-import Entypo from "@expo/vector-icons/Entypo";
+import { Tabs } from "expo-router";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import NotificationBell from "@/components/NotificationBell";
 
 function AppTabs() {

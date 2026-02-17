@@ -3,7 +3,7 @@ import { useBookContext } from "@/utils/Context/BookContext";
 import { useFriendContext } from "@/utils/Context/FriendContext";
 import { useUserContext } from "@/utils/Context/UserContext";
 import { LinearGradient } from "expo-linear-gradient";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { useState, useContext, useEffect } from "react";
 import {
   View,

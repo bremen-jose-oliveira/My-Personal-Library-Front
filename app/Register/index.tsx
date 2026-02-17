@@ -31,7 +31,7 @@ export default function Register() {
       await createUser(username, email, password);
       router.dismissAll();
       router.push("/(tabs)");
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Failed to register");
     }
   };

@@ -1,13 +1,10 @@
-import { Alert, Text, TouchableOpacity, View } from "react-native";
-import * as Google from "expo-auth-session/providers/google";
+import { TouchableOpacity, View, Text } from "react-native";
 import React, { useContext } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { Href, Link, useRouter } from "expo-router";
+import { Href, Link } from "expo-router";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import GoogleLogo from "../assets/images/google-icon.svg";
 import "../global.css";
-import * as SecureStore from "expo-secure-store";
-import { getToken, storeToken } from "@/utils/Context/storageUtils";
 import { AuthContext } from "@/utils/Context/AuthContext";
 
 type Props = {
@@ -15,7 +12,6 @@ type Props = {
 };
 
 const SocialLoginButtons = (props: Props) => {
-  const router = useRouter();
 
   const { handleGoogleLogin} = useContext(AuthContext);
   const { appleLogin } = useContext(AuthContext);

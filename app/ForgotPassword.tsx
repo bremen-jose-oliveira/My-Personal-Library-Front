@@ -1,8 +1,6 @@
 import InputField from "@/components/inputField";
-import SocialLoginButtons from "@/components/SocialLoginButtons";
-import { AuthContext } from "@/utils/Context/AuthContext";
-import { Link, router, Stack } from "expo-router";
-import React, { useState, useContext } from "react";
+import { router, Stack } from "expo-router";
+import React, { useState } from "react";
 import { Alert, TouchableOpacity, View, Text } from "react-native";
 import Ioicons from "react-native-vector-icons/Ionicons";
 
@@ -20,8 +18,7 @@ export default function ForgotPassword() {
 
         const data = await response.json();  
         Alert.alert("Check your email", data.message);
-    } catch (error) {
-      
+    } catch {
         Alert.alert("Error", "Failed to send reset email");
     }
 };
