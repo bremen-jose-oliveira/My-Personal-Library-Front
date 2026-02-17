@@ -185,7 +185,7 @@ export default function AddBookForm() {
     try {
       await addBook(bookData);
       setSelectedBook(null);
-      router.push("/Library/DisplayBooks");
+      router.push("/(tabs)/Library");
 
       if (Platform.OS === "web") {
         window.confirm("Success " + " Book added successfully!");
