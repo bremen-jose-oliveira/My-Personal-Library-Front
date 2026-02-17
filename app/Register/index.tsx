@@ -3,8 +3,9 @@ import SocialLoginButtons from "@/components/SocialLoginButtons";
 import { AuthContext } from "@/utils/Context/AuthContext";
 import { Link, router, Stack } from "expo-router";
 import React, { useState, useContext } from "react";
-import { Alert, TouchableOpacity, View, Text } from "react-native";
+import { Alert, TouchableOpacity, View, Text, ScrollView } from "react-native";
 import Ioicons from "react-native-vector-icons/Ionicons";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function Register() {
   const { createUser } = useContext(AuthContext);
@@ -40,87 +41,202 @@ export default function Register() {
     <>
       <Stack.Screen
         options={{
-          headerTitle: "Sign Up",
+          headerTitle: "",
+          headerTransparent: true,
           headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()}>
-              <Ioicons name="close" size={24} color="black" />
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                backgroundColor: "rgba(255, 255, 255, 0.9)",
+                alignItems: "center",
+                justifyContent: "center",
+                marginLeft: 8,
+              }}
+            >
+              <Ioicons name="close" size={24} color="#171717" />
             </TouchableOpacity>
           ),
         }}
       />
 
-      <View className="flex-1 justify-center items-center px-5 bg-gray-100">
-        <Text className="text-2xl font-semibold tracking-wide text-black mb-12">
-          Create an Account
-        </Text>
-
-        <InputField
-          value={username}
-          onChangeText={setUsername}
-          placeholder="Enter a Username"
-          placeholderTextColor="gray"
-          autoCapitalize="none"
-        />
-
-        <InputField
-          value={email}
-          onChangeText={setEmail}
-          placeholder="Enter Email..."
-          placeholderTextColor="gray"
-          autoCapitalize="none"
-        />
-
-        <InputField
-          secureTextEntry={secureText}
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Enter Password..."
-          placeholderTextColor="gray"
-        />
-
-        <InputField
-          secureTextEntry={secureText}
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          placeholder="Confirm Password..."
-          placeholderTextColor="gray"
-        />
-        <TouchableOpacity onPress={() => setSecureText(!secureText)}>
+      <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
+        {/* Gradient Header */}
+        <LinearGradient
+          colors={["#ff6b35", "#ff9166"] as any}
+          style={{
+            height: 180,
+            justifyContent: "center",
+            alignItems: "center",
+            paddingTop: 60,
+          }}
+        >
           <Text
             style={{
-              color: "#bf471b",
-              fontWeight: "600",
-              marginBottom: 20,
+              fontSize: 32,
+              fontWeight: "800",
+              color: "#fff",
+              marginBottom: 8,
             }}
           >
-            {secureText ? "Show Password" : "Hide Password"}
+            Create Account
           </Text>
-          
-        </TouchableOpacity>
+          <Text
+            style={{
+              fontSize: 16,
+              color: "rgba(255, 255, 255, 0.95)",
+              fontWeight: "500",
+            }}
+          >
+            Join us today
+          </Text>
+        </LinearGradient>
 
-        {passwordError && (
-          <Text className="text-red-500 mt-1 mb-2">{passwordError}</Text>
-        )}
-
-        <TouchableOpacity
-         style={{  backgroundColor: "#bf471b", alignItems:"center", borderRadius: 5, alignSelf: "stretch",   paddingVertical: 14,paddingHorizontal: 18,  marginBottom: 30,}}
-       
-          onPress={handleRegister}
+        {/* Registration Form */}
+        <ScrollView
+          style={{
+            flex: 1,
+            backgroundColor: "#ffffff",
+            borderTopLeftRadius: 32,
+            borderTopRightRadius: 32,
+            marginTop: -32,
+          }}
+          contentContainerStyle={{
+            paddingHorizontal: 24,
+            paddingTop: 32,
+            paddingBottom: 40,
+          }}
         >
-          <Text className="text-white text-lg font-semibold">Register</Text>
-        </TouchableOpacity>
+          <InputField
+            value={username}
+            onChangeText={setUsername}
+            placeholder="Username"
+            placeholderTextColor="#a3a3a3"
+            autoCapitalize="none"
+          />
 
-        <Text className="mb-5 text-sm text-black">
-          Have an Account?{" "}
-          <Link href="/Login" asChild>
-            <TouchableOpacity>
-              <Text  style={{  color: "#bf471b"}}>Sign In</Text>
-            </TouchableOpacity>
-          </Link>
-        </Text>
+          <InputField
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Email address"
+            placeholderTextColor="#a3a3a3"
+            autoCapitalize="none"
+          />
 
-        <View className="border-t border-gray-300 w-1/3 mb-8"></View>
-        <SocialLoginButtons emailHref="/Login" />
+          <InputField
+            secureTextEntry={secureText}
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Password"
+            placeholderTextColor="#a3a3a3"
+          />
+
+          <InputField
+            secureTextEntry={secureText}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            placeholder="Confirm Password"
+            placeholderTextColor="#a3a3a3"
+          />
+
+          <TouchableOpacity
+            onPress={() => setSecureText(!secureText)}
+            style={{ alignSelf: "flex-end", marginBottom: 16 }}
+          >
+            <Text
+              style={{
+                color: "#ff6b35",
+                fontWeight: "600",
+                fontSize: 14,
+              }}
+            >
+              {secureText ? "Show Password" : "Hide Password"}
+            </Text>
+          </TouchableOpacity>
+
+          {passwordError && (
+            <Text
+              style={{
+                color: "#ef4444",
+                fontSize: 14,
+                marginBottom: 16,
+                textAlign: "center",
+              }}
+            >
+              {passwordError}
+            </Text>
+          )}
+
+          <TouchableOpacity
+            style={{
+              backgroundColor: "#ff6b35",
+              alignItems: "center",
+              borderRadius: 16,
+              alignSelf: "stretch",
+              paddingVertical: 16,
+              marginBottom: 24,
+              shadowColor: "#ff6b35",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+            onPress={handleRegister}
+          >
+            <Text
+              style={{
+                color: "#ffffff",
+                fontSize: 18,
+                fontWeight: "700",
+              }}
+            >
+              Create Account
+            </Text>
+          </TouchableOpacity>
+
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 24,
+            }}
+          >
+            <View style={{ flex: 1, height: 1, backgroundColor: "#e5e5e5" }} />
+            <Text
+              style={{
+                marginHorizontal: 12,
+                fontSize: 14,
+                color: "#a3a3a3",
+                fontWeight: "500",
+              }}
+            >
+              or sign up with
+            </Text>
+            <View style={{ flex: 1, height: 1, backgroundColor: "#e5e5e5" }} />
+          </View>
+
+          <SocialLoginButtons emailHref="/Login" />
+
+          <Text
+            style={{
+              marginTop: 16,
+              fontSize: 14,
+              color: "#525252",
+              textAlign: "center",
+            }}
+          >
+            Already have an account?{" "}
+            <Link href="/Login" asChild>
+              <TouchableOpacity>
+                <Text style={{ color: "#ff6b35", fontWeight: "600" }}>
+                  Sign In
+                </Text>
+              </TouchableOpacity>
+            </Link>
+          </Text>
+        </ScrollView>
       </View>
     </>
   );
