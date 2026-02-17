@@ -3,8 +3,9 @@ import SocialLoginButtons from "@/components/SocialLoginButtons";
 import { AuthContext } from "@/utils/Context/AuthContext";
 import { Link, router, Stack } from "expo-router";
 import React, { useState, useContext } from "react";
-import { Alert, TouchableOpacity, View, Text } from "react-native";
+import { Alert, TouchableOpacity, View, Text, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import Ioicons from "react-native-vector-icons/Ionicons";
+import { Colors } from "@/constants/Colors";
 
 export default function Register() {
   const { createUser } = useContext(AuthContext);
@@ -41,87 +42,191 @@ export default function Register() {
       <Stack.Screen
         options={{
           headerTitle: "Sign Up",
+          headerStyle: {
+            backgroundColor: Colors.background,
+          },
+          headerTintColor: Colors.textPrimary,
           headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()}>
-              <Ioicons name="close" size={24} color="black" />
+            <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 8 }}>
+              <Ioicons name="close" size={28} color={Colors.textPrimary} />
             </TouchableOpacity>
           ),
         }}
       />
 
-      <View className="flex-1 justify-center items-center px-5 bg-gray-100">
-        <Text className="text-2xl font-semibold tracking-wide text-black mb-12">
-          Create an Account
-        </Text>
-
-        <InputField
-          value={username}
-          onChangeText={setUsername}
-          placeholder="Enter a Username"
-          placeholderTextColor="gray"
-          autoCapitalize="none"
-        />
-
-        <InputField
-          value={email}
-          onChangeText={setEmail}
-          placeholder="Enter Email..."
-          placeholderTextColor="gray"
-          autoCapitalize="none"
-        />
-
-        <InputField
-          secureTextEntry={secureText}
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Enter Password..."
-          placeholderTextColor="gray"
-        />
-
-        <InputField
-          secureTextEntry={secureText}
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          placeholder="Confirm Password..."
-          placeholderTextColor="gray"
-        />
-        <TouchableOpacity onPress={() => setSecureText(!secureText)}>
-          <Text
-            style={{
-              color: "#bf471b",
-              fontWeight: "600",
-              marginBottom: 20,
-            }}
-          >
-            {secureText ? "Show Password" : "Hide Password"}
-          </Text>
-          
-        </TouchableOpacity>
-
-        {passwordError && (
-          <Text className="text-red-500 mt-1 mb-2">{passwordError}</Text>
-        )}
-
-        <TouchableOpacity
-         style={{  backgroundColor: "#bf471b", alignItems:"center", borderRadius: 5, alignSelf: "stretch",   paddingVertical: 14,paddingHorizontal: 18,  marginBottom: 30,}}
-       
-          onPress={handleRegister}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView 
+          contentContainerStyle={{ flexGrow: 1 }}
+          style={{ backgroundColor: Colors.background }}
         >
-          <Text className="text-white text-lg font-semibold">Register</Text>
-        </TouchableOpacity>
+          <View className="flex-1 justify-center items-center px-6 py-8">
+            {/* Header Section */}
+            <View className="mb-10 items-center">
+              <Text 
+                className="text-4xl font-bold mb-2"
+                style={{ color: Colors.textPrimary }}
+              >
+                Join Us
+              </Text>
+              <Text 
+                className="text-base"
+                style={{ color: Colors.textSecondary }}
+              >
+                Create your account to get started
+              </Text>
+            </View>
 
-        <Text className="mb-5 text-sm text-black">
-          Have an Account?{" "}
-          <Link href="/Login" asChild>
-            <TouchableOpacity>
-              <Text  style={{  color: "#bf471b"}}>Sign In</Text>
-            </TouchableOpacity>
-          </Link>
-        </Text>
+            {/* Input Fields */}
+            <View className="w-full mb-6">
+              <InputField
+                value={username}
+                onChangeText={setUsername}
+                placeholder="Username"
+                placeholderTextColor={Colors.textSecondary}
+                autoCapitalize="none"
+                style={{
+                  backgroundColor: Colors.surface,
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                  marginBottom: 16,
+                  borderWidth: 2,
+                  borderColor: Colors.lightGray,
+                  fontSize: 16,
+                  color: Colors.textPrimary,
+                }}
+              />
 
-        <View className="border-t border-gray-300 w-1/3 mb-8"></View>
-        <SocialLoginButtons emailHref="/Login" />
-      </View>
+              <InputField
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Email Address"
+                placeholderTextColor={Colors.textSecondary}
+                autoCapitalize="none"
+                style={{
+                  backgroundColor: Colors.surface,
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                  marginBottom: 16,
+                  borderWidth: 2,
+                  borderColor: Colors.lightGray,
+                  fontSize: 16,
+                  color: Colors.textPrimary,
+                }}
+              />
+
+              <InputField
+                secureTextEntry={secureText}
+                value={password}
+                onChangeText={setPassword}
+                placeholder="Password"
+                placeholderTextColor={Colors.textSecondary}
+                style={{
+                  backgroundColor: Colors.surface,
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                  marginBottom: 16,
+                  borderWidth: 2,
+                  borderColor: Colors.lightGray,
+                  fontSize: 16,
+                  color: Colors.textPrimary,
+                }}
+              />
+
+              <InputField
+                secureTextEntry={secureText}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder="Confirm Password"
+                placeholderTextColor={Colors.textSecondary}
+                style={{
+                  backgroundColor: Colors.surface,
+                  borderRadius: 12,
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                  marginBottom: 8,
+                  borderWidth: 2,
+                  borderColor: Colors.lightGray,
+                  fontSize: 16,
+                  color: Colors.textPrimary,
+                }}
+              />
+              
+              <TouchableOpacity 
+                onPress={() => setSecureText(!secureText)}
+                style={{ alignSelf: 'flex-end', marginTop: 8, marginBottom: 16 }}
+              >
+                <Text
+                  style={{
+                    color: Colors.primary,
+                    fontWeight: "600",
+                    fontSize: 15,
+                  }}
+                >
+                  {secureText ? "Show Password" : "Hide Password"}
+                </Text>
+              </TouchableOpacity>
+
+              {passwordError ? (
+                <Text 
+                  className="text-base mb-4"
+                  style={{ color: Colors.error }}
+                >
+                  {passwordError}
+                </Text>
+              ) : null}
+
+              {/* Register Button */}
+              <TouchableOpacity
+                onPress={handleRegister}
+                style={{
+                  backgroundColor: Colors.primary,
+                  alignItems: "center",
+                  borderRadius: 12,
+                  alignSelf: "stretch",
+                  paddingVertical: 16,
+                  paddingHorizontal: 18,
+                  marginBottom: 20,
+                  shadowColor: Colors.primary,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 8,
+                  elevation: 4,
+                }}
+              >
+                <Text className="text-white text-lg font-bold">Create Account</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Sign In Link */}
+            <Text className="mb-6 text-base" style={{ color: Colors.textSecondary }}>
+              Already have an account?{" "}
+              <Link href="/Login" asChild>
+                <TouchableOpacity>
+                  <Text style={{ color: Colors.primary, fontWeight: "700" }}>Sign In</Text>
+                </TouchableOpacity>
+              </Link>
+            </Text>
+
+            {/* Divider */}
+            <View className="flex-row items-center w-full mb-8">
+              <View className="flex-1 h-px" style={{ backgroundColor: Colors.lightGray }} />
+              <Text className="mx-4 text-sm" style={{ color: Colors.textSecondary }}>OR</Text>
+              <View className="flex-1 h-px" style={{ backgroundColor: Colors.lightGray }} />
+            </View>
+
+            {/* Social Login */}
+            <View className="w-full">
+              <SocialLoginButtons emailHref="/Login" />
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </>
   );
 }

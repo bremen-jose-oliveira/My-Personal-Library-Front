@@ -3,6 +3,7 @@ import { TouchableOpacity, View, Text, StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNotificationContext } from "@/utils/Context/NotificationContext";
 import { router } from "expo-router";
+import { Colors } from "@/constants/Colors";
 
 export default function NotificationBell() {
   const { unreadCount } = useNotificationContext();
@@ -12,7 +13,7 @@ export default function NotificationBell() {
       onPress={() => router.push("/Notifications")}
       style={styles.container}
     >
-      <MaterialCommunityIcons name="bell" size={24} color="#bf471b" />
+      <MaterialCommunityIcons name="bell-outline" size={24} color={Colors.textPrimary} />
       {unreadCount > 0 && (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>
@@ -33,7 +34,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: -8,
     right: -8,
-    backgroundColor: "#ef4444",
+    backgroundColor: Colors.primary,
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -42,13 +43,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   badgeText: {
-    color: "#fff",
+    color: Colors.white,
     fontSize: 12,
     fontWeight: "bold",
   },
 });
-
-
-
-
-
