@@ -17,7 +17,6 @@ import {
   Alert,
   Modal,
   Platform,
-  ImageBackground,
 } from "react-native";
 
 const processGoogleBooksImageUrl = (
@@ -205,100 +204,134 @@ export default function AddBookForm() {
   };
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
+    <LinearGradient
+      colors={["#667eea", "#764ba2"]}
       style={{
-        flex: 1, // Take full screen
-        width: "100%", // Make sure it spans full width
-        height: "100%", // Make sure it spans full height
-        justifyContent: "center", // Center content vertically
-        alignItems: "center", // Center content horizontally
+        flex: 1,
+        width: "100%",
+        height: "100%",
       }}
-      resizeMode="cover" // Ensures the image covers the screen
     >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
-        style={{
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-          justifyContent: "flex-start",
-        }}
-      >
-        <View style={{ flex: 1, padding: 20 }}>
-          <TextInput
-            placeholder="Search for a book..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            style={{
-              borderColor: "gray",
-              backgroundColor: "rgba(0,0,0,0.4)",
-              padding: 10,
-              marginBottom: 20,
-              fontSize: 15,
-              borderRadius: 8,
-              color: "#f0dcc7",
-            }}
-          />
-          <View style={{ flexDirection: "row", marginBottom: 10 }}>
-            <View style={{ flex: 1, marginRight: 5 }}>
-              <Button
-                title="Search"
-                onPress={() => {
-                  setStartIndex(0);
-                  fetchBooks(searchQuery, true);
-                }}
-                color="#bf471b"
-              />
-            </View>
-          </View>
-
-          {/* Render "Open Barcode Scanner" only if not on iOS Web */}
-          <View style={{ flexDirection: "row", marginBottom: 10 }}>
-            <View
-              style={{ flex: 1, marginRight: searchResults.length > 0 ? 5 : 0 }}
+      <View style={{ flex: 1, padding: 20 }}>
+        <TextInput
+          placeholder="Search for a book..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholderTextColor="#999"
+          style={{
+            borderColor: "#e9ecef",
+            backgroundColor: "rgba(255,255,255,0.95)",
+            padding: 14,
+            marginBottom: 16,
+            fontSize: 15,
+            borderRadius: 12,
+            color: "#333",
+            borderWidth: 2,
+          }}
+        />
+        <View style={{ flexDirection: "row", marginBottom: 10 }}>
+          <View style={{ flex: 1, marginRight: 5 }}>
+            <TouchableOpacity
+              onPress={() => {
+                setStartIndex(0);
+                fetchBooks(searchQuery, true);
+              }}
+              style={{
+                backgroundColor: "#667eea",
+                alignItems: "center",
+                borderRadius: 12,
+                paddingVertical: 12,
+                shadowColor: "#667eea",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 4,
+              }}
             >
-              <Button
-                color="#bf471b"
-                title="Open Scanner"
-                onPress={() => {
-                  clearSearchState(); // Clear previous results when opening scanner
-                  setScannerVisible(true);
-                }}
-              />
-            </View>
-            {searchResults.length > 0 && (
-              <View style={{ flex: 1, marginLeft: 5 }}>
-                <Button
-                  color="#666"
-                  title="Clear Results"
-                  onPress={clearSearchState}
-                />
-              </View>
-            )}
+              <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "600" }}>
+                Search
+              </Text>
+            </TouchableOpacity>
           </View>
+        </View>
 
+        {/* Render "Open Barcode Scanner" only if not on iOS Web */}
+        <View style={{ flexDirection: "row", marginBottom: 10 }}>
+          <View
+            style={{ flex: 1, marginRight: searchResults.length > 0 ? 5 : 0 }}
+          >
+            <TouchableOpacity
+              onPress={() => {
+                clearSearchState(); // Clear previous results when opening scanner
+                setScannerVisible(true);
+              }}
+              style={{
+                backgroundColor: "#764ba2",
+                alignItems: "center",
+                borderRadius: 12,
+                paddingVertical: 12,
+                shadowColor: "#764ba2",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 6,
+                elevation: 3,
+              }}
+            >
+              <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "600" }}>
+                Open Scanner
+              </Text>
+            </TouchableOpacity>
+          </View>
           {searchResults.length > 0 && (
-            <View>
-              <View
+            <View style={{ flex: 1, marginLeft: 5 }}>
+              <TouchableOpacity
+                onPress={clearSearchState}
                 style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
+                  backgroundColor: "#666",
                   alignItems: "center",
-                  marginBottom: 10,
+                  borderRadius: 12,
+                  paddingVertical: 12,
                 }}
               >
-                <Text
-                  style={{ color: "#f0dcc7", fontSize: 16, fontWeight: "bold" }}
-                >
-                  Found {searchResults.length} result
-                  {searchResults.length !== 1 ? "s" : ""}
+                <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "600" }}>
+                  Clear Results
                 </Text>
-                <Button color="#666" title="Clear" onPress={clearSearchState} />
-              </View>
-              <FlatList
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+
+        {searchResults.length > 0 && (
+          <View>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 10,
+              }}
+            >
+              <Text
+                style={{ color: "#ffffff", fontSize: 16, fontWeight: "700" }}
+              >
+                Found {searchResults.length} result
+                {searchResults.length !== 1 ? "s" : ""}
+              </Text>
+              <TouchableOpacity
+                onPress={clearSearchState}
+                style={{
+                  backgroundColor: "#666",
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 8,
+                }}
+              >
+                <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "600" }}>
+                  Clear
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
                 data={searchResults}
                 keyExtractor={(item: any, index: number) =>
                   `${
@@ -353,9 +386,16 @@ export default function AddBookForm() {
                       <View
                         style={{
                           flexDirection: "row",
-                          padding: 10,
+                          padding: 12,
                           alignItems: "center",
-                          marginBottom: 5,
+                          marginBottom: 8,
+                          backgroundColor: "rgba(255,255,255,0.95)",
+                          borderRadius: 12,
+                          shadowColor: "#000",
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.1,
+                          shadowRadius: 6,
+                          elevation: 3,
                         }}
                       >
                         <Image
@@ -364,9 +404,10 @@ export default function AddBookForm() {
                           style={{
                             width: 50,
                             height: 75,
-                            marginRight: 10,
+                            marginRight: 12,
                             resizeMode: "contain",
-                            backgroundColor: "rgba(255,255,255,0.1)",
+                            backgroundColor: "#f8f9fa",
+                            borderRadius: 6,
                           }}
                           onError={() => {
                             // Image failed to load, fallback will be used
@@ -378,18 +419,14 @@ export default function AddBookForm() {
                         <View
                           style={{
                             flex: 1,
-                            padding: 17,
-                            borderRadius: 2,
-                            borderBlockColor: "#f0dcc7",
-                            backgroundColor: "rgba(0,0,0,0.4)",
                           }}
                         >
                           <Text
-                            style={{ fontWeight: "bold", color: "#f0dcc7" }}
+                            style={{ fontWeight: "600", color: "#333", fontSize: 15 }}
                           >
                             {item.volumeInfo.title}
                           </Text>
-                          <Text style={{ color: "#f0dcc7" }}>
+                          <Text style={{ color: "#666", fontSize: 14, marginTop: 4 }}>
                             {item.volumeInfo.authors?.join(", ") ||
                               "Unknown Author"}
                           </Text>
@@ -408,10 +445,15 @@ export default function AddBookForm() {
             <ScrollView
               style={{
                 marginTop: 20,
-                backgroundColor: "rgba(0,0,0,0.4)",
-                padding: 8,
-                borderRadius: 8,
-                maxHeight: 400, // Ensure the box has a max height
+                backgroundColor: "rgba(255,255,255,0.95)",
+                padding: 16,
+                borderRadius: 12,
+                maxHeight: 400,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 6,
+                elevation: 3,
               }}
             >
               <View style={{ alignItems: "center" }}>
@@ -420,23 +462,31 @@ export default function AddBookForm() {
                     flexDirection: "row",
                     justifyContent: "space-between",
                     width: "100%",
-                    marginBottom: 10,
+                    marginBottom: 12,
                   }}
                 >
                   <Text
                     style={{
-                      fontWeight: "bold",
-                      color: "#f0dcc7",
+                      fontWeight: "700",
+                      color: "#333",
                       fontSize: 18,
                     }}
                   >
                     Book Preview
                   </Text>
-                  <Button
-                    title="Cancel"
+                  <TouchableOpacity
                     onPress={() => setSelectedBook(null)}
-                    color="#666"
-                  />
+                    style={{
+                      backgroundColor: "#666",
+                      paddingHorizontal: 16,
+                      paddingVertical: 8,
+                      borderRadius: 8,
+                    }}
+                  >
+                    <Text style={{ color: "#ffffff", fontSize: 14, fontWeight: "600" }}>
+                      Cancel
+                    </Text>
+                  </TouchableOpacity>
                 </View>
                 {(() => {
                   // Try to get cover URL with multiple fallback strategies
@@ -485,8 +535,9 @@ export default function AddBookForm() {
                       style={{
                         width: 65,
                         height: 90,
-                        marginBottom: 10,
+                        marginBottom: 12,
                         resizeMode: "contain",
+                        borderRadius: 6,
                       }}
                       onError={() => {
                         // Image failed to load, fallback will be used
@@ -499,18 +550,19 @@ export default function AddBookForm() {
                 })()}
                 <Text
                   style={{
-                    fontWeight: "bold",
-                    color: "#f0dcc7",
-                    marginBottom: 5,
+                    fontWeight: "600",
+                    color: "#333",
+                    marginBottom: 8,
+                    fontSize: 15,
                   }}
                 >
                   Title: {selectedBook.volumeInfo.title || ""}
                 </Text>
                 <Text
                   style={{
-                    fontWeight: "bold",
-                    color: "#f0dcc7",
-                    marginBottom: 5,
+                    fontWeight: "600",
+                    color: "#333",
+                    marginBottom: 8,
                   }}
                 >
                   Author:{" "}
@@ -519,45 +571,50 @@ export default function AddBookForm() {
                 </Text>
                 <Text
                   style={{
-                    fontWeight: "bold",
-                    color: "#f0dcc7",
-                    marginBottom: 5,
+                    fontWeight: "600",
+                    color: "#333",
+                    marginBottom: 8,
+                    fontSize: 15,
                   }}
                 >
                   Publisher: {selectedBook.volumeInfo.publisher || ""}
                 </Text>
                 <Text
                   style={{
-                    fontWeight: "bold",
-                    color: "#f0dcc7",
-                    marginBottom: 5,
+                    fontWeight: "600",
+                    color: "#333",
+                    marginBottom: 8,
+                    fontSize: 15,
                   }}
                 >
                   Published Date: {selectedBook.volumeInfo.publishedDate || ""}
                 </Text>
                 <Text
                   style={{
-                    fontWeight: "bold",
-                    color: "#f0dcc7",
-                    marginBottom: 5,
+                    fontWeight: "600",
+                    color: "#333",
+                    marginBottom: 8,
+                    fontSize: 15,
                   }}
                 >
                   Categories: {selectedBook.volumeInfo.categories || ""}
                 </Text>
                 <Text
                   style={{
-                    fontWeight: "bold",
-                    color: "#f0dcc7",
-                    marginBottom: 5,
+                    fontWeight: "600",
+                    color: "#333",
+                    marginBottom: 8,
+                    fontSize: 15,
                   }}
                 >
                   Description: {selectedBook.volumeInfo.description || ""}
                 </Text>
                 <Text
                   style={{
-                    fontWeight: "bold",
-                    color: "#f0dcc7",
-                    marginBottom: 5,
+                    fontWeight: "600",
+                    color: "#333",
+                    marginBottom: 8,
+                    fontSize: 15,
                   }}
                 >
                   isbn:{" "}
@@ -568,26 +625,48 @@ export default function AddBookForm() {
                   style={{
                     flexDirection: "row",
                     width: "100%",
-                    marginTop: 10,
+                    marginTop: 12,
+                    gap: 10,
                   }}
                 >
-                  <View style={{ flex: 1, marginRight: 5 }}>
-                    <Button
-                      title={addingBook ? "Adding..." : "Add Book"}
+                  <View style={{ flex: 1 }}>
+                    <TouchableOpacity
                       onPress={handleAddBook}
-                      color="#bf471b"
                       disabled={addingBook}
-                    />
+                      style={{
+                        backgroundColor: addingBook ? "#999" : "#667eea",
+                        alignItems: "center",
+                        borderRadius: 12,
+                        paddingVertical: 12,
+                        shadowColor: "#667eea",
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 8,
+                        elevation: 4,
+                      }}
+                    >
+                      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "600" }}>
+                        {addingBook ? "Adding..." : "Add Book"}
+                      </Text>
+                    </TouchableOpacity>
                   </View>
-                  <View style={{ flex: 1, marginLeft: 5 }}>
-                    <Button
-                      title="Cancel"
+                  <View style={{ flex: 1 }}>
+                    <TouchableOpacity
                       onPress={() => {
                         setSelectedBook(null);
                         clearSearchState();
                       }}
-                      color="#666"
-                    />
+                      style={{
+                        backgroundColor: "#666",
+                        alignItems: "center",
+                        borderRadius: 12,
+                        paddingVertical: 12,
+                      }}
+                    >
+                      <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "600" }}>
+                        Cancel
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               </View>
@@ -604,6 +683,5 @@ export default function AddBookForm() {
           </Modal>
         </View>
       </LinearGradient>
-    </ImageBackground>
   );
 }

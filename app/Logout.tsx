@@ -2,7 +2,7 @@ import "react-native-reanimated";
 
 import { Link, Stack, Redirect } from "expo-router";
 import "../global.css";
-import { TouchableOpacity, View, Text, ImageBackground } from "react-native";
+import { TouchableOpacity, View, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useContext } from "react";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
@@ -23,120 +23,94 @@ export default function LogoutScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <View
+      <LinearGradient
+        colors={["#667eea", "#764ba2", "#f093fb"]}
         style={{
           flex: 1,
-          backgroundColor: "#f5f5f5",
           width: "100%",
           height: "100%",
         }}
       >
-        <ImageBackground
-          source={require("@/assets/images/login.png")}
+        <View
           style={{
             flex: 1,
-            width: "100%",
-            height: "100%",
-            justifyContent: "center",
+            justifyContent: "flex-end",
             alignItems: "center",
-          }}
-          resizeMode="cover"
-          onError={(error) => {
-            console.error("ImageBackground failed to load:", error);
+            paddingBottom: 60,
+            paddingHorizontal: 20,
           }}
         >
-          <LinearGradient
-            colors={[
-              "transparent",
-              "rgba(255,255,255,0.1)",
-              "rgba(255,255,255,0.8)",
-            ]}
+          <View
             style={{
-              position: "absolute",
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: 0,
-              justifyContent: "flex-end",
               alignItems: "center",
-              paddingBottom: 12,
+              width: "100%",
             }}
           >
-            <View
+            <Text
               style={{
-                alignItems: "center",
-                paddingHorizontal: 20,
-                width: "100%",
+                fontSize: 48,
+                fontWeight: "800",
+                color: "#ffffff",
+                marginBottom: 8,
+                textShadowColor: "rgba(0, 0, 0, 0.3)",
+                textShadowOffset: { width: 0, height: 2 },
+                textShadowRadius: 4,
               }}
             >
-              <Text
-                style={{
-                  fontSize: 24,
-                  fontWeight: "bold",
-                  letterSpacing: 2.4,
-                  color: "#FF6347",
-                  marginBottom: 5,
-                }}
-              >
-                My Library
-              </Text>
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  letterSpacing: 1.2,
-                  color: "#808080",
-                  lineHeight: 21,
-                  marginBottom: 15,
-                  textAlign: "center",
-                }}
-              >
-                Your Own Private Book Collection
-              </Text>
+              My Library
+            </Text>
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "600",
+                color: "rgba(255,255,255,0.9)",
+                marginBottom: 40,
+                textAlign: "center",
+              }}
+            >
+              Your Own Private Book Collection
+            </Text>
 
-              <SocialLoginButtons emailHref="/Register" />
+            <SocialLoginButtons emailHref="/Register" />
 
-              <Text
-                style={{
-                  marginTop: 5,
-                  marginBottom: 35,
-                  fontSize: 14,
-                  color: "black",
-                  textAlign: "center",
-                }}
-              >
-                Have an Account?{" "}
-                <Link href="/Login" asChild>
-                  <TouchableOpacity>
-                    <Text style={{ color: "#FF6347", fontWeight: "600" }}>
-                      SignIn
-                    </Text>
-                  </TouchableOpacity>
-                </Link>
-              </Text>
+            <Text
+              style={{
+                marginTop: 20,
+                marginBottom: 20,
+                fontSize: 15,
+                color: "#ffffff",
+                textAlign: "center",
+              }}
+            >
+              Have an Account?{" "}
+              <Link href="/Login" asChild>
+                <TouchableOpacity>
+                  <Text style={{ color: "#ffffff", fontWeight: "700", textDecorationLine: "underline" }}>
+                    Sign In
+                  </Text>
+                </TouchableOpacity>
+              </Link>
+            </Text>
 
-              <Text
-                style={{
-                  marginTop: 5,
-                  marginBottom: 35,
-                  fontSize: 14,
-                  color: "black",
-                  textAlign: "center",
-                }}
-              >
-                Forgot Passord?{" "}
-                <Link href="/ForgotPassword" asChild>
-                  <TouchableOpacity>
-                    <Text style={{ color: "#FF6347", fontWeight: "600" }}>
-                      ResetPassword
-                    </Text>
-                  </TouchableOpacity>
-                </Link>
-              </Text>
-            </View>
-          </LinearGradient>
-        </ImageBackground>
-      </View>
+            <Text
+              style={{
+                fontSize: 15,
+                color: "#ffffff",
+                textAlign: "center",
+              }}
+            >
+              Forgot Password?{" "}
+              <Link href="/ForgotPassword" asChild>
+                <TouchableOpacity>
+                  <Text style={{ color: "#ffffff", fontWeight: "700", textDecorationLine: "underline" }}>
+                    Reset Password
+                  </Text>
+                </TouchableOpacity>
+              </Link>
+            </Text>
+          </View>
+        </View>
+      </LinearGradient>
     </>
   );
 }
