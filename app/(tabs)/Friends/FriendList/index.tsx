@@ -6,7 +6,6 @@ import {
   Text,
   Image,
   FlatList,
-  ActivityIndicator,
   Button,
   RefreshControl,
   Alert,

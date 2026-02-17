@@ -24,7 +24,7 @@ const HomeScreen = () => {
   const { books, fetchCurrentUserBooks } = useBookContext();
   const { friends, fetchCurrentUserFriends } = useFriendContext();
   const { borrowedBooks, lendingBooks, refreshAll } = useExchangeContext();
-  const { currentUser, refreshCurrentUser } = useUserContext();
+  const { refreshCurrentUser } = useUserContext();
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
