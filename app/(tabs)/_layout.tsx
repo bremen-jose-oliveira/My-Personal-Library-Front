@@ -110,7 +110,7 @@ function AppTabs() {
           tabBarLabel: "Library",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
-              name="bookshelf"
+              name="book-multiple"
               size={size}
               color={color}
             />

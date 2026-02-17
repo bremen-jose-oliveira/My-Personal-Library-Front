@@ -30,7 +30,7 @@ const typeIcons: Record<NotificationType, string> = {
   [NotificationType.EXCHANGE_REQUEST]: "swap-horizontal",
   [NotificationType.EXCHANGE_ACCEPTED]: "check-circle",
   [NotificationType.EXCHANGE_REJECTED]: "close-circle",
-  [NotificationType.EXCHANGE_RETURNED]: "book-arrow-left",
+  [NotificationType.EXCHANGE_RETURNED]: "book-arrow-down",
   [NotificationType.REVIEW_ADDED]: "star",
 };
 
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-    backgroundColor: Colors.primaryLight + '30',
+    backgroundColor: Colors.primaryOpacity30,
   },
   markAllText: {
     color: Colors.primary,
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-    backgroundColor: Colors.error + '20',
+    backgroundColor: Colors.errorOpacity20,
   },
   clearAllText: {
     color: Colors.error,
@@ -242,19 +242,19 @@ const styles = StyleSheet.create({
   },
   unreadCard: {
     borderColor: Colors.primary,
-    backgroundColor: Colors.primaryLight + '10',
+    backgroundColor: Colors.primaryOpacity10,
   },
   iconContainer: {
     marginRight: 12,
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.lightGray + '30',
+    backgroundColor: Colors.lightGrayOpacity30,
     justifyContent: 'center',
     alignItems: 'center',
   },
   unreadIconContainer: {
-    backgroundColor: Colors.primaryLight + '30',
+    backgroundColor: Colors.primaryOpacity30,
   },
   contentContainer: {
     flex: 1,

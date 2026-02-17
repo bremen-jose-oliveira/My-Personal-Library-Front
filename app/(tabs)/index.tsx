@@ -76,48 +76,58 @@ const HomeScreen = () => {
     label: string; 
     onPress: () => void; 
     color?: string;
-  }) => (
-    <TouchableOpacity
-      onPress={onPress}
-      style={{
-        flex: 1,
-        minWidth: 100,
-        backgroundColor: Colors.surface,
-        borderRadius: 16,
-        padding: 16,
-        alignItems: 'center',
-        shadowColor: Colors.shadow,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
-      }}
-    >
-      <View 
+  }) => {
+    // Extract RGB values from hex color for opacity
+    const hexToRgba = (hex: string, alpha: number) => {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    };
+
+    return (
+      <TouchableOpacity
+        onPress={onPress}
         style={{
-          width: 48,
-          height: 48,
-          borderRadius: 24,
-          backgroundColor: `${color}20`,
+          flex: 1,
+          minWidth: 100,
+          backgroundColor: Colors.surface,
+          borderRadius: 16,
+          padding: 16,
           alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: 8,
+          shadowColor: Colors.shadow,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 2,
         }}
       >
-        <MaterialCommunityIcons name={icon as any} size={24} color={color} />
-      </View>
-      <Text 
-        style={{ 
-          fontSize: 12, 
-          fontWeight: '600', 
-          color: Colors.textPrimary,
-          textAlign: 'center',
-        }}
-      >
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
+        <View 
+          style={{
+            width: 48,
+            height: 48,
+            borderRadius: 24,
+            backgroundColor: hexToRgba(color, 0.2),
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 8,
+          }}
+        >
+          <MaterialCommunityIcons name={icon as any} size={24} color={color} />
+        </View>
+        <Text 
+          style={{ 
+            fontSize: 12, 
+            fontWeight: '600', 
+            color: Colors.textPrimary,
+            textAlign: 'center',
+          }}
+        >
+          {label}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.background }}>

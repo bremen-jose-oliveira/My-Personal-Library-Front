@@ -7,7 +7,6 @@ import InputField from "@/components/inputField";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
 import React from "react";
 import { Colors } from "@/constants/Colors";
-import { LinearGradient } from "expo-linear-gradient";
 
 export default function Login() {
   const { login } = useContext(AuthContext);

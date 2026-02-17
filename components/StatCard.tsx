@@ -15,6 +15,14 @@ export const StatCard: React.FC<StatCardProps> = ({
   icon,
   color = '#FF6B35'
 }) => {
+  // Extract RGB values from hex color for opacity
+  const hexToRgba = (hex: string, alpha: number) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
   return (
     <Card style={{ flex: 1, minWidth: 150 }}>
       <View className="flex-row items-center justify-between">
@@ -30,7 +38,7 @@ export const StatCard: React.FC<StatCardProps> = ({
         {icon && (
           <View 
             className="w-12 h-12 rounded-full items-center justify-center"
-            style={{ backgroundColor: `${color}20` }}
+            style={{ backgroundColor: hexToRgba(color, 0.2) }}
           >
             {icon}
           </View>
