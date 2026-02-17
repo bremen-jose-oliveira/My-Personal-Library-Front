@@ -5,7 +5,6 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
-  ImageBackground,
   ActivityIndicator,
   Image,
 } from "react-native";
@@ -119,10 +118,15 @@ export default function ReadingListScreen() {
         onPress={() => router.push(`/BookDetails/${item.book!.id}`)}
         style={{
           flexDirection: "row",
-          backgroundColor: "rgba(0,0,0,0.4)",
+          backgroundColor: "rgba(255,255,255,0.95)",
           borderRadius: 12,
           padding: 12,
           marginBottom: 12,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 6,
+          elevation: 3,
         }}
       >
         {item.book.cover ? (
@@ -160,7 +164,7 @@ export default function ReadingListScreen() {
         <View style={{ flex: 1 }}>
           <Text
             style={{
-              color: "#f0dcc7",
+              color: "#333",
               fontSize: 16,
               fontWeight: "600",
               marginBottom: 4,
@@ -168,7 +172,7 @@ export default function ReadingListScreen() {
           >
             {item.book.title}
           </Text>
-          <Text style={{ color: "#f0dcc7", fontSize: 14, marginBottom: 4 }}>
+          <Text style={{ color: "#666", fontSize: 14, marginBottom: 4 }}>
             {item.book.author}
           </Text>
           <View
@@ -195,114 +199,106 @@ export default function ReadingListScreen() {
   };
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
+    <LinearGradient
+      colors={["#667eea", "#764ba2"]}
       style={{
         flex: 1,
         width: "100%",
         height: "100%",
-        justifyContent: "center",
-        alignItems: "center",
       }}
-      resizeMode="cover"
     >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
-        style={{
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-        }}
-      >
-        <View style={{ paddingTop: 60 }}>
-          <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
-            <Text
+      <View style={{ paddingTop: 60 }}>
+        <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: "bold",
+              color: "#ffffff",
+              marginBottom: 12,
+            }}
+          >
+            Reading List
+          </Text>
+          <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+            <TouchableOpacity
+              onPress={() => setSelectedFilter("ALL")}
               style={{
-                fontSize: 24,
-                fontWeight: "bold",
-                color: "#f0dcc7",
-                marginBottom: 12,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 8,
+                backgroundColor:
+                  selectedFilter === "ALL" ? "#667eea" : "rgba(255,255,255,0.3)",
               }}
             >
-              Reading List
-            </Text>
-            <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+              <Text style={{ color: "#fff", fontSize: 12 }}>All</Text>
+            </TouchableOpacity>
+            {Object.values(BookStatus).map((status) => (
               <TouchableOpacity
-                onPress={() => setSelectedFilter("ALL")}
+                key={status}
+                onPress={() => setSelectedFilter(status)}
                 style={{
                   paddingHorizontal: 12,
                   paddingVertical: 6,
                   borderRadius: 8,
                   backgroundColor:
-                    selectedFilter === "ALL" ? "#bf471b" : "rgba(0,0,0,0.4)",
+                    selectedFilter === status ? "#667eea" : "rgba(255,255,255,0.3)",
                 }}
               >
-                <Text style={{ color: "#fff", fontSize: 12 }}>All</Text>
+                <Text style={{ color: "#fff", fontSize: 12 }}>
+                  {statusLabels[status]}
+                </Text>
               </TouchableOpacity>
-              {Object.values(BookStatus).map((status) => (
-                <TouchableOpacity
-                  key={status}
-                  onPress={() => setSelectedFilter(status)}
-                  style={{
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    borderRadius: 8,
-                    backgroundColor:
-                      selectedFilter === status ? "#bf471b" : "rgba(0,0,0,0.4)",
-                  }}
-                >
-                  <Text style={{ color: "#fff", fontSize: 12 }}>
-                    {statusLabels[status]}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            ))}
           </View>
-
-          {loading ? (
-            <ActivityIndicator
-              size="large"
-              color="#bf471b"
-              style={{ marginTop: 40 }}
-            />
-          ) : (
-            <FlatList
-              contentContainerStyle={{ padding: 16, paddingTop: 0 }}
-              data={filteredStatuses}
-              keyExtractor={(item) => item.id.toString()}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                  tintColor="#bf471b"
-                />
-              }
-              renderItem={renderBookItem}
-              ListEmptyComponent={
-                <View
-                  style={{
-                    alignItems: "center",
-                    marginTop: 40,
-                    padding: 20,
-                    backgroundColor: "rgba(0,0,0,0.4)",
-                    borderRadius: 10,
-                  }}
-                >
-                  <Text style={{ color: "#f0dcc7", fontSize: 16 }}>
-                    {selectedFilter === "ALL"
-                      ? "No books in your reading list yet."
-                      : `No books with status "${
-                          statusLabels[selectedFilter as BookStatus]
-                        }".`}
-                  </Text>
-                </View>
-              }
-            />
-          )}
         </View>
-      </LinearGradient>
-    </ImageBackground>
+
+        {loading ? (
+          <ActivityIndicator
+            size="large"
+            color="#ffffff"
+            style={{ marginTop: 40 }}
+          />
+        ) : (
+          <FlatList
+            contentContainerStyle={{ padding: 16, paddingTop: 0 }}
+            data={filteredStatuses}
+            keyExtractor={(item) => item.id.toString()}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#ffffff"
+                colors={["#ffffff"]}
+              />
+            }
+            renderItem={renderBookItem}
+            ListEmptyComponent={
+              <View
+                style={{
+                  alignItems: "center",
+                  marginTop: 40,
+                  padding: 20,
+                  backgroundColor: "rgba(255,255,255,0.95)",
+                  borderRadius: 12,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 6,
+                  elevation: 3,
+                }}
+              >
+                <Text style={{ color: "#333", fontSize: 16 }}>
+                  {selectedFilter === "ALL"
+                    ? "No books in your reading list yet."
+                    : `No books with status "${
+                        statusLabels[selectedFilter as BookStatus]
+                      }".`}
+                </Text>
+              </View>
+            }
+          />
+        )}
+      </View>
+    </LinearGradient>
   );
 }

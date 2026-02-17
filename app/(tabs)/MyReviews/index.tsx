@@ -5,7 +5,6 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
-  ImageBackground,
   ActivityIndicator,
   Alert,
   Modal,
@@ -79,19 +78,19 @@ export default function MyReviewsScreen() {
         onPress={() => router.push(`/BookDetails/${item.bookId}`)}
         style={{ marginBottom: 8 }}
       >
-        <Text style={{ color: "#bf471b", fontSize: 16, fontWeight: "600" }}>
+        <Text style={{ color: "#667eea", fontSize: 16, fontWeight: "600" }}>
           View Book →
         </Text>
       </TouchableOpacity>
       <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-        <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "bold" }}>
+        <Text style={{ color: "#333", fontSize: 18, fontWeight: "bold" }}>
           Rating: {item.rating}/5
         </Text>
-        <Text style={{ color: "#f0dcc7", fontSize: 12 }}>
+        <Text style={{ color: "#666", fontSize: 12 }}>
           {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""}
         </Text>
       </View>
-      <Text style={{ color: "#f0dcc7", marginBottom: 12 }}>{item.comment}</Text>
+      <Text style={{ color: "#666", marginBottom: 12 }}>{item.comment}</Text>
       <View style={styles.buttonRow}>
         <TouchableOpacity
           onPress={() => handleEditReview(item)}
@@ -110,56 +109,48 @@ export default function MyReviewsScreen() {
   );
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
+    <LinearGradient
+      colors={["#667eea", "#764ba2"]}
       style={{
         flex: 1,
         width: "100%",
         height: "100%",
-        justifyContent: "center",
-        alignItems: "center",
       }}
-      resizeMode="cover"
     >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
-        style={{
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-        }}
-      >
-        <FlatList
-          contentContainerStyle={{ padding: 16, paddingTop: 60 }}
-          data={myReviews}
-          keyExtractor={(item) => item.id.toString()}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#bf471b" />
-          }
-          renderItem={renderReviewItem}
-          ListEmptyComponent={
-            !loading ? (
-              <View
-                style={{
-                  alignItems: "center",
-                  marginTop: 40,
-                  padding: 20,
-                  backgroundColor: "rgba(0,0,0,0.4)",
-                  borderRadius: 10,
-                }}
-              >
-                <Text style={{ color: "#f0dcc7", fontSize: 16 }}>
-                  You haven't written any reviews yet.
-                </Text>
-              </View>
-            ) : (
-              <ActivityIndicator size="large" color="#bf471b" style={{ marginTop: 40 }} />
-            )
-          }
-        />
-      </LinearGradient>
+      <FlatList
+        contentContainerStyle={{ padding: 16, paddingTop: 60 }}
+        data={myReviews}
+        keyExtractor={(item) => item.id.toString()}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ffffff" colors={["#ffffff"]} />
+        }
+        renderItem={renderReviewItem}
+        ListEmptyComponent={
+          !loading ? (
+            <View
+              style={{
+                alignItems: "center",
+                marginTop: 40,
+                padding: 20,
+                backgroundColor: "rgba(255,255,255,0.95)",
+                borderRadius: 12,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 6,
+                elevation: 3,
+              }}
+            >
+              <Text style={{ color: "#333", fontSize: 16 }}>
+                You haven't written any reviews yet.
+              </Text>
+            </View>
+          ) : (
+            <ActivityIndicator size="large" color="#ffffff" style={{ marginTop: 40 }} />
+          )
+        }
+      />
+    </LinearGradient>
 
       {/* Edit Review Modal */}
       <Modal
@@ -206,16 +197,21 @@ export default function MyReviewsScreen() {
           </View>
         </View>
       </Modal>
-    </ImageBackground>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   reviewCard: {
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(255,255,255,0.95)",
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
   },
   buttonRow: {
     flexDirection: "row",
@@ -230,7 +226,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   editButton: {
-    backgroundColor: "#bf471b",
+    backgroundColor: "#667eea",
   },
   deleteButton: {
     backgroundColor: "#b91c1c",
@@ -270,7 +266,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#bf471b",
+    borderColor: "#667eea",
   },
   modalTextArea: {
     height: 100,
@@ -291,7 +287,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#6b7280",
   },
   saveButton: {
-    backgroundColor: "#bf471b",
+    backgroundColor: "#667eea",
   },
   modalButtonText: {
     color: "#fff",
