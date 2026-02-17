@@ -12,6 +12,7 @@ import {
   ScrollView,
   Linking,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { getToken, removeToken } from "@/utils/Context/storageUtils";
 
 const AccountSettings = () => {
@@ -232,46 +233,46 @@ const AccountSettings = () => {
     <>
       <Stack.Screen
         options={{
-          headerTitle: "AccountSettings",
+          headerTitle: "Account Settings",
         }}
       />
 
-      <View
+      <LinearGradient
+        colors={["#667eea", "#764ba2"]}
         style={{
           flex: 1,
-          justifyContent: "flex-start",
-          alignItems: "center",
-          paddingHorizontal: 20,
-          paddingVertical: 20,
-          backgroundColor: "#f3f4f6",
         }}
       >
         <ScrollView
-          style={{ width: "100%", maxWidth: 600 }}
-          contentContainerStyle={{ paddingBottom: 40 }}
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            paddingHorizontal: 20,
+            paddingVertical: 20,
+            paddingBottom: 40,
+          }}
           showsVerticalScrollIndicator={false}
         >
           {/* Current User Information */}
           <View
             style={{
-              backgroundColor: "#fff",
-              borderRadius: 8,
-              padding: 16,
+              backgroundColor: "rgba(255,255,255,0.95)",
+              borderRadius: 12,
+              padding: 20,
               marginBottom: 24,
               width: "100%",
               shadowColor: "#000",
-              shadowOffset: { width: 0, height: 1 },
+              shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.1,
-              shadowRadius: 2,
-              elevation: 2,
+              shadowRadius: 6,
+              elevation: 3,
             }}
           >
             <Text
               style={{
-                fontSize: 16,
-                fontWeight: "600",
-                color: "#6b7280",
-                marginBottom: 8,
+                fontSize: 18,
+                fontWeight: "700",
+                color: "#667eea",
+                marginBottom: 12,
               }}
             >
               Current Account Information
@@ -279,18 +280,18 @@ const AccountSettings = () => {
             {currentUser ? (
               <>
                 {currentUser.username && (
-                  <View style={{ marginBottom: 8 }}>
+                  <View style={{ marginBottom: 12 }}>
                     <Text
                       style={{
-                        fontSize: 14,
-                        color: "#9ca3af",
+                        fontSize: 13,
+                        color: "#666",
                         marginBottom: 4,
                       }}
                     >
                       Username
                     </Text>
                     <Text
-                      style={{ fontSize: 18, fontWeight: "600", color: "#000" }}
+                      style={{ fontSize: 18, fontWeight: "600", color: "#333" }}
                     >
                       {currentUser.username}
                     </Text>
@@ -300,15 +301,15 @@ const AccountSettings = () => {
                   <View>
                     <Text
                       style={{
-                        fontSize: 14,
-                        color: "#9ca3af",
+                        fontSize: 13,
+                        color: "#666",
                         marginBottom: 4,
                       }}
                     >
                       Email
                     </Text>
                     <Text
-                      style={{ fontSize: 18, fontWeight: "600", color: "#000" }}
+                      style={{ fontSize: 18, fontWeight: "600", color: "#333" }}
                     >
                       {currentUser.email}
                     </Text>
@@ -316,92 +317,116 @@ const AccountSettings = () => {
                 )}
               </>
             ) : (
-              <Text style={{ fontSize: 14, color: "#9ca3af" }}>
+              <Text style={{ fontSize: 14, color: "#666" }}>
                 Loading user information...
               </Text>
             )}
           </View>
 
-          <Text
+          {/* Update Username Section */}
+          <View
             style={{
-              fontSize: 24,
-              fontWeight: "600",
-              letterSpacing: 0.5,
-              color: "#000",
+              backgroundColor: "rgba(255,255,255,0.95)",
+              borderRadius: 12,
+              padding: 20,
               marginBottom: 24,
-              marginTop: 10,
-              textAlign: "center",
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 6,
+              elevation: 3,
             }}
           >
-            Change Username
-          </Text>
-
-          <InputField
-            value={username}
-            onChangeText={setUsername}
-            placeholder="Enter a Username"
-            placeholderTextColor="gray"
-            autoCapitalize="none"
-          />
-          <TouchableOpacity
-            style={{
-              backgroundColor: "#bf471b",
-              alignItems: "center",
-              borderRadius: 5,
-              alignSelf: "stretch",
-              paddingVertical: 14,
-              paddingHorizontal: 18,
-              marginBottom: 30,
-              minHeight: 48,
-            }}
-            onPress={handleUpdateUsername}
-          >
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "600" }}>
-              Update Username
-            </Text>
-          </TouchableOpacity>
-
-          <Text
-            style={{
-              fontSize: 24,
-              fontWeight: "600",
-              letterSpacing: 0.5,
-              color: "#000",
-              marginBottom: 24,
-              marginTop: 10,
-              textAlign: "center",
-            }}
-          >
-            Change Password
-          </Text>
-          <InputField
-            secureTextEntry={secureText}
-            value={oldPassword}
-            onChangeText={setOldPassword}
-            placeholder="Enter Old Password..."
-            placeholderTextColor="gray"
-          />
-          <InputField
-            secureTextEntry={secureText}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Enter New Password..."
-            placeholderTextColor="gray"
-          />
-
-          <InputField
-            secureTextEntry={secureText}
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            placeholder="Confirm New Password..."
-            placeholderTextColor="gray"
-          />
-          <TouchableOpacity onPress={() => setSecureText(!secureText)}>
             <Text
               style={{
-                color: "#bf471b",
+                fontSize: 20,
+                fontWeight: "700",
+                color: "#333",
+                marginBottom: 16,
+              }}
+            >
+              Change Username
+            </Text>
+
+            <InputField
+              value={username}
+              onChangeText={setUsername}
+              placeholder="Enter a Username"
+              placeholderTextColor="#999"
+              autoCapitalize="none"
+            />
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#667eea",
+                alignItems: "center",
+                borderRadius: 12,
+                paddingVertical: 14,
+                shadowColor: "#667eea",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 4,
+              }}
+              onPress={handleUpdateUsername}
+            >
+              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+                Update Username
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Update Password Section */}
+          <View
+            style={{
+              backgroundColor: "rgba(255,255,255,0.95)",
+              borderRadius: 12,
+              padding: 20,
+              marginBottom: 24,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 6,
+              elevation: 3,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "700",
+                color: "#333",
+                marginBottom: 16,
+              }}
+            >
+              Change Password
+            </Text>
+            <InputField
+              secureTextEntry={secureText}
+              value={oldPassword}
+              onChangeText={setOldPassword}
+              placeholder="Enter Old Password..."
+              placeholderTextColor="#999"
+            />
+            <InputField
+              secureTextEntry={secureText}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Enter New Password..."
+              placeholderTextColor="#999"
+            />
+
+            <InputField
+              secureTextEntry={secureText}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder="Confirm New Password..."
+              placeholderTextColor="#999"
+            />
+            <TouchableOpacity onPress={() => setSecureText(!secureText)}>
+              <Text
+              style={{
+                color: "#667eea",
                 fontWeight: "600",
-                marginBottom: 20,
+                marginBottom: 16,
                 fontSize: 14,
               }}
             >
@@ -413,8 +438,7 @@ const AccountSettings = () => {
             <Text
               style={{
                 color: "#ef4444",
-                marginTop: 4,
-                marginBottom: 8,
+                marginBottom: 12,
                 fontSize: 14,
               }}
             >
@@ -424,40 +448,44 @@ const AccountSettings = () => {
 
           <TouchableOpacity
             style={{
-              backgroundColor: "#bf471b",
+              backgroundColor: "#667eea",
               alignItems: "center",
-              borderRadius: 5,
-              alignSelf: "stretch",
+              borderRadius: 12,
               paddingVertical: 14,
-              paddingHorizontal: 18,
-              marginBottom: 30,
-              minHeight: 48,
+              shadowColor: "#667eea",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 4,
             }}
             onPress={handleUpdatePassword}
           >
-            <Text style={{ color: "#fff", fontSize: 18, fontWeight: "600" }}>
+            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
               Update Password
             </Text>
           </TouchableOpacity>
+        </View>
 
           {/* Legal & Support Section */}
           <View
             style={{
-              marginTop: 40,
-              paddingTop: 30,
-              borderTopWidth: 1,
-              borderTopColor: "#e0e0e0",
-              width: "100%",
+              backgroundColor: "rgba(255,255,255,0.95)",
+              borderRadius: 12,
+              padding: 20,
+              marginBottom: 24,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 6,
+              elevation: 3,
             }}
           >
             <Text
               style={{
                 fontSize: 20,
-                fontWeight: "600",
-                letterSpacing: 0.5,
-                color: "#000",
-                marginBottom: 8,
-                textAlign: "center",
+                fontWeight: "700",
+                color: "#333",
+                marginBottom: 16,
               }}
             >
               Legal & Support
@@ -466,14 +494,16 @@ const AccountSettings = () => {
             {/* Privacy Policy Link */}
             <TouchableOpacity
               style={{
-                backgroundColor: "#6b7280",
+                backgroundColor: "#667eea",
                 alignItems: "center",
-                borderRadius: 5,
-                alignSelf: "stretch",
+                borderRadius: 12,
                 paddingVertical: 14,
-                paddingHorizontal: 18,
                 marginBottom: 12,
-                minHeight: 48,
+                shadowColor: "#667eea",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 4,
+                elevation: 2,
               }}
               onPress={() => {
                 // @ts-ignore
@@ -488,11 +518,9 @@ const AccountSettings = () => {
             <Text
               style={{
                 fontSize: 14,
-                color: "#4b5563",
-                marginTop: 20,
+                color: "#666",
+                marginTop: 12,
                 marginBottom: 12,
-                textAlign: "center",
-                paddingHorizontal: 16,
                 lineHeight: 20,
               }}
             >
@@ -503,15 +531,17 @@ const AccountSettings = () => {
               style={{
                 backgroundColor: "#0070ba",
                 alignItems: "center",
-                borderRadius: 5,
-                alignSelf: "stretch",
+                borderRadius: 12,
                 paddingVertical: 14,
-                paddingHorizontal: 18,
-                marginBottom: 30,
-                minHeight: 48,
+                marginBottom: 16,
                 flexDirection: "row",
                 justifyContent: "center",
                 gap: 8,
+                shadowColor: "#0070ba",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 4,
+                elevation: 2,
               }}
               onPress={async () => {
                 const paypalUrl = "https://paypal.me/MyPersonalLibrary";
@@ -531,29 +561,34 @@ const AccountSettings = () => {
                 }
               }}
             >
-              <Text style={{ color: "#fff", fontSize: 18, fontWeight: "600" }}>
+              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
                 💙 Support with PayPal
               </Text>
             </TouchableOpacity>
           </View>
 
+          {/* Danger Zone */}
           <View
             style={{
-              marginTop: 40,
-              paddingTop: 30,
-              borderTopWidth: 1,
-              borderTopColor: "#e0e0e0",
-              width: "100%",
+              backgroundColor: "rgba(255,255,255,0.95)",
+              borderRadius: 12,
+              padding: 20,
+              marginBottom: 24,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 6,
+              elevation: 3,
+              borderWidth: 2,
+              borderColor: "#dc2626",
             }}
           >
             <Text
               style={{
                 fontSize: 20,
-                fontWeight: "600",
-                letterSpacing: 0.5,
+                fontWeight: "700",
                 color: "#dc2626",
-                marginBottom: 16,
-                textAlign: "center",
+                marginBottom: 12,
               }}
             >
               Danger Zone
@@ -561,10 +596,8 @@ const AccountSettings = () => {
             <Text
               style={{
                 fontSize: 14,
-                color: "#4b5563",
-                marginBottom: 24,
-                textAlign: "center",
-                paddingHorizontal: 16,
+                color: "#666",
+                marginBottom: 16,
                 lineHeight: 20,
               }}
             >
@@ -576,22 +609,23 @@ const AccountSettings = () => {
               style={{
                 backgroundColor: "#dc2626",
                 alignItems: "center",
-                borderRadius: 5,
-                alignSelf: "stretch",
+                borderRadius: 12,
                 paddingVertical: 14,
-                paddingHorizontal: 18,
-                marginBottom: 20,
-                minHeight: 48,
+                shadowColor: "#dc2626",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+                elevation: 3,
               }}
               onPress={handleDeleteAccount}
             >
-              <Text style={{ color: "#fff", fontSize: 18, fontWeight: "600" }}>
+              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
                 Delete Account
               </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
-      </View>
+      </LinearGradient>
     </>
   );
 };
