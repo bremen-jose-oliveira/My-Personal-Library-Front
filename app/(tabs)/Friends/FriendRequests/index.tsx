@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Alert, ImageBackground, StyleSheet, RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, Alert, StyleSheet, RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
 import { useFriendContext } from "@/utils/Context/FriendContext";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -45,21 +45,21 @@ export default function FriendshipRequests() {
   };
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
+    <LinearGradient
+      colors={["#667eea", "#764ba2"]}
       style={styles.backgroundImage}
-      resizeMode="cover"
     >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
-        style={styles.gradientOverlay}
-      >
         <Text style={styles.header}>Friend Requests</Text>
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#bf471b" />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#ffffff"
+              colors={["#ffffff"]}
+            />
           }
         >
           {friendRequests.length > 0 ? (
@@ -106,8 +106,7 @@ export default function FriendshipRequests() {
             </View>
           )}
         </ScrollView>
-      </LinearGradient>
-    </ImageBackground>
+    </LinearGradient>
   );
 }
 
@@ -116,22 +115,12 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  gradientOverlay: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    justifyContent: "flex-start",
     paddingTop: 60,
   },
   header: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#f0dcc7",
+    color: "#ffffff",
     textAlign: "center",
     marginBottom: 20,
     paddingHorizontal: 16,
@@ -144,22 +133,25 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   requestCard: {
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(255,255,255,0.95)",
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#bf471b",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
   },
   requestTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#f0dcc7",
+    color: "#333",
     marginBottom: 8,
   },
   detailText: {
     fontSize: 14,
-    color: "#f0dcc7",
+    color: "#666",
     marginBottom: 4,
   },
   buttonContainer: {
@@ -190,11 +182,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 40,
     padding: 20,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.95)",
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
   },
   emptyText: {
-    color: "#f0dcc7",
+    color: "#333",
     fontSize: 16,
     textAlign: "center",
   },

@@ -11,7 +11,6 @@ import {
   RefreshControl,
   Alert,
   Platform,
-  ImageBackground,
   TouchableOpacity,
 } from "react-native";
 import { router } from "expo-router";
@@ -52,28 +51,14 @@ export default function FriendList() {
   };
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
+    <LinearGradient
+      colors={["#667eea", "#764ba2"]}
       style={{
-        flex: 1, // Take full screen
-        width: "100%", // Make sure it spans full width
-        height: "100%", // Make sure it spans full height
-        justifyContent: "center", // Center content vertically
-        alignItems: "center", // Center content horizontally
+        flex: 1,
+        width: "100%",
+        height: "100%",
       }}
-      resizeMode="cover" // Ensures the image covers the screen
     >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.9)"]}
-        style={{
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-          justifyContent: "flex-start",
-        }}
-      >
         <FlatList
           data={friends}
           keyExtractor={(friend) =>
@@ -85,9 +70,14 @@ export default function FriendList() {
                 flexDirection: "row",
                 marginTop: 3,
                 padding: 1,
-                borderRadius: 10,
+                borderRadius: 12,
                 width: "100%",
-                backgroundColor: "rgba(0,0,0,0.4)",
+                backgroundColor: "rgba(255,255,255,0.95)",
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 6,
+                elevation: 3,
               }}
             >
               {friend.profilePicture ? (
@@ -109,7 +99,7 @@ export default function FriendList() {
                 >
                   <Text
                     style={{
-                      color: "#f0dcc7",
+                      color: "#666",
                       fontSize: 12,
                       lineHeight: 16,
                       textAlign: "center",
@@ -138,7 +128,7 @@ export default function FriendList() {
                     style={{
                       fontSize: 20,
                       fontWeight: "bold",
-                      color: "#f0dcc7",
+                      color: "#333",
                     }}
                   >
                     Name:{" "}
@@ -150,7 +140,7 @@ export default function FriendList() {
                     style={{
                       fontSize: 20,
                       fontWeight: "bold",
-                      color: "#f0dcc7",
+                      color: "#333",
                     }}
                   >
                     Email:{" "}
@@ -159,7 +149,7 @@ export default function FriendList() {
                   <Text
                     style={{
                       fontSize: 14,
-                      color: "#bf471b",
+                      color: "#667eea",
                       marginTop: 8,
                       textDecorationLine: "underline",
                     }}
@@ -176,17 +166,21 @@ export default function FriendList() {
                 <Button
                   title="Remove Friend"
                   onPress={() => handleRemoveFriend(friend.id)}
-                  color="#bf471b"
+                  color="#667eea"
                 />
               </View>
             </View>
           )}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#ffffff"
+              colors={["#ffffff"]}
+            />
           }
           keyboardShouldPersistTaps="handled"
         />
-      </LinearGradient>
-    </ImageBackground>
+    </LinearGradient>
   );
 }

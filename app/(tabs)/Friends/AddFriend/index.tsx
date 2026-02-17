@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-  ImageBackground,
   Image,
   FlatList,
 } from "react-native";
@@ -80,8 +79,8 @@ const AddFriend = () => {
   }, [searchQuery]);
 
   return (
-    <ImageBackground
-      source={require("@/assets/images/background2.png")}
+    <LinearGradient
+      colors={["#667eea", "#764ba2"]}
       style={{
         flex: 1,
         width: "100%",
@@ -89,20 +88,7 @@ const AddFriend = () => {
         justifyContent: "center",
         alignItems: "center",
       }}
-      resizeMode="cover"
     >
-      <LinearGradient
-        colors={["transparent", "rgba(255,255,255,0.8)"]}
-        style={{
-          position: "absolute",
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
         {/* Search results display */}
 
         <View
@@ -110,8 +96,13 @@ const AddFriend = () => {
             flex: 1,
             width: "90%",
             padding: 20,
-            backgroundColor: "rgba(0, 0, 0, 0.6)",
-            borderRadius: 8,
+            backgroundColor: "rgba(255,255,255,0.95)",
+            borderRadius: 12,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 6,
+            elevation: 3,
           }}
         >
           {/* Email Input for adding a friend */}
@@ -119,27 +110,29 @@ const AddFriend = () => {
             value={friendEmail}
             onChangeText={setFriendEmail}
             placeholder="Enter friend's email"
+            placeholderTextColor="#999"
             style={{
               height: 40,
-              borderColor: "gray",
+              borderColor: "#ddd",
               borderWidth: 1,
               marginBottom: 20,
               paddingHorizontal: 10,
-              color: "white",
-              backgroundColor: "rgba(0,0,0,0.4)",
+              color: "#333",
+              backgroundColor: "#fff",
+              borderRadius: 8,
             }}
           />
           <TouchableOpacity
             onPress={handleAddFriendByEmail}
             style={{
-              backgroundColor: "#bf471b",
+              backgroundColor: "#667eea",
               padding: 10,
               marginBottom: 40,
-              borderRadius: 5,
+              borderRadius: 8,
               alignItems: "center",
             }}
           >
-            <Text style={{ color: "white", fontSize: 16 }}>
+            <Text style={{ color: "#ffffff", fontSize: 16 }}>
               Add Friend by Email
             </Text>
           </TouchableOpacity>
@@ -149,14 +142,16 @@ const AddFriend = () => {
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="Search by username or email"
+            placeholderTextColor="#999"
             style={{
               height: 40,
-              borderColor: "gray",
+              borderColor: "#ddd",
               borderWidth: 1,
               marginBottom: 20,
               paddingHorizontal: 10,
-              color: "white",
-              backgroundColor: "rgba(0,0,0,0.4)",
+              color: "#333",
+              backgroundColor: "#fff",
+              borderRadius: 8,
             }}
           />
           <FlatList
@@ -170,9 +165,14 @@ const AddFriend = () => {
                   flexDirection: "row",
                   marginTop: 3,
                   padding: 1,
-                  borderRadius: 10,
+                  borderRadius: 12,
                   width: "100%",
-                  backgroundColor: "rgba(0,0,0,0.4)",
+                  backgroundColor: "#fff",
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 6,
+                  elevation: 3,
                 }}
               >
                 {friend?.profilePicture ? (
@@ -194,7 +194,7 @@ const AddFriend = () => {
                   >
                     <Text
                       style={{
-                        color: "#f0dcc7",
+                        color: "#666",
                         fontSize: 12,
                         lineHeight: 16,
                         textAlign: "center",
@@ -209,25 +209,25 @@ const AddFriend = () => {
                     style={{
                       fontSize: 20,
                       fontWeight: "bold",
-                      color: "#f0dcc7",
+                      color: "#333",
                     }}
                   >
                     Name: {friend?.username}
                   </Text>
-                  <Text style={{ fontSize: 15, color: "#f0dcc7" }}>
+                  <Text style={{ fontSize: 15, color: "#666" }}>
                     Email: {friend?.email}
                   </Text>
                   <TouchableOpacity
                     onPress={() => handleAddFriendFromSearch(friend)}
                     style={{
-                      backgroundColor: "#bf471b",
+                      backgroundColor: "#667eea",
                       padding: 10,
-                      borderRadius: 5,
+                      borderRadius: 8,
                       alignItems: "center",
                       marginTop: 10,
                     }}
                   >
-                    <Text style={{ color: "white", fontSize: 16 }}>
+                    <Text style={{ color: "#ffffff", fontSize: 16 }}>
                       Add Friend
                     </Text>
                   </TouchableOpacity>
@@ -237,8 +237,7 @@ const AddFriend = () => {
             keyboardShouldPersistTaps="handled"
           />
         </View>
-      </LinearGradient>
-    </ImageBackground>
+    </LinearGradient>
   );
 };
 
