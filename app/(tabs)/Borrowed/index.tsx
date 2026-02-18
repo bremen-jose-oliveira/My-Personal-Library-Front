@@ -193,42 +193,54 @@ export default function BorrowedScreen() {
               });
 
               const isProcessing = processing === item.id;
+              
+              // Handle status - might come as string or enum
+              const itemStatus = typeof item.status === 'string' 
+                ? (ExchangeStatus[item.status as keyof typeof ExchangeStatus] || item.status)
+                : item.status;
+              
               const canReturn =
-                item.status === ExchangeStatus.ACCEPTED && !isProcessing;
+                itemStatus === ExchangeStatus.ACCEPTED && !isProcessing;
+
+              // Get book data - handle if it's nested differently
+              const book = item.book || (item as any).Book;
+              const bookTitle = book?.title || book?.Title || "Unknown book";
+              const bookAuthor = book?.author || book?.Author || "Unknown";
+              const bookCover = book?.cover || book?.Cover;
+              const ownerUsername = book?.ownerUsername || book?.OwnerUsername || 
+                                   (typeof book?.owner === "string" ? book?.owner : 
+                                   (book?.owner as any)?.username || "Unknown");
 
               return (
                 <View style={styles.exchangeCard}>
-                  {item.book?.cover && (
+                  {bookCover && (
                     <Image
-                      source={{ uri: item.book.cover }}
+                      source={{ uri: bookCover }}
                       style={styles.bookCover}
                       resizeMode="cover"
                     />
                   )}
                   <View style={styles.cardContent}>
                     <Text style={styles.bookTitle}>
-                      {item.book?.title ?? "Unknown book"}
+                      {bookTitle}
                     </Text>
                     <Text style={styles.detailText}>
                       <Text style={styles.label}>Author:</Text>{" "}
-                      {item.book?.author ?? "Unknown"}
+                      {bookAuthor}
                     </Text>
                     <Text style={styles.detailText}>
                       <Text style={styles.label}>From:</Text>{" "}
-                      {item.book?.ownerUsername ??
-                        (typeof item.book?.owner === "string"
-                          ? item.book?.owner
-                          : (item.book?.owner as any)?.username ?? "Unknown")}
+                      {ownerUsername}
                     </Text>
                     <Text style={styles.detailText}>
                       <Text style={styles.label}>Status:</Text>{" "}
                       <Text
                         style={[
                           styles.statusText,
-                          { color: getStatusColor(item.status) },
+                          { color: getStatusColor(itemStatus) },
                         ]}
                       >
-                        {statusLabels[item.status]}
+                        {statusLabels[itemStatus] || itemStatus || "Unknown"}
                       </Text>
                     </Text>
                     {item.exchangeDate && (
