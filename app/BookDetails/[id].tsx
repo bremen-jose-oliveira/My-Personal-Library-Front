@@ -341,7 +341,7 @@ export default function BookDetails() {
                 onPress={handleRequestExchange}
               >
                 <Text style={{ color: "#fff", fontWeight: "600" }}>
-                  Request Exchange
+                  Lending Request
                 </Text>
               </TouchableOpacity>
             )}
