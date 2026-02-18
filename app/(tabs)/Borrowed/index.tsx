@@ -45,9 +45,6 @@ export default function BorrowedScreen() {
         if (isMounted) {
           console.log("BorrowedScreen: Data loaded successfully");
           console.log("BorrowedScreen: borrowedBooks count:", borrowedBooks.length);
-          if (borrowedBooks.length > 0) {
-            console.log("BorrowedScreen: First item structure:", JSON.stringify(borrowedBooks[0], null, 2));
-          }
           setLocalLoading(false);
         }
       } catch (err: any) {
@@ -181,17 +178,6 @@ export default function BorrowedScreen() {
               />
             }
             renderItem={({ item }) => {
-              // Debug logging to see actual data structure
-              console.log("BorrowedScreen renderItem:", {
-                id: item.id,
-                status: item.status,
-                hasBook: !!item.book,
-                bookKeys: item.book ? Object.keys(item.book) : [],
-                bookTitle: item.book?.title,
-                bookAuthor: item.book?.author,
-                rawItem: JSON.stringify(item)
-              });
-
               const isProcessing = processing === item.id;
               
               // Handle status - might come as string or enum
@@ -202,14 +188,15 @@ export default function BorrowedScreen() {
               const canReturn =
                 itemStatus === ExchangeStatus.ACCEPTED && !isProcessing;
 
-              // Get book data - handle if it's nested differently
+              // Get book data from the correct nested structure
+              // API returns: item.book.bookDetails (contains title, author, cover)
+              // and item.book.owner (contains username)
               const book = item.book || (item as any).Book;
-              const bookTitle = book?.title || book?.Title || "Unknown book";
-              const bookAuthor = book?.author || book?.Author || "Unknown";
-              const bookCover = book?.cover || book?.Cover;
-              const ownerUsername = book?.ownerUsername || book?.OwnerUsername || 
-                                   (typeof book?.owner === "string" ? book?.owner : 
-                                   (book?.owner as any)?.username || "Unknown");
+              const bookDetails = book?.bookDetails || book;
+              const bookTitle = bookDetails?.title || "Unknown book";
+              const bookAuthor = bookDetails?.author || "Unknown";
+              const bookCover = bookDetails?.cover;
+              const ownerUsername = book?.owner?.username || "Unknown";
 
               return (
                 <View style={styles.exchangeCard}>
