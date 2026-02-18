@@ -24,7 +24,7 @@ const HomeScreen = () => {
   const { books, fetchCurrentUserBooks } = useBookContext();
   const { friends, fetchCurrentUserFriends } = useFriendContext();
   const { borrowedBooks, lendingBooks, refreshAll } = useExchangeContext();
-  const { refreshCurrentUser } = useUserContext();
+  const { currentUser, refreshCurrentUser } = useUserContext();
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -203,7 +203,7 @@ const HomeScreen = () => {
                 marginBottom: 4,
               }}
             >
-              Welcome back!
+              Welcome back{currentUser?.username ? `, ${currentUser.username}` : ""}!
             </Text>
             <Text style={{ fontSize: 16, color: "#666" }}>
               Here's your library overview
