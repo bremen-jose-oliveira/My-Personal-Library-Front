@@ -49,6 +49,11 @@ const HomeScreen = () => {
   const numberOfBorrowed = borrowedBooks.length;
   const numberOfLending = lendingBooks.length;
 
+  // Generate welcome message with username if available
+  const welcomeMessage = currentUser?.username
+    ? `Welcome back, ${currentUser.username}!`
+    : "Welcome back!";
+
   const onRefresh = async () => {
     if (!isLoggedIn) {
       return;
@@ -203,7 +208,7 @@ const HomeScreen = () => {
                 marginBottom: 4,
               }}
             >
-              Welcome back{currentUser?.username ? `, ${currentUser.username}` : ""}!
+              {welcomeMessage}
             </Text>
             <Text style={{ fontSize: 16, color: "#666" }}>
               Here's your library overview
