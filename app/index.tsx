@@ -104,7 +104,7 @@ export default function WelcomeScreen() {
           backgroundColor: "#f5f5f5",
         }}
       >
-        <ActivityIndicator size="large" color="#FF6347" />
+        <ActivityIndicator size="large" color="#bf471b" />
         <Text style={{ marginTop: 10, color: "#666" }}>Loading...</Text>
       </View>
     );
@@ -120,7 +120,7 @@ export default function WelcomeScreen() {
           backgroundColor: "#f5f5f5",
         }}
       >
-        <ActivityIndicator size="large" color="#FF6347" />
+        <ActivityIndicator size="large" color="#bf471b" />
         <Text style={{ marginTop: 10, color: "#666" }}>Redirecting...</Text>
       </View>
     );
@@ -139,7 +139,7 @@ export default function WelcomeScreen() {
         }}
       >
         <ImageBackground
-          source={require("@/assets/images/login.png")}
+          source={require("@/assets/images/background2.png")}
           style={{
             flex: 1,
             width: "100%",
@@ -153,11 +153,7 @@ export default function WelcomeScreen() {
           }}
         >
           <LinearGradient
-            colors={[
-              "transparent",
-              "rgba(255,255,255,0.1)",
-              "rgba(255,255,255,0.8)",
-            ]}
+            colors={["transparent", "rgba(255,255,255,0.9)"]}
             style={{
               position: "absolute",
               top: 0,
@@ -181,7 +177,7 @@ export default function WelcomeScreen() {
                   fontSize: 24,
                   fontWeight: "bold",
                   letterSpacing: 2.4,
-                  color: "#FF6347",
+                  color: "#bf471b",
                   marginBottom: 5,
                 }}
               >
@@ -215,7 +211,7 @@ export default function WelcomeScreen() {
                 Have an Account?{" "}
                 <Link href="/Login" asChild>
                   <TouchableOpacity>
-                    <Text style={{ color: "#FF6347", fontWeight: "600" }}>
+                    <Text style={{ color: "#bf471b", fontWeight: "600" }}>
                       SignIn
                     </Text>
                   </TouchableOpacity>
@@ -234,7 +230,7 @@ export default function WelcomeScreen() {
                 Forgot Passord?{" "}
                 <Link href="/ForgotPassword" asChild>
                   <TouchableOpacity>
-                    <Text style={{ color: "#FF6347", fontWeight: "600" }}>
+                    <Text style={{ color: "#bf471b", fontWeight: "600" }}>
                       ResetPassword
                     </Text>
                   </TouchableOpacity>
