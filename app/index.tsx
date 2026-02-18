@@ -227,7 +227,7 @@ export default function WelcomeScreen() {
                   textAlign: "center",
                 }}
               >
-                Forgot Passord?{" "}
+                Forgot Password?{" "}
                 <Link href="/ForgotPassword" asChild>
                   <TouchableOpacity>
                     <Text style={{ color: "#bf471b", fontWeight: "600" }}>
