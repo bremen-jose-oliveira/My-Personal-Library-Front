@@ -204,13 +204,13 @@ const HomeScreen = () => {
               style={{
                 fontSize: 28,
                 fontWeight: "bold",
-                color: "#333",
+                color: "#bf471b",
                 marginBottom: 4,
               }}
             >
               {welcomeMessage}
             </Text>
-            <Text style={{ fontSize: 16, color: "#666" }}>
+            <Text style={{ fontSize: 16, color: "#8b4513" }}>
               Here's your library overview
             </Text>
           </View>
