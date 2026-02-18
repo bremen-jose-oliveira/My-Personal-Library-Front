@@ -174,7 +174,7 @@ const HomeScreen = () => {
       resizeMode="cover"
     >
       <LinearGradient
-        colors={["rgba(255,255,255,0.85)", "rgba(255,255,255,0.95)"]}
+        colors={["transparent", "rgba(255,255,255,0.9)"]}
         style={{
           flex: 1,
         }}
