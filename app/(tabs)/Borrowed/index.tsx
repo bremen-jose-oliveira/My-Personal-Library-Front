@@ -44,6 +44,10 @@ export default function BorrowedScreen() {
         await refreshBorrowed();
         if (isMounted) {
           console.log("BorrowedScreen: Data loaded successfully");
+          console.log("BorrowedScreen: borrowedBooks count:", borrowedBooks.length);
+          if (borrowedBooks.length > 0) {
+            console.log("BorrowedScreen: First item structure:", JSON.stringify(borrowedBooks[0], null, 2));
+          }
           setLocalLoading(false);
         }
       } catch (err: any) {
@@ -177,6 +181,17 @@ export default function BorrowedScreen() {
               />
             }
             renderItem={({ item }) => {
+              // Debug logging to see actual data structure
+              console.log("BorrowedScreen renderItem:", {
+                id: item.id,
+                status: item.status,
+                hasBook: !!item.book,
+                bookKeys: item.book ? Object.keys(item.book) : [],
+                bookTitle: item.book?.title,
+                bookAuthor: item.book?.author,
+                rawItem: JSON.stringify(item)
+              });
+
               const isProcessing = processing === item.id;
               const canReturn =
                 item.status === ExchangeStatus.ACCEPTED && !isProcessing;
