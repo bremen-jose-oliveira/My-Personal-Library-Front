@@ -203,7 +203,7 @@ export default function BorrowedScreen() {
                       {item.book?.ownerUsername ??
                         (typeof item.book?.owner === "string"
                           ? item.book?.owner
-                          : "Unknown")}
+                          : (item.book?.owner as any)?.username ?? "Unknown")}
                     </Text>
                     <Text style={styles.detailText}>
                       <Text style={styles.label}>Status:</Text>{" "}
