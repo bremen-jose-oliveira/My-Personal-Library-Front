@@ -1,43 +1,22 @@
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import DisplayBooks from "./DisplayBooks/index";
-import AddBookForm from "./AddBookForm/index";
-import { Stack, Tabs } from "expo-router";
+import { Stack } from "expo-router";
 
-
-
-export default function BooksLayout() {
+export default function LibraryLayout() {
   return (
-
-       
-    <Tabs screenOptions={{ headerShown: false }}>
-         <Tabs.Screen
+    <Stack>
+      <Stack.Screen
         name="DisplayBooks/index"
-     
         options={{
-          tabBarLabel: "My Books",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons name="bookshelf" size={24} color="black" />
-          ),
+          headerTitle: "My Books",
+          headerShown: true,
         }}
       />
-      <Tabs.Screen
+      <Stack.Screen
         name="AddBookForm/index"
-
         options={{
-
-          tabBarActiveTintColor: "#bf471b",
-          tabBarLabel: "Add a Book",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons
-              name="book-plus-multiple"
-              size={24}
-              color="black"
-            />
-          ),
+          headerTitle: "Add a Book",
+          headerShown: true,
         }}
       />
-    </Tabs>
+    </Stack>
   );
 }

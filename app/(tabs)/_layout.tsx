@@ -2,10 +2,9 @@ import React, { useContext, useCallback, useRef } from "react";
 import { Platform, Alert, Button } from "react-native";
 import "../../global.css";
 import { AuthContext } from "@/utils/Context/AuthContext";
-import { Tabs, Redirect } from "expo-router";
-import Entypo from "@expo/vector-icons/Entypo";
+import { Tabs } from "expo-router";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import NotificationBell from "@/components/NotificationBell";
 
 function AppTabs() {
@@ -75,110 +74,11 @@ function AppTabs() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="Library"
-        options={{
-          headerTitle: "Library",
-          headerRight: () => <NotificationBell />,
-          tabBarLabel: "Library",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons
-              name="bank-outline"
-              size={24}
-              color="black"
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="Borrowed/index"
-        options={{
-          headerTitle: "Borrowed",
-          headerRight: () => <NotificationBell />,
-          tabBarLabel: "Borrowed",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons
-              name="book-arrow-down"
-              size={24}
-              color="black"
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="Lending/index"
-        options={{
-          headerTitle: "Lending",
-          headerRight: () => <NotificationBell />,
-          tabBarLabel: "Lending",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons
-              name="book-arrow-up"
-              size={24}
-              color="black"
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="MyReviews/index"
-        options={{
-          headerTitle: "My Reviews",
-          tabBarLabel: "My Reviews",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons
-              name="star-outline"
-              size={24}
-              color="black"
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="ReadingList/index"
-        options={{
-          headerTitle: "Reading List",
-          tabBarLabel: "Reading List",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons
-              name="book-open-variant"
-              size={24}
-              color="black"
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="BrowseBooks/index"
-        options={{
-          headerTitle: "Browse Books",
-          tabBarLabel: "Browse",
-          tabBarActiveTintColor: "#bf471b",
-          tabBarIcon: () => (
-            <MaterialCommunityIcons
-              name="book-search"
-              size={24}
-              color="black"
-            />
-          ),
-        }}
-      />
 
       <Tabs.Screen
         name="Friends"
         options={{
-          headerTitle: "Friends",
-          headerRight: () => <NotificationBell />,
+          headerShown: false,
           tabBarLabel: "Friends",
           tabBarActiveTintColor: "#bf471b",
           tabBarIcon: () => (
@@ -199,11 +99,62 @@ function AppTabs() {
           ),
 
           headerTitle: "Account Settings",
-          tabBarLabel: "",
+          tabBarLabel: "Settings",
           tabBarActiveTintColor: "#bf471b",
           tabBarIcon: () => (
             <Ionicons name="settings-sharp" size={24} color="black" />
           ),
+        }}
+      />
+
+      {/* Hidden tabs - accessible via navigation but not in tab bar */}
+      <Tabs.Screen
+        name="Library"
+        options={{
+          href: null, // Hide from tab bar
+          headerShown: false,
+        }}
+      />
+
+      <Tabs.Screen
+        name="BrowseBooks/index"
+        options={{
+          href: null, // Hide from tab bar
+          headerTitle: "Browse Books",
+        }}
+      />
+
+      <Tabs.Screen
+        name="Borrowed/index"
+        options={{
+          href: null, // Hide from tab bar
+          headerTitle: "Borrowed Books",
+          headerRight: () => <NotificationBell />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="Lending/index"
+        options={{
+          href: null, // Hide from tab bar
+          headerTitle: "Lending Books",
+          headerRight: () => <NotificationBell />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="MyReviews/index"
+        options={{
+          href: null, // Hide from tab bar
+          headerTitle: "My Reviews",
+        }}
+      />
+
+      <Tabs.Screen
+        name="ReadingList/index"
+        options={{
+          href: null, // Hide from tab bar
+          headerTitle: "Reading List",
         }}
       />
     </Tabs>

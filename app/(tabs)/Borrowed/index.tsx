@@ -44,6 +44,7 @@ export default function BorrowedScreen() {
         await refreshBorrowed();
         if (isMounted) {
           console.log("BorrowedScreen: Data loaded successfully");
+          console.log("BorrowedScreen: borrowedBooks count:", borrowedBooks.length);
           setLocalLoading(false);
         }
       } catch (err: any) {
@@ -178,41 +179,55 @@ export default function BorrowedScreen() {
             }
             renderItem={({ item }) => {
               const isProcessing = processing === item.id;
+              
+              // Handle status - might come as string or enum
+              const itemStatus = typeof item.status === 'string' 
+                ? (ExchangeStatus[item.status as keyof typeof ExchangeStatus] || item.status)
+                : item.status;
+              
               const canReturn =
-                item.status === ExchangeStatus.ACCEPTED && !isProcessing;
+                itemStatus === ExchangeStatus.ACCEPTED && !isProcessing;
+
+              // Get book data from the correct nested structure
+              // API returns: item.book.bookDetails (contains title, author, cover)
+              // and item.book.owner (contains username)
+              const book = item.book || (item as any).Book;
+              const bookDetails = book?.bookDetails || book;
+              const bookTitle = bookDetails?.title || "Unknown book";
+              const bookAuthor = bookDetails?.author || "Unknown";
+              const bookCover = bookDetails?.cover;
+              const ownerUsername = book?.owner?.username || "Unknown";
 
               return (
                 <View style={styles.exchangeCard}>
-                  {item.book?.cover && (
+                  {bookCover && (
                     <Image
-                      source={{ uri: item.book.cover }}
+                      source={{ uri: bookCover }}
                       style={styles.bookCover}
                       resizeMode="cover"
                     />
                   )}
                   <View style={styles.cardContent}>
                     <Text style={styles.bookTitle}>
-                      {item.book?.title ?? "Unknown book"}
+                      {bookTitle}
                     </Text>
                     <Text style={styles.detailText}>
                       <Text style={styles.label}>Author:</Text>{" "}
-                      {item.book?.author ?? "Unknown"}
+                      {bookAuthor}
                     </Text>
                     <Text style={styles.detailText}>
                       <Text style={styles.label}>From:</Text>{" "}
-                      {item.book?.ownerUsername ??
-                        item.book?.owner ??
-                        "Unknown"}
+                      {ownerUsername}
                     </Text>
                     <Text style={styles.detailText}>
                       <Text style={styles.label}>Status:</Text>{" "}
                       <Text
                         style={[
                           styles.statusText,
-                          { color: getStatusColor(item.status) },
+                          { color: getStatusColor(itemStatus) },
                         ]}
                       >
-                        {statusLabels[item.status]}
+                        {statusLabels[itemStatus] || itemStatus || "Unknown"}
                       </Text>
                     </Text>
                     {item.exchangeDate && (
@@ -265,14 +280,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   gradientOverlay: {
-    position: "absolute",
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    justifyContent: "flex-start",
+    flex: 1,
     paddingTop: 60,
-    zIndex: 1,
   },
   headerContainer: {
     paddingTop: 10,
@@ -355,8 +364,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingTop: 100,
-    zIndex: 100,
-    elevation: 100,
   },
   loadingText: {
     color: "#f0dcc7",

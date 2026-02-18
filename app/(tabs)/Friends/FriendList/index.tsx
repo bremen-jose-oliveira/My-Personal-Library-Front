@@ -6,7 +6,6 @@ import {
   Text,
   Image,
   FlatList,
-  ActivityIndicator,
   Button,
   RefreshControl,
   Alert,
@@ -15,6 +14,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { router } from "expo-router";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function FriendList() {
   const { friends, removeFriend, fetchCurrentUserFriends } = useFriendContext();
@@ -186,6 +186,54 @@ export default function FriendList() {
           }
           keyboardShouldPersistTaps="handled"
         />
+        
+        {/* Floating Action Buttons */}
+        <View
+          style={{
+            position: "absolute",
+            right: 20,
+            bottom: 20,
+            gap: 12,
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => router.push("/(tabs)/Friends/FriendRequests")}
+            style={{
+              backgroundColor: "#2196F3",
+              width: 60,
+              height: 60,
+              borderRadius: 30,
+              justifyContent: "center",
+              alignItems: "center",
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+          >
+            <MaterialCommunityIcons name="account-clock" size={28} color="white" />
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            onPress={() => router.push("/(tabs)/Friends/AddFriend")}
+            style={{
+              backgroundColor: "#bf471b",
+              width: 60,
+              height: 60,
+              borderRadius: 30,
+              justifyContent: "center",
+              alignItems: "center",
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+          >
+            <MaterialCommunityIcons name="account-plus" size={28} color="white" />
+          </TouchableOpacity>
+        </View>
       </LinearGradient>
     </ImageBackground>
   );

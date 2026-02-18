@@ -11,11 +11,13 @@ import {
   ImageBackground,
   TouchableOpacity,
 } from "react-native";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function DisplayBooks() {
   const { books, fetchCurrentUserBooks } = useBookContext();
   const [refreshing, setRefreshing] = useState(false);
+  const router = useRouter();
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -62,7 +64,7 @@ export default function DisplayBooks() {
             height: "100%", // Make sure it spans full height
           }}
           data={books}
-          numColumns={Platform.OS === "web" ? 8 : 4}
+          numColumns={4}
           keyExtractor={(book: { id?: number }) =>
             book.id ? book.id.toString() : Math.random().toString()
           }
@@ -134,6 +136,29 @@ export default function DisplayBooks() {
           }
           keyboardShouldPersistTaps="handled"
         />
+        
+        {/* Floating Action Button */}
+        <TouchableOpacity
+          onPress={() => router.push("/(tabs)/Library/AddBookForm")}
+          style={{
+            position: "absolute",
+            right: 20,
+            bottom: 20,
+            backgroundColor: "#bf471b",
+            width: 60,
+            height: 60,
+            borderRadius: 30,
+            justifyContent: "center",
+            alignItems: "center",
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 8,
+          }}
+        >
+          <MaterialCommunityIcons name="plus" size={32} color="white" />
+        </TouchableOpacity>
       </LinearGradient>
     </ImageBackground>
   );
