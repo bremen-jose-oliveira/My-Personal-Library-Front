@@ -201,8 +201,9 @@ export default function BorrowedScreen() {
                     <Text style={styles.detailText}>
                       <Text style={styles.label}>From:</Text>{" "}
                       {item.book?.ownerUsername ??
-                        item.book?.owner ??
-                        "Unknown"}
+                        (typeof item.book?.owner === "string"
+                          ? item.book?.owner
+                          : "Unknown")}
                     </Text>
                     <Text style={styles.detailText}>
                       <Text style={styles.label}>Status:</Text>{" "}
