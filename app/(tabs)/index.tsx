@@ -74,7 +74,7 @@ const HomeScreen = () => {
     }
   };
 
-  // Dashboard stat card component
+  // Dashboard stat card component (transparent black like Borrowed/Lending pages)
   const StatCard = ({
     icon,
     title,
@@ -91,18 +91,20 @@ const HomeScreen = () => {
     <Pressable
       onPress={onPress}
       style={{
-        backgroundColor: "rgba(255, 255, 255, 0.95)",
+        backgroundColor: "rgba(0,0,0,0.6)",
         borderRadius: 16,
         padding: 16,
         width: "48%",
         marginBottom: 12,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.15,
         shadowRadius: 8,
         elevation: 4,
         borderLeftWidth: 4,
         borderLeftColor: color,
+        borderWidth: 1,
+        borderColor: "#bf471b",
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
@@ -112,13 +114,13 @@ const HomeScreen = () => {
         style={{
           fontSize: 32,
           fontWeight: "bold",
-          color: "#333",
+          color: "#f0dcc7",
           marginBottom: 4,
         }}
       >
         {value}
       </Text>
-      <Text style={{ fontSize: 13, color: "#666", fontWeight: "500" }}>
+      <Text style={{ fontSize: 13, color: "#f0dcc7", fontWeight: "500" }}>
         {title}
       </Text>
     </Pressable>
@@ -260,7 +262,7 @@ const HomeScreen = () => {
               style={{
                 fontSize: 20,
                 fontWeight: "bold",
-                color: "#333",
+                color: "#8b4513",
                 marginBottom: 16,
               }}
             >

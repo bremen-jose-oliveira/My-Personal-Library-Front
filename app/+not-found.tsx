@@ -1,11 +1,54 @@
-import { Link } from "expo-router";
-import { View, Text, StyleSheet } from "react-native";
+import { Link, useRouter, usePathname } from "expo-router";
+import { View, Text, StyleSheet, Platform } from "react-native";
+import { useEffect, useRef } from "react";
+
+// Routes that exist in the app but may not match on first load after refresh (web SPA)
+const KNOWN_WEB_ROUTES = [
+  "/Borrowed",
+  "/Lending",
+  "/Friends",
+  "/Library",
+  "/BrowseBooks",
+  "/ReadingList",
+  "/MyReviews",
+  "/AccountSettings",
+  "/Login",
+  "/Register",
+  "/BookDetails",
+  "/Notifications",
+  "/ForgotPassword",
+  "/ResetPassword",
+  "/Logout",
+  "/FriendBooks",
+  "/PrivacyPolicy",
+];
+
+function isKnownRoute(pathname: string | null): boolean {
+  if (!pathname || pathname === "/") return false;
+  return KNOWN_WEB_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(route + "/")
+  );
+}
 
 /**
- * Shown when the URL doesn't match any route (e.g. after a browser refresh if SPA routing didn't match).
- * Provides a way back to the app.
+ * Shown when the URL doesn't match any route (e.g. after a browser refresh).
+ * On web, if the path looks like a known app route, redirect there so the tab/screen loads.
  */
 export default function NotFoundScreen() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const redirected = useRef(false);
+
+  useEffect(() => {
+    if (Platform.OS !== "web" || redirected.current) return;
+    const path =
+      typeof window !== "undefined" ? window.location.pathname : pathname;
+    if (isKnownRoute(path)) {
+      redirected.current = true;
+      router.replace(path as any);
+    }
+  }, [pathname, router]);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Page not found</Text>
