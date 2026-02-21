@@ -2,32 +2,58 @@ import { Link, useRouter, usePathname } from "expo-router";
 import { View, Text, StyleSheet, Platform } from "react-native";
 import { useEffect, useRef } from "react";
 
-// Routes that exist in the app but may not match on first load after refresh (web SPA)
-const KNOWN_WEB_ROUTES = [
-  "/Borrowed",
-  "/Lending",
-  "/Friends",
-  "/Library",
-  "/BrowseBooks",
-  "/ReadingList",
-  "/MyReviews",
-  "/AccountSettings",
-  "/Login",
-  "/Register",
-  "/BookDetails",
-  "/Notifications",
-  "/ForgotPassword",
-  "/ResetPassword",
-  "/Logout",
-  "/FriendBooks",
-  "/PrivacyPolicy",
-];
+// Map lowercase path segments to the actual route casing (Expo Router is case-sensitive).
+// After refresh, browser/server may send lowercase (e.g. /borrowed); we redirect to correct case (e.g. /Borrowed).
+const SEGMENT_CASING: Record<string, string> = {
+  borrowed: "Borrowed",
+  lending: "Lending",
+  friends: "Friends",
+  friendlist: "FriendList",
+  addfriend: "AddFriend",
+  friendrequests: "FriendRequests",
+  library: "Library",
+  displaybooks: "DisplayBooks",
+  addbookform: "AddBookForm",
+  browsebooks: "BrowseBooks",
+  readinglist: "ReadingList",
+  myreviews: "MyReviews",
+  accountsettings: "AccountSettings",
+  login: "Login",
+  register: "Register",
+  bookdetails: "BookDetails",
+  notifications: "Notifications",
+  forgotpassword: "ForgotPassword",
+  resetpassword: "ResetPassword",
+  logout: "Logout",
+  friendbooks: "FriendBooks",
+  privacypolicy: "PrivacyPolicy",
+};
+
+function normalizePathToRoute(pathname: string): string {
+  const segments = pathname.replace(/^\/|\/$/g, "").split("/").filter(Boolean);
+  if (segments.length === 0) return "/";
+  const firstLower = segments[0].toLowerCase();
+  const normalized = segments
+    .map((seg, i) => {
+      // Keep dynamic segments as-is (e.g. BookDetails/123, FriendBooks/email@x.com)
+      if (i === 1 && (firstLower === "bookdetails" || firstLower === "friendbooks"))
+        return seg;
+      return SEGMENT_CASING[seg.toLowerCase()] ?? seg;
+    })
+    .join("/");
+  return "/" + normalized;
+}
 
 function isKnownRoute(pathname: string | null): boolean {
   if (!pathname || pathname === "/") return false;
-  return KNOWN_WEB_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(route + "/")
-  );
+  const lower = pathname.toLowerCase();
+  const known = [
+    "/borrowed", "/lending", "/friends", "/library", "/browsebooks",
+    "/readinglist", "/myreviews", "/accountsettings", "/login", "/register",
+    "/bookdetails", "/notifications", "/forgotpassword", "/resetpassword",
+    "/logout", "/friendbooks", "/privacypolicy",
+  ];
+  return known.some((route) => lower === route || lower.startsWith(route + "/"));
 }
 
 /**
@@ -45,7 +71,9 @@ export default function NotFoundScreen() {
       typeof window !== "undefined" ? window.location.pathname : pathname;
     if (isKnownRoute(path)) {
       redirected.current = true;
-      router.replace(path as any);
+      // Normalize casing: /borrowed -> /Borrowed, /friends/friendlist -> /Friends/FriendList
+      const correctPath = normalizePathToRoute(path);
+      router.replace(correctPath as any);
     }
   }, [pathname, router]);
 
