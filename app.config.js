@@ -71,6 +71,8 @@ export default {
     ],
     experiments: {
       typedRoutes: true,
+      // Ensure web app is rooted at / so refresh on /Borrowed, /Friends, etc. works (Netlify SPA)
+      baseUrl: "/",
     },
     extra: {
       eas: {
