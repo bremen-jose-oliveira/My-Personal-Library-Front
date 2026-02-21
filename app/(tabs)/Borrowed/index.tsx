@@ -33,6 +33,7 @@ export default function BorrowedScreen() {
     console.log("BorrowedScreen: Component mounted, loading data...");
     let isMounted = true;
     let timeoutId: ReturnType<typeof setTimeout>;
+    let loadFinished = false;
 
     const loadData = async () => {
       try {
@@ -42,22 +43,30 @@ export default function BorrowedScreen() {
         }
         console.log("BorrowedScreen: Calling refreshBorrowed...");
         await refreshBorrowed();
+        loadFinished = true;
+        if (timeoutId) clearTimeout(timeoutId);
         if (isMounted) {
           console.log("BorrowedScreen: Data loaded successfully");
-          console.log("BorrowedScreen: borrowedBooks count:", borrowedBooks.length);
           setLocalLoading(false);
         }
       } catch (err: any) {
+        loadFinished = true;
+        if (timeoutId) clearTimeout(timeoutId);
         console.error("BorrowedScreen: Error loading borrowed books:", err);
         if (isMounted) {
-          setError(err.message || "Failed to load borrowed books");
+          const message =
+            typeof err?.message === "string"
+              ? err.message
+              : "Failed to load borrowed books";
+          setError(message);
           setLocalLoading(false);
         }
       }
     };
 
-    // Add timeout to prevent infinite loading
+    // Timeout only if load never completes; clear it when load finishes
     timeoutId = setTimeout(() => {
+      if (loadFinished) return;
       console.warn("BorrowedScreen: Loading timeout reached");
       if (isMounted) {
         setLocalLoading(false);
@@ -65,7 +74,7 @@ export default function BorrowedScreen() {
           "Loading took too long. Please check your connection and try again."
         );
       }
-    }, 8000); // 8 second timeout
+    }, 8000);
 
     loadData();
 
@@ -165,7 +174,9 @@ export default function BorrowedScreen() {
           <FlatList
             contentContainerStyle={styles.listContentContainer}
             data={borrowedBooks}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item, index) =>
+              item?.id != null ? String(item.id) : `borrowed-${index}`
+            }
             refreshControl={
               <RefreshControl
                 refreshing={loading || localLoading}
@@ -179,69 +190,95 @@ export default function BorrowedScreen() {
             }
             renderItem={({ item }) => {
               const isProcessing = processing === item.id;
-              
-              // Handle status - might come as string or enum
-              const itemStatus = typeof item.status === 'string' 
-                ? (ExchangeStatus[item.status as keyof typeof ExchangeStatus] || item.status)
-                : item.status;
-              
+
+              // Handle status - might come as string or enum from API
+              const rawStatus = item.status;
+              const itemStatus =
+                typeof rawStatus === "string"
+                  ? ExchangeStatus[rawStatus as keyof typeof ExchangeStatus] ?? rawStatus
+                  : rawStatus;
+              const statusLabel =
+                typeof itemStatus === "string"
+                  ? statusLabels[itemStatus as ExchangeStatus] || itemStatus
+                  : itemStatus != null
+                    ? statusLabels[itemStatus]
+                    : "Unknown";
+
               const canReturn =
                 itemStatus === ExchangeStatus.ACCEPTED && !isProcessing;
 
-              // Get book data from the correct nested structure
-              // API returns: item.book.bookDetails (contains title, author, cover)
-              // and item.book.owner (contains username)
+              // Get book data from the correct nested structure (API may vary)
               const book = item.book || (item as any).Book;
               const bookDetails = book?.bookDetails || book;
-              const bookTitle = bookDetails?.title || "Unknown book";
-              const bookAuthor = bookDetails?.author || "Unknown";
-              const bookCover = bookDetails?.cover;
-              const ownerUsername = book?.owner?.username || "Unknown";
+              const bookTitle =
+                typeof bookDetails?.title === "string"
+                  ? bookDetails.title
+                  : "Unknown book";
+              const bookAuthor =
+                typeof bookDetails?.author === "string"
+                  ? bookDetails.author
+                  : "Unknown";
+              const bookCover =
+                typeof bookDetails?.cover === "string" ? bookDetails.cover : undefined;
+              const ownerUsername =
+                typeof book?.owner?.username === "string"
+                  ? book.owner.username
+                  : "Unknown";
+
+              const formatDate = (value: unknown): string => {
+                if (value == null) return "";
+                try {
+                  const d = new Date(value as string | number);
+                  return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString();
+                } catch {
+                  return "";
+                }
+              };
 
               return (
                 <View style={styles.exchangeCard}>
-                  {bookCover && (
+                  {bookCover ? (
                     <Image
                       source={{ uri: bookCover }}
                       style={styles.bookCover}
                       resizeMode="cover"
                     />
-                  )}
+                  ) : null}
                   <View style={styles.cardContent}>
-                    <Text style={styles.bookTitle}>
-                      {bookTitle}
+                    <Text style={styles.bookTitle}>{bookTitle}</Text>
+                    <Text style={styles.detailText}>
+                      <Text style={styles.label}>Author:</Text> {bookAuthor}
                     </Text>
                     <Text style={styles.detailText}>
-                      <Text style={styles.label}>Author:</Text>{" "}
-                      {bookAuthor}
-                    </Text>
-                    <Text style={styles.detailText}>
-                      <Text style={styles.label}>From:</Text>{" "}
-                      {ownerUsername}
+                      <Text style={styles.label}>From:</Text> {ownerUsername}
                     </Text>
                     <Text style={styles.detailText}>
                       <Text style={styles.label}>Status:</Text>{" "}
                       <Text
                         style={[
                           styles.statusText,
-                          { color: getStatusColor(itemStatus) },
+                          {
+                            color: getStatusColor(
+                              itemStatus as ExchangeStatus
+                            ),
+                          },
                         ]}
                       >
-                        {statusLabels[itemStatus] || itemStatus || "Unknown"}
+                        {statusLabel}
                       </Text>
                     </Text>
-                    {item.exchangeDate && (
+                    {formatDate(item.exchangeDate) ? (
                       <Text style={styles.detailText}>
                         <Text style={styles.label}>Borrowed on:</Text>{" "}
-                        {new Date(item.exchangeDate).toLocaleDateString()}
+                        {formatDate(item.exchangeDate)}
                       </Text>
-                    )}
-                    {item.createdAt && (
+                    ) : null}
+                    {formatDate(item.createdAt) ? (
                       <Text style={styles.detailText}>
                         <Text style={styles.label}>Requested on:</Text>{" "}
-                        {new Date(item.createdAt).toLocaleDateString()}
+                        {formatDate(item.createdAt)}
                       </Text>
-                    )}
+                    ) : null}
                     {canReturn && (
                       <TouchableOpacity
                         style={styles.returnButton}
