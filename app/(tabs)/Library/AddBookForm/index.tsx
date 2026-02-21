@@ -4,7 +4,7 @@ import { useBookContext } from "@/utils/Context/BookContext";
 import { fetchCoverImage } from "@/utils/fetchBookData";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ScrollView } from "react-native";
 import {
   View,
@@ -79,6 +79,7 @@ export default function AddBookForm() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [selectedBook, setSelectedBook] = useState<any>(null);
+  const [selectedBookCoverUrl, setSelectedBookCoverUrl] = useState<string | null>(null);
   const [scannerVisible, setScannerVisible] = useState(false);
   const [startIndex, setStartIndex] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -125,6 +126,7 @@ export default function AddBookForm() {
   const clearSearchState = () => {
     setSearchResults([]);
     setSelectedBook(null);
+    setSelectedBookCoverUrl(null);
     setSearchQuery("");
     setStartIndex(0);
   };
@@ -138,9 +140,37 @@ export default function AddBookForm() {
 
   const handleBookSelect = (bookData: any) => {
     setSelectedBook(bookData);
+    setSelectedBookCoverUrl(null);
     setSearchQuery("");
     setSearchResults([]);
   };
+
+  // Resolve cover for selected book the same way handleAddBook does, so preview matches saved cover
+  useEffect(() => {
+    if (!selectedBook) {
+      setSelectedBookCoverUrl(null);
+      return;
+    }
+    let cancelled = false;
+    const resolve = async () => {
+      const rawCoverUrl = getBestCoverUrl(selectedBook.volumeInfo?.imageLinks);
+      let url = processGoogleBooksImageUrl(rawCoverUrl);
+      if (!url) {
+        const title = selectedBook.volumeInfo?.title;
+        const author =
+          selectedBook.volumeInfo?.authors?.join(", ") || "Unknown Author";
+        url = await fetchCoverImage(title, author);
+      }
+      if (!cancelled && (url == null || url.trim() === "")) {
+        url = "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
+      }
+      if (!cancelled && url) setSelectedBookCoverUrl(url);
+    };
+    resolve();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedBook]);
 
   const handleAddBook = async () => {
     if (!selectedBook || addingBook) return; // Prevent double submission
@@ -438,65 +468,19 @@ export default function AddBookForm() {
                     color="#666"
                   />
                 </View>
-                {(() => {
-                  // Try to get cover URL with multiple fallback strategies
-                  let processedCoverUrl: string | null = null;
-
-                  if (selectedBook.volumeInfo.imageLinks) {
-                    // Strategy 1: Get best URL from imageLinks
-                    const rawCoverUrl = getBestCoverUrl(
-                      selectedBook.volumeInfo.imageLinks
-                    );
-                    processedCoverUrl = processGoogleBooksImageUrl(rawCoverUrl);
-
-                    // Strategy 2: If first attempt failed, try all imageLinks properties
-                    if (!processedCoverUrl) {
-                      const imageLinks = selectedBook.volumeInfo.imageLinks;
-                      const urlsToTry = [
-                        imageLinks.medium,
-                        imageLinks.large,
-                        imageLinks.small,
-                        imageLinks.thumbnail,
-                        imageLinks.smallThumbnail,
-                      ].filter(Boolean);
-
-                      for (const url of urlsToTry) {
-                        const processed = processGoogleBooksImageUrl(url);
-                        if (processed) {
-                          processedCoverUrl = processed;
-                          break;
-                        }
-                      }
-                    }
-                  }
-
-                  const finalCoverUrl =
-                    processedCoverUrl ||
-                    "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
-
-                  const imageKey = `preview-${selectedBook.id}-${
-                    processedCoverUrl || "fallback"
-                  }`;
-
-                  return (
-                    <Image
-                      key={imageKey}
-                      source={{ uri: finalCoverUrl }}
-                      style={{
-                        width: 65,
-                        height: 90,
-                        marginBottom: 10,
-                        resizeMode: "contain",
-                      }}
-                      onError={() => {
-                        // Image failed to load, fallback will be used
-                      }}
-                      onLoad={() => {
-                        // Image loaded successfully
-                      }}
-                    />
-                  );
-                })()}
+                <Image
+                  source={{
+                    uri:
+                      selectedBookCoverUrl ||
+                      "https://cdn-icons-png.flaticon.com/512/7340/7340665.png",
+                  }}
+                  style={{
+                    width: 65,
+                    height: 90,
+                    marginBottom: 10,
+                    resizeMode: "contain",
+                  }}
+                />
                 <Text
                   style={{
                     fontWeight: "bold",

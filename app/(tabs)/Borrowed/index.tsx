@@ -142,9 +142,7 @@ export default function BorrowedScreen() {
         colors={["transparent", "rgba(255,255,255,0.9)"]}
         style={styles.gradientOverlay}
       >
-        <View style={styles.headerContainer}>
-          <Text style={styles.header}>Borrowed Books</Text>
-        </View>
+        <Text style={styles.header}>Borrowed Books</Text>
         {error ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{error}</Text>
@@ -317,13 +315,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   gradientOverlay: {
-    flex: 1,
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    justifyContent: "flex-start",
     paddingTop: 60,
-  },
-  headerContainer: {
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingHorizontal: 16,
+    zIndex: 1,
   },
   header: {
     fontSize: 28,
@@ -331,6 +330,7 @@ const styles = StyleSheet.create({
     color: "#f0dcc7",
     textAlign: "center",
     marginBottom: 20,
+    paddingHorizontal: 16,
   },
   listContentContainer: {
     paddingHorizontal: 16,
@@ -401,6 +401,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingTop: 100,
+    zIndex: 100,
+    elevation: 100,
   },
   loadingText: {
     color: "#f0dcc7",
@@ -413,6 +415,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 100,
     paddingHorizontal: 20,
+    zIndex: 100,
   },
   errorText: {
     color: "#ef4444",
