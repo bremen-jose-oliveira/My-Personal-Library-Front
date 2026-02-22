@@ -81,6 +81,7 @@ export default function AddBookForm() {
   const [selectedBook, setSelectedBook] = useState<any>(null);
   const [selectedBookCoverUrl, setSelectedBookCoverUrl] = useState<string | null>(null);
   const [resolvedListCovers, setResolvedListCovers] = useState<Record<string, string>>({});
+  const [loadingDetails, setLoadingDetails] = useState(false);
   const [scannerVisible, setScannerVisible] = useState(false);
   const [startIndex, setStartIndex] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -140,11 +141,31 @@ export default function AddBookForm() {
     fetchBooks(isbnQuery, true);
   };
 
-  const handleBookSelect = (bookData: any) => {
-    setSelectedBook(bookData);
-    setSelectedBookCoverUrl(null);
+  const fetchVolumeDetails = async (volumeId: string): Promise<any> => {
+    const url = `https://www.googleapis.com/books/v1/volumes/${volumeId}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    return res.json();
+  };
+
+  const handleBookSelect = async (bookData: any) => {
     setSearchQuery("");
     setSearchResults([]);
+    setSelectedBookCoverUrl(null);
+    setSelectedBook(bookData);
+    const volumeId = bookData.id;
+    if (volumeId) {
+      setLoadingDetails(true);
+      try {
+        const fullVolume = await fetchVolumeDetails(volumeId);
+        if (fullVolume?.volumeInfo) {
+          setSelectedBook(fullVolume);
+        }
+      } catch (e) {
+        console.warn("Could not fetch full volume details, using list item:", e);
+      }
+      setLoadingDetails(false);
+    }
   };
 
   // Resolve cover for selected book the same way handleAddBook does, so preview matches saved cover
@@ -205,13 +226,13 @@ export default function AddBookForm() {
 
     setAddingBook(true);
 
-    const rawCoverUrl = getBestCoverUrl(selectedBook.volumeInfo.imageLinks);
+    const vi = selectedBook.volumeInfo || {};
+    const rawCoverUrl = getBestCoverUrl(vi.imageLinks);
     let coverUrl = processGoogleBooksImageUrl(rawCoverUrl);
 
     if (!coverUrl) {
-      const title = selectedBook.volumeInfo.title;
-      const author =
-        selectedBook.volumeInfo.authors?.join(", ") || "Unknown Author";
+      const title = vi.title;
+      const author = vi.authors?.join(", ") || "Unknown Author";
       coverUrl = await fetchCoverImage(title, author);
     }
 
@@ -219,18 +240,18 @@ export default function AddBookForm() {
       coverUrl = "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
     }
 
+    const yearStr = vi.publishedDate ? String(vi.publishedDate).substring(0, 4) : "";
+    const yearNum = yearStr ? parseInt(yearStr, 10) : 0;
     const bookData: Book = {
-      title: selectedBook.volumeInfo.title,
-      author: selectedBook.volumeInfo.authors?.join(", ") || "Unknown Author",
-      year: selectedBook.volumeInfo.publishedDate
-        ? selectedBook.volumeInfo.publishedDate.substring(0, 4)
-        : "",
-      publisher: selectedBook.volumeInfo.publisher || "",
+      title: vi.title || "Unknown",
+      author: (vi.authors && vi.authors.length) ? vi.authors.join(", ") : "Unknown Author",
+      year: Number.isNaN(yearNum) ? 0 : yearNum,
+      publisher: vi.publisher || "",
       cover: coverUrl,
-      description: selectedBook.volumeInfo.description || null,
-      id: selectedBook.identifier,
+      description: vi.description || null,
+      id: 0,
       isbn:
-        selectedBook.volumeInfo.industryIdentifiers?.[0]?.identifier || "N/A",
+        vi.industryIdentifiers?.[0]?.identifier || "N/A",
       owner: undefined,
       exchangeStatus: undefined,
       exchanges: undefined,
@@ -483,10 +504,14 @@ export default function AddBookForm() {
                     }}
                   >
                     Book Preview
+                    {loadingDetails ? " (loading details…)" : ""}
                   </Text>
                   <Button
                     title="Cancel"
-                    onPress={() => setSelectedBook(null)}
+                    onPress={() => {
+                      setSelectedBook(null);
+                      setLoadingDetails(false);
+                    }}
                     color="#666"
                   />
                 </View>
@@ -510,7 +535,7 @@ export default function AddBookForm() {
                     marginBottom: 5,
                   }}
                 >
-                  Title: {selectedBook.volumeInfo.title || ""}
+                  Title: {selectedBook.volumeInfo?.title || "—"}
                 </Text>
                 <Text
                   style={{
@@ -520,8 +545,9 @@ export default function AddBookForm() {
                   }}
                 >
                   Author:{" "}
-                  {selectedBook.volumeInfo.authors?.join(", ") ||
-                    "Unknown Author"}
+                  {selectedBook.volumeInfo?.authors?.length
+                    ? selectedBook.volumeInfo.authors.join(", ")
+                    : "—"}
                 </Text>
                 <Text
                   style={{
@@ -530,7 +556,7 @@ export default function AddBookForm() {
                     marginBottom: 5,
                   }}
                 >
-                  Publisher: {selectedBook.volumeInfo.publisher || ""}
+                  Publisher: {selectedBook.volumeInfo?.publisher || "—"}
                 </Text>
                 <Text
                   style={{
@@ -539,7 +565,7 @@ export default function AddBookForm() {
                     marginBottom: 5,
                   }}
                 >
-                  Published Date: {selectedBook.volumeInfo.publishedDate || ""}
+                  Published Date: {selectedBook.volumeInfo?.publishedDate || "—"}
                 </Text>
                 <Text
                   style={{
@@ -548,7 +574,10 @@ export default function AddBookForm() {
                     marginBottom: 5,
                   }}
                 >
-                  Categories: {selectedBook.volumeInfo.categories || ""}
+                  Categories:{" "}
+                  {Array.isArray(selectedBook.volumeInfo?.categories)
+                    ? selectedBook.volumeInfo.categories.join(", ")
+                    : selectedBook.volumeInfo?.categories || "—"}
                 </Text>
                 <Text
                   style={{
@@ -557,7 +586,7 @@ export default function AddBookForm() {
                     marginBottom: 5,
                   }}
                 >
-                  Description: {selectedBook.volumeInfo.description || ""}
+                  Description: {selectedBook.volumeInfo?.description || "—"}
                 </Text>
                 <Text
                   style={{
@@ -567,8 +596,8 @@ export default function AddBookForm() {
                   }}
                 >
                   isbn:{" "}
-                  {selectedBook.volumeInfo.industryIdentifiers?.[0]
-                    ?.identifier || "N/A"}
+                  {selectedBook.volumeInfo?.industryIdentifiers?.[0]?.identifier ||
+                    "N/A"}
                 </Text>
                 <View
                   style={{

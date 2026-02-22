@@ -226,13 +226,13 @@ export default function BookDetails() {
                 Author: {selectedBook.author}
               </Text>
               <Text style={{ color: "#f0dcc7" }}>
-                Year: {selectedBook.year}
+                Year: {selectedBook.year ?? "—"}
               </Text>
               <Text style={{ color: "#f0dcc7" }}>
-                Publisher: {selectedBook.publisher}
+                Publisher: {selectedBook.publisher ?? "—"}
               </Text>
               <Text style={{ color: "#f0dcc7" }}>
-                ISBN: {selectedBook.isbn}
+                ISBN: {selectedBook.isbn ?? "—"}
               </Text>
               <Text style={{ color: "#f0dcc7", fontWeight: "600" }}>
                 Owner: {selectedBook.ownerUsername || "Unknown"}
@@ -251,55 +251,53 @@ export default function BookDetails() {
           </View>
 
           {/* Book Description - Expandable Section */}
-          {selectedBook.description && (
-            <View style={{ marginTop: 24 }}>
-              <TouchableOpacity
-                onPress={() => setDescriptionExpanded(!descriptionExpanded)}
+          <View style={{ marginTop: 24 }}>
+            <TouchableOpacity
+              onPress={() => setDescriptionExpanded(!descriptionExpanded)}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                backgroundColor: "rgba(0,0,0,0.4)",
+                borderRadius: 10,
+                padding: 12,
+                marginBottom: descriptionExpanded ? 8 : 0,
+              }}
+            >
+              <Text
                 style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  backgroundColor: "rgba(0,0,0,0.4)",
+                  color: "#f0dcc7",
+                  fontSize: 18,
+                  fontWeight: "600",
+                  flex: 1,
+                }}
+              >
+                Description
+              </Text>
+              <Text style={{ color: "#f0dcc7", fontSize: 16 }}>
+                {descriptionExpanded ? "▼" : "▶"}
+              </Text>
+            </TouchableOpacity>
+            {descriptionExpanded && (
+              <View
+                style={{
+                  backgroundColor: "rgba(0,0,0,0.35)",
                   borderRadius: 10,
                   padding: 12,
-                  marginBottom: descriptionExpanded ? 8 : 0,
                 }}
               >
                 <Text
                   style={{
                     color: "#f0dcc7",
-                    fontSize: 18,
-                    fontWeight: "600",
-                    flex: 1,
+                    lineHeight: 20,
+                    fontSize: 14,
                   }}
                 >
-                  Description
+                  {selectedBook.description?.trim() || "No description available."}
                 </Text>
-                <Text style={{ color: "#f0dcc7", fontSize: 16 }}>
-                  {descriptionExpanded ? "▼" : "▶"}
-                </Text>
-              </TouchableOpacity>
-              {descriptionExpanded && (
-                <View
-                  style={{
-                    backgroundColor: "rgba(0,0,0,0.35)",
-                    borderRadius: 10,
-                    padding: 12,
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#f0dcc7",
-                      lineHeight: 20,
-                      fontSize: 14,
-                    }}
-                  >
-                    {selectedBook.description}
-                  </Text>
-                </View>
-              )}
-            </View>
-          )}
+              </View>
+            )}
+          </View>
 
           <View style={{ marginTop: 24, gap: 12 }}>
             <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "600" }}>
