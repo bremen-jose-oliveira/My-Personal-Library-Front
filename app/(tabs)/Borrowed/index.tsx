@@ -14,17 +14,19 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { useExchangeContext } from "@/utils/Context/ExchangeContext";
 import { ExchangeStatus } from "@/Interfaces/exchange";
-
-const statusLabels: Record<ExchangeStatus, string> = {
-  [ExchangeStatus.REQUESTED]: "Pending",
-  [ExchangeStatus.ACCEPTED]: "Active",
-  [ExchangeStatus.REJECTED]: "Rejected",
-  [ExchangeStatus.RETURNED]: "Returned",
-};
+import { useTranslation } from "react-i18next";
 
 export default function BorrowedScreen() {
+  const { t } = useTranslation();
   const { borrowedBooks, loading, refreshBorrowed, updateExchangeStatus } =
     useExchangeContext();
+
+  const statusLabels: Record<ExchangeStatus, string> = {
+    [ExchangeStatus.REQUESTED]: t("borrowed.pending"),
+    [ExchangeStatus.ACCEPTED]: t("borrowed.active"),
+    [ExchangeStatus.REJECTED]: t("borrowed.rejected"),
+    [ExchangeStatus.RETURNED]: t("borrowed.returned"),
+  };
   const [localLoading, setLocalLoading] = useState(true);
   const [processing, setProcessing] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +59,7 @@ export default function BorrowedScreen() {
           const message =
             typeof err?.message === "string"
               ? err.message
-              : "Failed to load borrowed books";
+              : t("borrowed.failedToLoad");
           setError(message);
           setLocalLoading(false);
         }
@@ -70,9 +72,7 @@ export default function BorrowedScreen() {
       console.warn("BorrowedScreen: Loading timeout reached");
       if (isMounted) {
         setLocalLoading(false);
-        setError(
-          "Loading took too long. Please check your connection and try again."
-        );
+        setError(t("borrowed.loadingTimeout"));
       }
     }, 8000);
 
@@ -89,10 +89,10 @@ export default function BorrowedScreen() {
     setProcessing(exchangeId);
     try {
       await updateExchangeStatus(exchangeId, ExchangeStatus.RETURNED);
-      Alert.alert("Success", "Book marked as returned!");
+      Alert.alert(t("common.success"), t("books.bookReturned"));
       await refreshBorrowed();
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to return book");
+      Alert.alert(t("common.error"), error.message || t("books.failedToReturnBook"));
     } finally {
       setProcessing(null);
     }
@@ -142,7 +142,7 @@ export default function BorrowedScreen() {
         colors={["transparent", "rgba(255,255,255,0.9)"]}
         style={styles.gradientOverlay}
       >
-        <Text style={styles.header}>Borrowed Books</Text>
+        <Text style={styles.header}>{t("borrowed.title")}</Text>
         {error ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{error}</Text>
@@ -154,19 +154,19 @@ export default function BorrowedScreen() {
                 try {
                   await refreshBorrowed();
                 } catch (err: any) {
-                  setError(err.message || "Failed to load borrowed books");
+                  setError(err.message || t("borrowed.failedToLoad"));
                 } finally {
                   setLocalLoading(false);
                 }
               }}
             >
-              <Text style={styles.buttonText}>Retry</Text>
+              <Text style={styles.buttonText}>{t("common.retry")}</Text>
             </TouchableOpacity>
           </View>
         ) : isLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#bf471b" />
-            <Text style={styles.loadingText}>Loading borrowed books...</Text>
+            <Text style={styles.loadingText}>{t("borrowed.loading")}</Text>
           </View>
         ) : (
           <FlatList
@@ -200,7 +200,7 @@ export default function BorrowedScreen() {
                   ? statusLabels[itemStatus as ExchangeStatus] || itemStatus
                   : itemStatus != null
                     ? statusLabels[itemStatus]
-                    : "Unknown";
+                    : t("common.unknown");
 
               const canReturn =
                 itemStatus === ExchangeStatus.ACCEPTED && !isProcessing;
@@ -211,17 +211,17 @@ export default function BorrowedScreen() {
               const bookTitle =
                 typeof bookDetails?.title === "string"
                   ? bookDetails.title
-                  : "Unknown book";
+                  : t("borrowed.unknownBook");
               const bookAuthor =
                 typeof bookDetails?.author === "string"
                   ? bookDetails.author
-                  : "Unknown";
+                  : t("common.unknown");
               const bookCover =
                 typeof bookDetails?.cover === "string" ? bookDetails.cover : undefined;
               const ownerUsername =
                 typeof book?.owner?.username === "string"
                   ? book.owner.username
-                  : "Unknown";
+                  : t("common.unknown");
 
               const formatDate = (value: unknown): string => {
                 if (value == null) return "";
@@ -248,10 +248,10 @@ export default function BorrowedScreen() {
                       <Text style={styles.label}>Author:</Text> {bookAuthor}
                     </Text>
                     <Text style={styles.detailText}>
-                      <Text style={styles.label}>From:</Text> {ownerUsername}
+                      <Text style={styles.label}>{t("borrowed.from")}:</Text> {ownerUsername}
                     </Text>
                     <Text style={styles.detailText}>
-                      <Text style={styles.label}>Status:</Text>{" "}
+                      <Text style={styles.label}>{t("borrowed.status")}:</Text>{" "}
                       <Text
                         style={[
                           styles.statusText,
@@ -267,13 +267,13 @@ export default function BorrowedScreen() {
                     </Text>
                     {formatDate(item.exchangeDate) ? (
                       <Text style={styles.detailText}>
-                        <Text style={styles.label}>Borrowed on:</Text>{" "}
+                        <Text style={styles.label}>{t("borrowed.borrowedOn")}</Text>{" "}
                         {formatDate(item.exchangeDate)}
                       </Text>
                     ) : null}
                     {formatDate(item.createdAt) ? (
                       <Text style={styles.detailText}>
-                        <Text style={styles.label}>Requested on:</Text>{" "}
+                        <Text style={styles.label}>{t("borrowed.requestedOn")}</Text>{" "}
                         {formatDate(item.createdAt)}
                       </Text>
                     ) : null}
@@ -284,7 +284,7 @@ export default function BorrowedScreen() {
                         disabled={isProcessing}
                       >
                         <Text style={styles.buttonText}>
-                          {isProcessing ? "Processing..." : "Mark as Returned"}
+                          {isProcessing ? t("common.processing") : t("books.markAsReturned")}
                         </Text>
                       </TouchableOpacity>
                     )}
@@ -295,7 +295,7 @@ export default function BorrowedScreen() {
             ListEmptyComponent={
               !loading && !localLoading ? (
                 <View style={styles.emptyContainer}>
-                  <Text style={styles.emptyText}>No borrowed books yet.</Text>
+                  <Text style={styles.emptyText}>{t("borrowed.noBorrowedYet")}</Text>
                 </View>
               ) : null
             }

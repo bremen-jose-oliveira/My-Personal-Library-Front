@@ -5,6 +5,7 @@ import { fetchCoverImage } from "@/utils/fetchBookData";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import {
   View,
@@ -75,6 +76,7 @@ const getBestCoverUrl = (imageLinks: any): string | null => {
 };
 
 export default function AddBookForm() {
+  const { t } = useTranslation();
   const { addBook } = useBookContext();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -119,7 +121,7 @@ export default function AddBookForm() {
       setStartIndex((prevIndex) => (reset ? 40 : prevIndex + 40));
     } catch (error) {
       console.error("Error fetching books:", error);
-      Alert.alert("Error", "Failed to fetch book data. Please try again.");
+      Alert.alert(t("common.error"), t("books.failedToFetchBooks"));
     } finally {
       setLoading(false);
     }
@@ -268,15 +270,15 @@ export default function AddBookForm() {
       router.push("/Library/DisplayBooks");
 
       if (Platform.OS === "web") {
-        window.confirm("Success " + " Book added successfully!");
+        window.confirm(t("common.success") + " " + t("books.bookAddedSuccess"));
       } else {
-        Alert.alert("Success", "Book added successfully!");
+        Alert.alert(t("common.success"), t("books.bookAddedSuccess"));
       }
     } catch (error: any) {
       console.error("Error adding book:", error);
       Alert.alert(
-        "Error",
-        error.message || "Failed to add book. Please try again."
+        t("common.error"),
+        error.message || t("books.failedToAddBook")
       );
     } finally {
       setAddingBook(false);
@@ -308,7 +310,7 @@ export default function AddBookForm() {
       >
         <View style={{ flex: 1, padding: 20 }}>
           <TextInput
-            placeholder="Search for a book..."
+            placeholder={t("books.searchPlaceholder")}
             value={searchQuery}
             onChangeText={setSearchQuery}
             style={{
@@ -324,7 +326,7 @@ export default function AddBookForm() {
           <View style={{ flexDirection: "row", marginBottom: 10 }}>
             <View style={{ flex: 1, marginRight: 5 }}>
               <Button
-                title="Search"
+                title={t("common.search")}
                 onPress={() => {
                   setStartIndex(0);
                   fetchBooks(searchQuery, true);
@@ -341,7 +343,7 @@ export default function AddBookForm() {
             >
               <Button
                 color="#bf471b"
-                title="Open Scanner"
+                title={t("books.openScanner")}
                 onPress={() => {
                   clearSearchState(); // Clear previous results when opening scanner
                   setScannerVisible(true);
@@ -352,7 +354,7 @@ export default function AddBookForm() {
               <View style={{ flex: 1, marginLeft: 5 }}>
                 <Button
                   color="#666"
-                  title="Clear Results"
+                  title={t("books.clearResults")}
                   onPress={clearSearchState}
                 />
               </View>
@@ -372,10 +374,9 @@ export default function AddBookForm() {
                 <Text
                   style={{ color: "#f0dcc7", fontSize: 16, fontWeight: "bold" }}
                 >
-                  Found {searchResults.length} result
-                  {searchResults.length !== 1 ? "s" : ""}
+                  {t("books.foundResults", { count: searchResults.length })}
                 </Text>
-                <Button color="#666" title="Clear" onPress={clearSearchState} />
+                <Button color="#666" title={t("common.clear")} onPress={clearSearchState} />
               </View>
               <FlatList
                 data={searchResults}
@@ -464,7 +465,7 @@ export default function AddBookForm() {
                           </Text>
                           <Text style={{ color: "#f0dcc7" }}>
                             {item.volumeInfo.authors?.join(", ") ||
-                              "Unknown Author"}
+                              t("common.unknownAuthor")}
                           </Text>
                         </View>
                       </View>
@@ -503,11 +504,11 @@ export default function AddBookForm() {
                       fontSize: 18,
                     }}
                   >
-                    Book Preview
-                    {loadingDetails ? " (loading details…)" : ""}
+                    {t("books.bookPreview")}
+                    {loadingDetails ? ` (${t("books.loadingDetails")})` : ""}
                   </Text>
                   <Button
-                    title="Cancel"
+                    title={t("common.cancel")}
                     onPress={() => {
                       setSelectedBook(null);
                       setLoadingDetails(false);
@@ -535,7 +536,7 @@ export default function AddBookForm() {
                     marginBottom: 5,
                   }}
                 >
-                  Title: {selectedBook.volumeInfo?.title || "—"}
+                  {t("books.title")}: {selectedBook.volumeInfo?.title || "—"}
                 </Text>
                 <Text
                   style={{
@@ -544,7 +545,7 @@ export default function AddBookForm() {
                     marginBottom: 5,
                   }}
                 >
-                  Author:{" "}
+                  {t("books.author")}:{" "}
                   {selectedBook.volumeInfo?.authors?.length
                     ? selectedBook.volumeInfo.authors.join(", ")
                     : "—"}
@@ -556,7 +557,7 @@ export default function AddBookForm() {
                     marginBottom: 5,
                   }}
                 >
-                  Publisher: {selectedBook.volumeInfo?.publisher || "—"}
+                  {t("books.publisher")}: {selectedBook.volumeInfo?.publisher || "—"}
                 </Text>
                 <Text
                   style={{
@@ -565,7 +566,7 @@ export default function AddBookForm() {
                     marginBottom: 5,
                   }}
                 >
-                  Published Date: {selectedBook.volumeInfo?.publishedDate || "—"}
+                  {t("books.publishedDate")}: {selectedBook.volumeInfo?.publishedDate || "—"}
                 </Text>
                 <Text
                   style={{
@@ -574,7 +575,7 @@ export default function AddBookForm() {
                     marginBottom: 5,
                   }}
                 >
-                  Categories:{" "}
+                  {t("books.categories")}:{" "}
                   {Array.isArray(selectedBook.volumeInfo?.categories)
                     ? selectedBook.volumeInfo.categories.join(", ")
                     : selectedBook.volumeInfo?.categories || "—"}
@@ -586,7 +587,7 @@ export default function AddBookForm() {
                     marginBottom: 5,
                   }}
                 >
-                  Description: {selectedBook.volumeInfo?.description || "—"}
+                  {t("books.description")}: {selectedBook.volumeInfo?.description || "—"}
                 </Text>
                 <Text
                   style={{
@@ -595,7 +596,7 @@ export default function AddBookForm() {
                     marginBottom: 5,
                   }}
                 >
-                  isbn:{" "}
+                  {t("books.isbn")}:{" "}
                   {selectedBook.volumeInfo?.industryIdentifiers?.[0]?.identifier ||
                     "N/A"}
                 </Text>
@@ -608,7 +609,7 @@ export default function AddBookForm() {
                 >
                   <View style={{ flex: 1, marginRight: 5 }}>
                     <Button
-                      title={addingBook ? "Adding..." : "Add Book"}
+                      title={addingBook ? t("books.adding") : t("books.addBook")}
                       onPress={handleAddBook}
                       color="#bf471b"
                       disabled={addingBook}
@@ -616,8 +617,8 @@ export default function AddBookForm() {
                   </View>
                   <View style={{ flex: 1, marginLeft: 5 }}>
                     <Button
-                      title="Cancel"
-                      onPress={() => {
+title={t("common.cancel")}
+                        onPress={() => {
                         setSelectedBook(null);
                         clearSearchState();
                       }}

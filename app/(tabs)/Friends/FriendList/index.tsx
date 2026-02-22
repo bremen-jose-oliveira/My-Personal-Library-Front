@@ -15,8 +15,10 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 export default function FriendList() {
+  const { t } = useTranslation();
   const { friends, removeFriend, fetchCurrentUserFriends } = useFriendContext();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -36,14 +38,14 @@ export default function FriendList() {
   const handleRemoveFriend = (id: number) => {
     if (Platform.OS === "web") {
       // Web-specific alert
-      if (window.confirm("Are you sure you want to delete this book?")) {
+      if (window.confirm(t("friendList.removeFriendConfirm"))) {
         removeFriend(id);
       }
     } else {
-      Alert.alert("Delete Book", "Are you sure you want to delete this book?", [
-        { text: "Cancel", style: "cancel" },
+      Alert.alert(t("friendList.removeFriend"), t("friendList.removeFriendConfirm"), [
+        { text: t("common.cancel"), style: "cancel" },
         {
-          text: "Delete",
+          text: t("common.delete"),
           onPress: () => removeFriend(id),
           style: "destructive",
         },
@@ -115,7 +117,7 @@ export default function FriendList() {
                       textAlign: "center",
                     }}
                   >
-                    No Image Available
+                    {t("books.noCover")}
                   </Text>
                 </View>
               )}
@@ -129,7 +131,7 @@ export default function FriendList() {
                         `/FriendBooks/${encodeURIComponent(friendEmail)}`
                       );
                     } else {
-                      Alert.alert("Error", "Friend email not available");
+                      Alert.alert(t("common.error"), t("friends.friendEmailNotAvailable"));
                     }
                   }}
                   style={{ flex: 1 }}
@@ -141,7 +143,7 @@ export default function FriendList() {
                       color: "#f0dcc7",
                     }}
                   >
-                    Name:{" "}
+                    {t("friendList.name")}{" "}
                     {friend.name
                       ? friend.name
                       : friend.email || friend.friendEmail}
@@ -153,8 +155,8 @@ export default function FriendList() {
                       color: "#f0dcc7",
                     }}
                   >
-                    Email:{" "}
-                    {friend.email || friend.friendEmail || "No Email Provided"}
+                    {t("friendList.email")}{" "}
+                    {friend.email || friend.friendEmail || t("friendList.noEmail")}
                   </Text>
                   <Text
                     style={{
@@ -164,17 +166,14 @@ export default function FriendList() {
                       textDecorationLine: "underline",
                     }}
                   >
-                    View{" "}
-                    {friend.name ||
-                      friend.email ||
-                      friend.friendEmail ||
-                      "Friend"}
-                    's Books →
+                    {t("friendList.viewBooks", {
+                      name: friend.name || friend.email || friend.friendEmail || "Friend",
+                    })}
                   </Text>
                 </TouchableOpacity>
 
                 <Button
-                  title="Remove Friend"
+                  title={t("friendList.removeFriend")}
                   onPress={() => handleRemoveFriend(friend.id)}
                   color="#bf471b"
                 />
@@ -185,8 +184,12 @@ export default function FriendList() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           keyboardShouldPersistTaps="handled"
+          ListEmptyComponent={
+            <View style={{ padding: 20, alignItems: "center" }}>
+              <Text style={{ color: "#f0dcc7", fontSize: 16 }}>{t("friendList.empty")}</Text>
+            </View>
+          }
         />
-        
         {/* Floating Action Buttons */}
         <View
           style={{

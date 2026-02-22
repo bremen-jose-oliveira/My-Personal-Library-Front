@@ -1,6 +1,7 @@
 import { Link, useRouter, usePathname } from "expo-router";
 import { View, Text, StyleSheet, Platform } from "react-native";
 import { useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 
 // Map lowercase path segments to the actual route casing (Expo Router is case-sensitive).
 // After refresh, browser/server may send lowercase (e.g. /borrowed); we redirect to correct case (e.g. /Borrowed).
@@ -61,6 +62,7 @@ function isKnownRoute(pathname: string | null): boolean {
  * On web, if the path looks like a known app route, redirect there so the tab/screen loads.
  */
 export default function NotFoundScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
   const redirected = useRef(false);
@@ -79,12 +81,12 @@ export default function NotFoundScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Page not found</Text>
+      <Text style={styles.title}>{t("notFound.title")}</Text>
       <Text style={styles.message}>
-        If you got here after refreshing, use the button below to go home.
+        {t("notFound.message")}
       </Text>
       <Link href="/">
-        <Text style={styles.linkText}>Go to Home</Text>
+        <Text style={styles.linkText}>{t("notFound.goHome")}</Text>
       </Link>
     </View>
   );

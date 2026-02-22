@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Alert, ImageBackground, StyleSheet, RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
 import { useFriendContext } from "@/utils/Context/FriendContext";
 import { LinearGradient } from "expo-linear-gradient";
+import { useTranslation } from "react-i18next";
 
 export default function FriendshipRequests() {
+  const { t } = useTranslation();
   const { friendRequests, fetchFriendRequests, approveFriendRequest, rejectFriendRequest } = useFriendContext();
   const [refreshing, setRefreshing] = useState(false);
   const [processing, setProcessing] = useState<string | null>(null);
@@ -22,10 +24,10 @@ export default function FriendshipRequests() {
     setProcessing(friendEmail);
     try {
       await approveFriendRequest(friendEmail);
-      Alert.alert("Success", "Friend request approved!");
+      Alert.alert(t("common.success"), t("friendRequests.approved"));
       await fetchFriendRequests();
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to approve friend request");
+      Alert.alert(t("common.error"), error.message || t("friendRequests.failedToApprove"));
     } finally {
       setProcessing(null);
     }
@@ -35,10 +37,10 @@ export default function FriendshipRequests() {
     setProcessing(friendEmail);
     try {
       await rejectFriendRequest(friendEmail);
-      Alert.alert("Success", "Friend request rejected.");
+      Alert.alert(t("common.success"), t("friendRequests.rejected"));
       await fetchFriendRequests();
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to reject friend request");
+      Alert.alert(t("common.error"), error.message || t("friendRequests.failedToReject"));
     } finally {
       setProcessing(null);
     }
@@ -54,7 +56,7 @@ export default function FriendshipRequests() {
         colors={["transparent", "rgba(255,255,255,0.9)"]}
         style={styles.gradientOverlay}
       >
-        <Text style={styles.header}>Friend Requests</Text>
+        <Text style={styles.header}>{t("friendRequests.title")}</Text>
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
@@ -68,13 +70,13 @@ export default function FriendshipRequests() {
               return (
                 <View key={request.id} style={styles.requestCard}>
                   <Text style={styles.requestTitle}>
-                    Request From: {request.username}
+                    {t("friendRequests.requestFrom", { username: request.username })}
                   </Text>
                   <Text style={styles.detailText}>
-                    Email: {request.friendEmail}
+                    {t("friendRequests.emailLabel")} {request.friendEmail}
                   </Text>
                   <Text style={styles.detailText}>
-                    Status: {request.friendshipStatus}
+                    {t("friendRequests.statusLabel")} {request.friendshipStatus}
                   </Text>
 
                   <View style={styles.buttonContainer}>
@@ -84,7 +86,7 @@ export default function FriendshipRequests() {
                       disabled={Boolean(isProcessing)}
                     >
                       <Text style={styles.buttonText}>
-                        {isProcessing ? "Processing..." : "Approve"}
+                        {isProcessing ? t("friendRequests.processing") : t("friendRequests.approve")}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -93,7 +95,7 @@ export default function FriendshipRequests() {
                       disabled={Boolean(isProcessing)}
                     >
                       <Text style={styles.buttonText}>
-                        {isProcessing ? "Processing..." : "Reject"}
+                        {isProcessing ? t("friendRequests.processing") : t("friendRequests.reject")}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -102,7 +104,7 @@ export default function FriendshipRequests() {
             })
           ) : (
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No pending friendship requests.</Text>
+              <Text style={styles.emptyText}>{t("friendRequests.empty")}</Text>
             </View>
           )}
         </ScrollView>

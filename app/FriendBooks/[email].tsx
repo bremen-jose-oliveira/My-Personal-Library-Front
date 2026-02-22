@@ -16,8 +16,10 @@ import { Link } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Book from "@/Interfaces/book";
 import { fetchCoverImage } from "@/utils/fetchBookData";
+import { useTranslation } from "react-i18next";
 
 export default function FriendBooksScreen() {
+  const { t } = useTranslation();
   const { email } = useLocalSearchParams<{ email: string }>();
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
@@ -137,7 +139,7 @@ export default function FriendBooksScreen() {
                 borderRadius: 8,
               }}
             >
-              <Text style={{ color: "#f0dcc7", fontSize: 16 }}>← Back</Text>
+              <Text style={{ color: "#f0dcc7", fontSize: 16 }}>{t("friendBooks.back")}</Text>
             </TouchableOpacity>
             <Text
               style={{
@@ -147,7 +149,7 @@ export default function FriendBooksScreen() {
                 marginBottom: 16,
               }}
             >
-              {friendName}'s Library
+              {t("friendBooks.libraryTitle", { name: friendName })}
             </Text>
             <View
               style={{
@@ -158,7 +160,7 @@ export default function FriendBooksScreen() {
               }}
             >
               <Text style={{ color: "#f0dcc7", fontSize: 16 }}>
-                {friendName} hasn't added any books yet.
+                {t("friendBooks.emptyWithName", { name: friendName })}
               </Text>
             </View>
           </View>
@@ -185,7 +187,7 @@ export default function FriendBooksScreen() {
                   borderRadius: 8,
                 }}
               >
-                <Text style={{ color: "#f0dcc7", fontSize: 16 }}>← Back</Text>
+                <Text style={{ color: "#f0dcc7", fontSize: 16 }}>{t("friendBooks.back")}</Text>
               </TouchableOpacity>
               <Text
                 style={{
@@ -196,7 +198,7 @@ export default function FriendBooksScreen() {
                   textAlign: "center",
                 }}
               >
-                {friendName}'s Library
+                {t("friendBooks.libraryTitle", { name: friendName })}
               </Text>
               <View style={{ width: 80 }} />
             </View>

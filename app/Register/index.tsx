@@ -5,8 +5,10 @@ import { Link, router, Stack } from "expo-router";
 import React, { useState, useContext } from "react";
 import { Alert, TouchableOpacity, View, Text } from "react-native";
 import Ioicons from "react-native-vector-icons/Ionicons";
+import { useTranslation } from "react-i18next";
 
 export default function Register() {
+  const { t } = useTranslation();
   const { createUser } = useContext(AuthContext);
   const [secureText, setSecureText] = useState(true);
 
@@ -18,12 +20,12 @@ export default function Register() {
 
   const handleRegister = async () => {
     if (!email || !password || !confirmPassword) {
-      Alert.alert("Error", "Please fill out all fields.");
+      Alert.alert(t("common.error"), t("register.fillAllFields"));
       return;
     }
 
     if (password !== confirmPassword) {
-      setPasswordError("Passwords do not match");
+      setPasswordError(t("account.passwordsDoNotMatch"));
       return; // Prevent further action if passwords don't match
     }
 
@@ -32,7 +34,7 @@ export default function Register() {
       router.dismissAll();
       router.push("/(tabs)");
     } catch (error) {
-      Alert.alert("Error", "Failed to register");
+      Alert.alert(t("common.error"), t("register.failedToRegister"));
     }
   };
 
@@ -40,7 +42,7 @@ export default function Register() {
     <>
       <Stack.Screen
         options={{
-          headerTitle: "Sign Up",
+          headerTitle: t("register.title"),
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>
               <Ioicons name="close" size={24} color="black" />
@@ -51,13 +53,13 @@ export default function Register() {
 
       <View className="flex-1 justify-center items-center px-5 bg-gray-100">
         <Text className="text-2xl font-semibold tracking-wide text-black mb-12">
-          Create an Account
+          {t("register.createAccountTitle")}
         </Text>
 
         <InputField
           value={username}
           onChangeText={setUsername}
-          placeholder="Enter a Username"
+          placeholder={t("register.enterUsername")}
           placeholderTextColor="gray"
           autoCapitalize="none"
         />
@@ -65,7 +67,7 @@ export default function Register() {
         <InputField
           value={email}
           onChangeText={setEmail}
-          placeholder="Enter Email..."
+          placeholder={t("register.enterEmail")}
           placeholderTextColor="gray"
           autoCapitalize="none"
         />
@@ -74,7 +76,7 @@ export default function Register() {
           secureTextEntry={secureText}
           value={password}
           onChangeText={setPassword}
-          placeholder="Enter Password..."
+          placeholder={t("register.enterPassword")}
           placeholderTextColor="gray"
         />
 
@@ -82,7 +84,7 @@ export default function Register() {
           secureTextEntry={secureText}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
-          placeholder="Confirm Password..."
+          placeholder={t("register.confirmPassword")}
           placeholderTextColor="gray"
         />
         <TouchableOpacity onPress={() => setSecureText(!secureText)}>
@@ -93,7 +95,7 @@ export default function Register() {
               marginBottom: 20,
             }}
           >
-            {secureText ? "Show Password" : "Hide Password"}
+            {secureText ? t("auth.showPassword") : t("auth.hidePassword")}
           </Text>
           
         </TouchableOpacity>
@@ -107,14 +109,14 @@ export default function Register() {
        
           onPress={handleRegister}
         >
-          <Text className="text-white text-lg font-semibold">Register</Text>
+          <Text className="text-white text-lg font-semibold">{t("register.createAccount")}</Text>
         </TouchableOpacity>
 
         <Text className="mb-5 text-sm text-black">
-          Have an Account?{" "}
+          {t("register.alreadyHaveAccount")}{" "}
           <Link href="/Login" asChild>
             <TouchableOpacity>
-              <Text  style={{  color: "#bf471b"}}>Sign In</Text>
+              <Text  style={{  color: "#bf471b"}}>{t("register.signIn")}</Text>
             </TouchableOpacity>
           </Link>
         </Text>

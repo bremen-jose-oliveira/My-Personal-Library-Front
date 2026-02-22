@@ -13,12 +13,14 @@ import { useFriendContext } from "@/utils/Context/FriendContext";
 import { LinearGradient } from "expo-linear-gradient";
 import { FetchAllUsers, FetchAllUsersBySearchParam } from "@/utils/Users";
 import type { UserSummary } from "@/Interfaces/user";
+import { useTranslation } from "react-i18next";
 
 interface UserWithProfilePicture extends UserSummary {
   profilePicture?: string;
 }
 
 const AddFriend = () => {
+  const { t } = useTranslation();
   const { addFriend } = useFriendContext();
   const [friendEmail, setFriendEmail] = useState("");
   const [friends, setFriends] = useState<UserWithProfilePicture[]>([]);
@@ -30,18 +32,18 @@ const AddFriend = () => {
 
   const handleAddFriendByEmail = async () => {
     if (!friendEmail) {
-      Alert.alert("Validation Error", "Please enter a valid email address.");
+      Alert.alert(t("addFriend.validationError"), t("addFriend.enterValidEmail"));
       return;
     }
 
     try {
-      setIsAddingFriend(true); // Set loading state
+      setIsAddingFriend(true);
       await addFriend(friendEmail);
-      Alert.alert("Success", "Friend added successfully!");
+      Alert.alert(t("common.success"), t("addFriend.friendAddedSuccess"));
       setFriendEmail("");
     } catch (error) {
       console.error("Error adding friend:", error);
-      Alert.alert("Error", "Failed to add friend. Please try again.");
+      Alert.alert(t("common.error"), t("addFriend.failedToAdd"));
     } finally {
       setIsAddingFriend(false); // Reset loading state
     }
@@ -53,12 +55,12 @@ const AddFriend = () => {
       setIsAddingFriend(true); // Set loading state
       await addFriend(friend.email);
       console.log("Payload to be sent:", JSON.stringify(friend.email));
-      Alert.alert("Success", "Friend added successfully!");
+      Alert.alert(t("common.success"), t("addFriend.friendAddedSuccess"));
     } catch (error) {
       console.error("Error adding friend:", error);
-      Alert.alert("Error", "Failed to add friend. Please try again.");
+      Alert.alert(t("common.error"), t("addFriend.failedToAdd"));
     } finally {
-      setIsAddingFriend(false); // Reset loading state
+      setIsAddingFriend(false);
     }
   };
 
@@ -118,7 +120,7 @@ const AddFriend = () => {
           <TextInput
             value={friendEmail}
             onChangeText={setFriendEmail}
-            placeholder="Enter friend's email"
+            placeholder={t("addFriend.placeholder")}
             style={{
               height: 40,
               borderColor: "gray",
@@ -140,15 +142,14 @@ const AddFriend = () => {
             }}
           >
             <Text style={{ color: "white", fontSize: 16 }}>
-              Add Friend by Email
+              {t("addFriend.addByEmail")}
             </Text>
           </TouchableOpacity>
 
-          {/* Search Query Input */}
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholder="Search by username or email"
+            placeholder={t("addFriend.searchPlaceholder")}
             style={{
               height: 40,
               borderColor: "gray",
@@ -200,7 +201,7 @@ const AddFriend = () => {
                         textAlign: "center",
                       }}
                     >
-                      No Image Available
+                      {t("books.noCover")}
                     </Text>
                   </View>
                 )}
@@ -212,10 +213,10 @@ const AddFriend = () => {
                       color: "#f0dcc7",
                     }}
                   >
-                    Name: {friend?.username}
+                    {t("friendList.name")} {friend?.username}
                   </Text>
                   <Text style={{ fontSize: 15, color: "#f0dcc7" }}>
-                    Email: {friend?.email}
+                    {t("friendList.email")} {friend?.email}
                   </Text>
                   <TouchableOpacity
                     onPress={() => handleAddFriendFromSearch(friend)}
@@ -228,7 +229,7 @@ const AddFriend = () => {
                     }}
                   >
                     <Text style={{ color: "white", fontSize: 16 }}>
-                      Add Friend
+                      {t("friendList.addFriend")}
                     </Text>
                   </TouchableOpacity>
                 </View>

@@ -22,16 +22,18 @@ import { useReviewContext } from "@/utils/Context/ReviewContext";
 import { useUserContext } from "@/utils/Context/UserContext";
 import { BookStatus } from "@/Interfaces/userBookStatus";
 import { ExchangeStatus } from "@/Interfaces/exchange";
-
-const statusLabels: Record<BookStatus, string> = {
-  [BookStatus.NOT_READ]: "Not read",
-  [BookStatus.READING]: "Reading",
-  [BookStatus.READ]: "Finished",
-};
+import { useTranslation } from "react-i18next";
 
 export default function BookDetails() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const bookId = Number(id);
+
+  const statusLabels: Record<BookStatus, string> = {
+    [BookStatus.NOT_READ]: t("books.notRead"),
+    [BookStatus.READING]: t("books.reading"),
+    [BookStatus.READ]: t("books.read"),
+  };
 
   const { currentUser } = useUserContext();
   const {
@@ -91,13 +93,13 @@ export default function BookDetails() {
     };
 
     if (Platform.OS === "web") {
-      if (window.confirm("Are you sure you want to delete this book?")) {
+      if (window.confirm(t("books.deleteBookConfirm"))) {
         await confirmDelete();
       }
     } else {
-      Alert.alert("Delete Book", "Are you sure?", [
-        { text: "Cancel", style: "cancel" },
-        { text: "Delete", onPress: confirmDelete, style: "destructive" },
+      Alert.alert(t("books.deleteBook"), t("books.deleteBookConfirm"), [
+        { text: t("common.cancel"), style: "cancel" },
+        { text: t("common.delete"), onPress: confirmDelete, style: "destructive" },
       ]);
     }
   };
@@ -106,11 +108,11 @@ export default function BookDetails() {
     if (!selectedBook) return;
     try {
       await requestExchange(selectedBook.id);
-      Alert.alert("Exchange requested", "The owner has been notified.");
+      Alert.alert(t("books.exchangeRequested"), t("books.ownerNotified"));
     } catch (error: any) {
       Alert.alert(
-        "Exchange failed",
-        error?.message ?? "Unable to request exchange"
+        t("books.exchangeFailed"),
+        error?.message ?? t("books.unableToRequestExchange")
       );
     }
   };
@@ -119,11 +121,11 @@ export default function BookDetails() {
     if (!selectedBook) return;
     try {
       await updateReadingStatus(selectedBook.id, status);
-      Alert.alert("Success", "Reading status updated successfully");
+      Alert.alert(t("common.success"), t("books.readingStatusUpdated"));
     } catch (error: any) {
       Alert.alert(
-        "Update failed",
-        error?.message ?? "Unable to update reading status"
+        t("books.updateFailed"),
+        error?.message ?? t("books.unableToUpdateReadingStatus")
       );
     }
   };
@@ -142,7 +144,7 @@ export default function BookDetails() {
       setReviewRating("5");
       await fetchReviewsForBook(selectedBook.id);
     } catch (error: any) {
-      Alert.alert("Review failed", error?.message ?? "Unable to submit review");
+      Alert.alert(t("books.reviewFailed"), error?.message ?? t("books.unableToSubmitReview"));
     } finally {
       setSubmittingReview(false);
     }
@@ -213,7 +215,7 @@ export default function BookDetails() {
                   alignItems: "center",
                 }}
               >
-                <Text>No cover</Text>
+                <Text>{t("books.noCover")}</Text>
               </View>
             )}
             <View style={{ flex: 1 }}>
@@ -223,29 +225,29 @@ export default function BookDetails() {
                 {selectedBook.title}
               </Text>
               <Text style={{ color: "#f0dcc7", marginTop: 4 }}>
-                Author: {selectedBook.author}
+                {t("books.author")}: {selectedBook.author}
               </Text>
               <Text style={{ color: "#f0dcc7" }}>
-                Year: {selectedBook.year ?? "—"}
+                {t("books.year")}: {selectedBook.year ?? "—"}
               </Text>
               <Text style={{ color: "#f0dcc7" }}>
-                Publisher: {selectedBook.publisher ?? "—"}
+                {t("books.publisher")}: {selectedBook.publisher ?? "—"}
               </Text>
               <Text style={{ color: "#f0dcc7" }}>
-                ISBN: {selectedBook.isbn ?? "—"}
+                {t("books.isbn")}: {selectedBook.isbn ?? "—"}
               </Text>
               <Text style={{ color: "#f0dcc7", fontWeight: "600" }}>
-                Owner: {selectedBook.ownerUsername || "Unknown"}
+                {t("books.owner")}: {selectedBook.ownerUsername || t("common.unknown")}
               </Text>
               <Text style={{ color: "#f0dcc7" }}>
-                Reading Status:{" "}
+                {t("books.readingStatusLabel")}:{" "}
                 {selectedBook.readingStatus
                   ? statusLabels[selectedBook.readingStatus as BookStatus] ??
                     selectedBook.readingStatus
-                  : "Not set"}
+                  : t("books.notSet")}
               </Text>
               <Text style={{ color: "#f0dcc7" }}>
-                Exchange Status: {selectedBook.exchangeStatus ?? "N/A"}
+                {t("books.exchangeStatus")}: {selectedBook.exchangeStatus ?? "N/A"}
               </Text>
             </View>
           </View>
@@ -272,8 +274,8 @@ export default function BookDetails() {
                   flex: 1,
                 }}
               >
-                Description
-              </Text>
+                {t("books.description")}
+                </Text>
               <Text style={{ color: "#f0dcc7", fontSize: 16 }}>
                 {descriptionExpanded ? "▼" : "▶"}
               </Text>
@@ -293,7 +295,7 @@ export default function BookDetails() {
                     fontSize: 14,
                   }}
                 >
-                  {selectedBook.description?.trim() || "No description available."}
+                  {selectedBook.description?.trim() || t("books.noDescription")}
                 </Text>
               </View>
             )}
@@ -301,7 +303,7 @@ export default function BookDetails() {
 
           <View style={{ marginTop: 24, gap: 12 }}>
             <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "600" }}>
-              Update Reading Status
+              {t("books.updateReadingStatus")}
             </Text>
             <View style={{ flexDirection: "row", gap: 8 }}>
               {Object.values(BookStatus).map((status) => (
@@ -326,7 +328,7 @@ export default function BookDetails() {
 
           <View style={{ marginTop: 24, gap: 12 }}>
             <Text style={{ color: "#f0dcc7", fontSize: 18, fontWeight: "600" }}>
-              Actions
+              {t("books.actions")}
             </Text>
             {!isOwner && (
               <TouchableOpacity
@@ -339,7 +341,7 @@ export default function BookDetails() {
                 onPress={handleRequestExchange}
               >
                 <Text style={{ color: "#fff", fontWeight: "600" }}>
-                  Lending Request
+                  {t("books.lendingRequest")}
                 </Text>
               </TouchableOpacity>
             )}
@@ -355,8 +357,8 @@ export default function BookDetails() {
                   }}
                   onPress={handleDeleteBook}
                 >
-                  <Text style={{ color: "#fff", fontWeight: "600" }}>
-                    Delete Book
+<Text style={{ color: "#fff", fontWeight: "600" }}>
+                  {t("books.deleteBook")}
                   </Text>
                 </TouchableOpacity>
               </>
@@ -378,7 +380,7 @@ export default function BookDetails() {
                   fontWeight: "600",
                 }}
               >
-                Reviews
+                {t("books.reviews")}
               </Text>
               {reviewsLoading && (
                 <ActivityIndicator
@@ -390,7 +392,7 @@ export default function BookDetails() {
             </View>
             {!reviewsLoading && reviews.length === 0 ? (
               <Text style={{ color: "#f0dcc7", fontStyle: "italic" }}>
-                No reviews yet. Be the first to review this book!
+                {t("books.noReviewsYet")}
               </Text>
             ) : !reviewsLoading && reviews.length > 0 ? (
               reviews.map((review) => (
@@ -404,7 +406,7 @@ export default function BookDetails() {
                   }}
                 >
                   <Text style={{ color: "#f0dcc7", fontWeight: "600" }}>
-                    {review.user?.username ?? "Anonymous"} • {review.rating}/5
+                    {review.user?.username ?? t("books.anonymous")} • {review.rating}/5
                   </Text>
                   <Text style={{ color: "#f0dcc7", marginTop: 4 }}>
                     {review.comment}
@@ -427,7 +429,7 @@ export default function BookDetails() {
                         }}
                       >
                         <Text style={{ color: "#fff", fontWeight: "600" }}>
-                          Edit
+                          {t("common.edit")}
                         </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
@@ -440,7 +442,7 @@ export default function BookDetails() {
                         }}
                       >
                         <Text style={{ color: "#fff", fontWeight: "600" }}>
-                          Delete
+                          {t("common.delete")}
                         </Text>
                       </TouchableOpacity>
                     </View>
@@ -459,7 +461,7 @@ export default function BookDetails() {
                 marginBottom: 12,
               }}
             >
-              Add a Review
+              {t("books.addReview")}
             </Text>
             <View style={{ flexDirection: "row", gap: 8 }}>
               <TextInput
@@ -479,7 +481,7 @@ export default function BookDetails() {
               <TextInput
                 value={reviewComment}
                 onChangeText={setReviewComment}
-                placeholder="Share your thoughts..."
+                placeholder={t("books.shareThoughts")}
                 placeholderTextColor="#d1d5db"
                 multiline={true}
                 style={{
@@ -503,7 +505,7 @@ export default function BookDetails() {
               disabled={Boolean(submittingReview)}
             >
               <Text style={{ color: "#fff", fontWeight: "600" }}>
-                {submittingReview ? "Submitting..." : "Submit Review"}
+                {submittingReview ? t("books.submittingReview") : t("books.submitReview")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -519,8 +521,8 @@ export default function BookDetails() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Edit Review</Text>
-            <Text style={styles.modalLabel}>Rating (1-5):</Text>
+            <Text style={styles.modalTitle}>{t("books.editReview")}</Text>
+            <Text style={styles.modalLabel}>{t("myReviews.ratingLabel")}</Text>
             <TextInput
               value={editRating}
               onChangeText={setEditRating}
@@ -529,7 +531,7 @@ export default function BookDetails() {
               style={styles.modalInput}
               placeholderTextColor="#d1d5db"
             />
-            <Text style={styles.modalLabel}>Comment:</Text>
+            <Text style={styles.modalLabel}>{t("myReviews.comment")}</Text>
             <TextInput
               value={editComment}
               onChangeText={setEditComment}
@@ -543,7 +545,7 @@ export default function BookDetails() {
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setEditingReview(null)}
               >
-                <Text style={styles.modalButtonText}>Cancel</Text>
+                <Text style={styles.modalButtonText}>{t("common.cancel")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.saveButton]}
@@ -554,18 +556,18 @@ export default function BookDetails() {
                       rating: parseInt(editRating) || 5,
                       comment: editComment,
                     });
-                    Alert.alert("Success", "Review updated successfully!");
+                    Alert.alert(t("common.success"), t("books.reviewUpdated"));
                     setEditingReview(null);
                     await fetchReviewsForBook(bookId);
                   } catch (error: any) {
                     Alert.alert(
-                      "Error",
-                      error.message || "Failed to update review"
+                      t("common.error"),
+                      error.message || t("books.failedToUpdateReview")
                     );
                   }
                 }}
               >
-                <Text style={styles.modalButtonText}>Save</Text>
+                <Text style={styles.modalButtonText}>{t("myReviews.save")}</Text>
               </TouchableOpacity>
             </View>
           </View>

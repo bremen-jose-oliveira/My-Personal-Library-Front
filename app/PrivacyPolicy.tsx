@@ -1,13 +1,15 @@
 import { Stack } from "expo-router";
 import React from "react";
 import { ScrollView, Text, View, StyleSheet, Linking } from "react-native";
+import { useTranslation } from "react-i18next";
 
 export default function PrivacyPolicy() {
+  const { t } = useTranslation();
   return (
     <>
       <Stack.Screen
         options={{
-          headerTitle: "Privacy Policy",
+          headerTitle: t("privacy.title"),
         }}
       />
       <ScrollView
@@ -15,7 +17,7 @@ export default function PrivacyPolicy() {
         contentContainerStyle={styles.contentContainer}
       >
         <View style={styles.section}>
-          <Text style={styles.title}>Privacy Policy</Text>
+          <Text style={styles.title}>{t("privacy.title")}</Text>
           <Text style={styles.lastUpdated}>
             Last Updated: {new Date().toLocaleDateString()}
           </Text>

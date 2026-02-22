@@ -1,5 +1,6 @@
 import React, { useContext, useCallback, useRef } from "react";
 import { Platform, Alert, Button } from "react-native";
+import { useTranslation } from "react-i18next";
 import "../../global.css";
 import { AuthContext } from "@/utils/Context/AuthContext";
 import { Tabs } from "expo-router";
@@ -8,6 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 import NotificationBell from "@/components/NotificationBell";
 
 function AppTabs() {
+  const { t } = useTranslation();
   const authContext = useContext(AuthContext);
   const { logout, isLoggedIn } = authContext || {
     logout: () => {},
@@ -24,21 +26,21 @@ function AppTabs() {
 
     try {
       if (Platform.OS === "web") {
-        const confirmed = window.confirm("Are you sure you want to log out?");
+        const confirmed = window.confirm(t("auth.confirmLogoutMessage"));
         if (confirmed) {
           await logout();
         }
       } else {
-        Alert.alert("Confirm Logout", "Are you sure you want to log out?", [
+        Alert.alert(t("auth.confirmLogout"), t("auth.confirmLogoutMessage"), [
           {
-            text: "Cancel",
+            text: t("common.cancel"),
             style: "cancel",
             onPress: () => {
               isLoggingOutRef.current = false;
             },
           },
           {
-            text: "Yes",
+            text: t("common.yes"),
             onPress: async () => {
               try {
                 await logout();
@@ -65,9 +67,9 @@ function AppTabs() {
       <Tabs.Screen
         name="index"
         options={{
-          headerTitle: "Home",
+          headerTitle: t("home.title"),
           headerRight: () => <NotificationBell />,
-          tabBarLabel: "Home",
+          tabBarLabel: t("home.title"),
           tabBarActiveTintColor: "#bf471b",
           tabBarIcon: () => (
             <MaterialCommunityIcons name="home" size={24} color="black" />
@@ -79,7 +81,7 @@ function AppTabs() {
         name="Friends"
         options={{
           headerShown: false,
-          tabBarLabel: "Friends",
+          tabBarLabel: t("home.friends"),
           tabBarActiveTintColor: "#bf471b",
           tabBarIcon: () => (
             <MaterialCommunityIcons
@@ -95,11 +97,11 @@ function AppTabs() {
         name="AccountSettings/index"
         options={{
           headerRight: () => (
-            <Button title="Logout" onPress={handleLogout} color="#bf471b" />
+            <Button title={t("auth.logout")} onPress={handleLogout} color="#bf471b" />
           ),
 
-          headerTitle: "Account Settings",
-          tabBarLabel: "Settings",
+          headerTitle: t("tabs.accountSettings"),
+          tabBarLabel: t("tabs.settings"),
           tabBarActiveTintColor: "#bf471b",
           tabBarIcon: () => (
             <Ionicons name="settings-sharp" size={24} color="black" />
@@ -120,7 +122,7 @@ function AppTabs() {
         name="BrowseBooks/index"
         options={{
           href: null, // Hide from tab bar
-          headerTitle: "Browse Books",
+          headerTitle: t("tabs.browseBooks"),
         }}
       />
 
@@ -128,7 +130,7 @@ function AppTabs() {
         name="Borrowed/index"
         options={{
           href: null, // Hide from tab bar
-          headerTitle: "Borrowed Books",
+          headerTitle: t("tabs.borrowedBooks"),
           headerRight: () => <NotificationBell />,
         }}
       />
@@ -137,7 +139,7 @@ function AppTabs() {
         name="Lending/index"
         options={{
           href: null, // Hide from tab bar
-          headerTitle: "Lending Books",
+          headerTitle: t("tabs.lendingBooks"),
           headerRight: () => <NotificationBell />,
         }}
       />
@@ -146,7 +148,7 @@ function AppTabs() {
         name="MyReviews/index"
         options={{
           href: null, // Hide from tab bar
-          headerTitle: "My Reviews",
+          headerTitle: t("tabs.myReviews"),
         }}
       />
 
@@ -154,7 +156,7 @@ function AppTabs() {
         name="ReadingList/index"
         options={{
           href: null, // Hide from tab bar
-          headerTitle: "Reading List",
+          headerTitle: t("tabs.readingList"),
         }}
       />
     </Tabs>

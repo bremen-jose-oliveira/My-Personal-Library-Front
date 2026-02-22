@@ -49,6 +49,7 @@ export default {
     plugins: [
       "expo-router",
       "expo-secure-store",
+      ["expo-localization", { supportedLocales: ["en", "pt-PT", "de"] }],
       [
         "@react-native-google-signin/google-signin",
         {

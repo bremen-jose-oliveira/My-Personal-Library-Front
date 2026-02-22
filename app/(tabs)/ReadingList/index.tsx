@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ImageBackground,
   ActivityIndicator,
   Image,
+  Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
@@ -15,16 +16,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BookStatus } from "@/Interfaces/userBookStatus";
 import type { UserBookStatus } from "@/Interfaces/userBookStatus";
 import { fetchCoverImage } from "@/utils/fetchBookData";
-import { Platform } from "react-native";
-import { useCallback } from "react";
-
-const statusLabels: Record<BookStatus, string> = {
-  [BookStatus.NOT_READ]: "Not Read",
-  [BookStatus.READING]: "Reading",
-  [BookStatus.READ]: "Finished",
-};
+import { useTranslation } from "react-i18next";
 
 export default function ReadingListScreen() {
+  const { t } = useTranslation();
+  const statusLabels: Record<BookStatus, string> = {
+    [BookStatus.NOT_READ]: t("books.notRead"),
+    [BookStatus.READING]: t("books.reading"),
+    [BookStatus.READ]: t("books.read"),
+  };
   const [bookStatuses, setBookStatuses] = useState<UserBookStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -153,7 +153,7 @@ export default function ReadingListScreen() {
             }}
           >
             <Text style={{ color: "#666", fontSize: 10, textAlign: "center" }}>
-              No Cover
+              {t("books.noCover")}
             </Text>
           </View>
         )}
@@ -226,7 +226,7 @@ export default function ReadingListScreen() {
                 marginBottom: 12,
               }}
             >
-              Reading List
+              {t("readingList.title")}
             </Text>
             <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
               <TouchableOpacity
@@ -239,7 +239,7 @@ export default function ReadingListScreen() {
                     selectedFilter === "ALL" ? "#bf471b" : "rgba(0,0,0,0.4)",
                 }}
               >
-                <Text style={{ color: "#fff", fontSize: 12 }}>All</Text>
+                <Text style={{ color: "#fff", fontSize: 12 }}>{t("readingListFilter.all")}</Text>
               </TouchableOpacity>
               {Object.values(BookStatus).map((status) => (
                 <TouchableOpacity
@@ -292,10 +292,10 @@ export default function ReadingListScreen() {
                 >
                   <Text style={{ color: "#f0dcc7", fontSize: 16 }}>
                     {selectedFilter === "ALL"
-                      ? "No books in your reading list yet."
-                      : `No books with status "${
-                          statusLabels[selectedFilter as BookStatus]
-                        }".`}
+                      ? t("readingList.empty")
+                      : t("readingList.emptyFiltered", {
+                          status: statusLabels[selectedFilter as BookStatus],
+                        })}
                   </Text>
                 </View>
               }

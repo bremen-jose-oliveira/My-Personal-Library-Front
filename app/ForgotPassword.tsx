@@ -1,13 +1,13 @@
 import InputField from "@/components/inputField";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
-import { AuthContext } from "@/utils/Context/AuthContext";
 import { Link, router, Stack } from "expo-router";
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { Alert, TouchableOpacity, View, Text } from "react-native";
 import Ioicons from "react-native-vector-icons/Ionicons";
+import { useTranslation } from "react-i18next";
 
 export default function ForgotPassword() {
-
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
 
   const handleForgotPassword = async () => {
@@ -19,10 +19,10 @@ export default function ForgotPassword() {
         });
 
         const data = await response.json();  
-        Alert.alert("Check your email", data.message);
+        Alert.alert(t("forgotPassword.checkEmail"), data.message);
     } catch (error) {
       
-        Alert.alert("Error", "Failed to send reset email");
+        Alert.alert(t("common.error"), t("forgotPassword.failedToSend"));
     }
 };
 
@@ -30,7 +30,7 @@ export default function ForgotPassword() {
     <>
       <Stack.Screen
         options={{
-          headerTitle: "Sign Up",
+          headerTitle: t("forgotPassword.title"),
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>
               <Ioicons name="close" size={24} color="black" />
@@ -41,15 +41,13 @@ export default function ForgotPassword() {
 
       <View className="flex-1 justify-center items-center px-5 bg-gray-100">
         <Text className="text-2xl font-semibold tracking-wide text-black mb-12">
-          Reset Password
+          {t("forgotPassword.title")}
         </Text>
-
-
 
         <InputField
           value={email}
           onChangeText={setEmail}
-          placeholder="Enter Email..."
+          placeholder={t("forgotPassword.enterEmail")}
           placeholderTextColor="gray"
           autoCapitalize="none"
         />
@@ -60,7 +58,7 @@ export default function ForgotPassword() {
        
           onPress={handleForgotPassword}
         >
-          <Text className="text-white text-lg font-semibold">Reset</Text>
+          <Text className="text-white text-lg font-semibold">{t("forgotPassword.resetButton")}</Text>
         </TouchableOpacity>
 
       

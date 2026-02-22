@@ -1,6 +1,8 @@
 import "react-native-gesture-handler";
+import "@/utils/i18n";
 import React, { useEffect, useState } from "react";
 import { Stack, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { AuthProvider } from "@/utils/Context/AuthContext";
 import { BookProvider } from "@/utils/Context/BookContext";
 import "../global.css";
@@ -13,6 +15,7 @@ import { NotificationProvider } from "@/utils/Context/NotificationContext";
 
 export default function Layout() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [isMounted, setIsMounted] = useState(false); // Track if layout is mounted
 
   useEffect(() => {
@@ -80,15 +83,15 @@ export default function Layout() {
                     />
                     <Stack.Screen
                       name="PrivacyPolicy"
-                      options={{ headerTitle: "Privacy Policy" }}
+                      options={{ headerTitle: t("privacy.title") }}
                     />
                     <Stack.Screen
                       name="BookDetails/[id]"
-                      options={{ headerTitle: "Book Details" }}
+                      options={{ headerTitle: t("books.bookDetails") }}
                     />
                     <Stack.Screen
                       name="Notifications/index"
-                      options={{ headerTitle: "Notifications" }}
+                      options={{ headerTitle: t("notifications.title") }}
                     />
                   </Stack>
                 </BookProvider>

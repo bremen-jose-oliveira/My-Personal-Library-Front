@@ -13,8 +13,10 @@ import {
 } from "react-native";
 import { Link, useRouter } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 export default function DisplayBooks() {
+  const { t } = useTranslation();
   const { books, fetchCurrentUserBooks } = useBookContext();
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
@@ -26,13 +28,13 @@ export default function DisplayBooks() {
     } catch (error) {
       console.error("Error refreshing books:", error);
     }
-    setRefreshing(false); // Ensure this happens last
+    setRefreshing(false);
   };
 
   const statusMap: { [key: string]: string } = {
-    NOT_READ: "Not read",
-    READING: "Reading",
-    READ: "Finished",
+    NOT_READ: t("books.notRead"),
+    READING: t("books.reading"),
+    READ: t("books.read"),
   };
 
   return (
@@ -123,7 +125,7 @@ export default function DisplayBooks() {
                   </Text>
                   {book.readingStatus && (
                     <Text style={{ color: "#cbd5f5", fontSize: 12 }}>
-                      Status:{" "}
+                      {t("books.status")}:{" "}
                       {statusMap[book.readingStatus] ?? book.readingStatus}
                     </Text>
                   )}
@@ -135,8 +137,15 @@ export default function DisplayBooks() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           keyboardShouldPersistTaps="handled"
+          ListEmptyComponent={
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingVertical: 40 }}>
+              <Text style={{ color: "#f0dcc7", fontSize: 16, marginBottom: 8 }}>{t("displayBooks.noBooks")}</Text>
+              <TouchableOpacity onPress={() => router.push("/(tabs)/Library/AddBookForm")}>
+                <Text style={{ color: "#bf471b", fontSize: 14 }}>{t("displayBooks.addFirst")}</Text>
+              </TouchableOpacity>
+            </View>
+          }
         />
-        
         {/* Floating Action Button */}
         <TouchableOpacity
           onPress={() => router.push("/(tabs)/Library/AddBookForm")}

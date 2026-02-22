@@ -14,17 +14,19 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { useExchangeContext } from "@/utils/Context/ExchangeContext";
 import { ExchangeStatus } from "@/Interfaces/exchange";
-
-const statusLabels: Record<ExchangeStatus, string> = {
-  [ExchangeStatus.REQUESTED]: "Pending",
-  [ExchangeStatus.ACCEPTED]: "Active",
-  [ExchangeStatus.REJECTED]: "Rejected",
-  [ExchangeStatus.RETURNED]: "Returned",
-};
+import { useTranslation } from "react-i18next";
 
 export default function LendingScreen() {
+  const { t } = useTranslation();
   const { lendingBooks, loading, refreshLending, updateExchangeStatus } =
     useExchangeContext();
+
+  const statusLabels: Record<ExchangeStatus, string> = {
+    [ExchangeStatus.REQUESTED]: t("borrowed.pending"),
+    [ExchangeStatus.ACCEPTED]: t("borrowed.active"),
+    [ExchangeStatus.REJECTED]: t("borrowed.rejected"),
+    [ExchangeStatus.RETURNED]: t("borrowed.returned"),
+  };
   const [processing, setProcessing] = useState<number | null>(null);
   const [localLoading, setLocalLoading] = useState(false);
 
@@ -41,7 +43,7 @@ export default function LendingScreen() {
     setProcessing(exchangeId);
     try {
       await updateExchangeStatus(exchangeId, ExchangeStatus.ACCEPTED);
-      Alert.alert("Success", "Exchange request accepted!");
+      Alert.alert(t("common.success"), t("lending.exchangeAccepted"));
       await refreshLending();
     } catch (error: any) {
       Alert.alert("Error", error.message || "Failed to accept exchange request");
@@ -54,7 +56,7 @@ export default function LendingScreen() {
     setProcessing(exchangeId);
     try {
       await updateExchangeStatus(exchangeId, ExchangeStatus.REJECTED);
-      Alert.alert("Success", "Exchange request rejected.");
+      Alert.alert(t("common.success"), t("lending.exchangeRejected"));
       await refreshLending();
     } catch (error: any) {
       Alert.alert("Error", error.message || "Failed to reject exchange request");
@@ -67,7 +69,7 @@ export default function LendingScreen() {
     setProcessing(exchangeId);
     try {
       await updateExchangeStatus(exchangeId, ExchangeStatus.RETURNED);
-      Alert.alert("Success", "Book marked as returned!");
+      Alert.alert(t("common.success"), t("lending.bookReturned"));
       await refreshLending();
     } catch (error: any) {
       Alert.alert("Error", error.message || "Failed to mark book as returned");
@@ -101,11 +103,11 @@ export default function LendingScreen() {
         colors={["transparent", "rgba(255,255,255,0.9)"]}
         style={styles.gradientOverlay}
       >
-        <Text style={styles.header}>Lending Books</Text>
+        <Text style={styles.header}>{t("tabs.lendingBooks")}</Text>
         {(loading || localLoading) && lendingBooks.length === 0 ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#bf471b" />
-            <Text style={styles.loadingText}>Loading lending books...</Text>
+            <Text style={styles.loadingText}>{t("lending.loading")}</Text>
           </View>
         ) : (
           <FlatList
@@ -139,31 +141,31 @@ export default function LendingScreen() {
                 )}
                 <View style={styles.cardContent}>
                   <Text style={styles.bookTitle}>
-                    {item.book?.title ?? "Unknown book"}
+                    {item.book?.title ?? t("borrowed.unknownBook")}
                   </Text>
                   <Text style={styles.detailText}>
-                    <Text style={styles.label}>Author:</Text>{" "}
-                    {item.book?.author ?? "Unknown"}
+                    <Text style={styles.label}>{t("books.author")}:</Text>{" "}
+                    {item.book?.author ?? t("common.unknown")}
                   </Text>
                   <Text style={styles.detailText}>
-                    <Text style={styles.label}>To:</Text>{" "}
-                    {item.borrower?.username ?? "Unknown"}
+                    <Text style={styles.label}>{t("lending.to")}:</Text>{" "}
+                    {item.borrower?.username ?? t("common.unknown")}
                   </Text>
                   <Text style={styles.detailText}>
-                    <Text style={styles.label}>Status:</Text>{" "}
+                    <Text style={styles.label}>{t("borrowed.status")}:</Text>{" "}
                     <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
                       {statusLabels[item.status]}
                     </Text>
                   </Text>
                   {item.exchangeDate && (
                     <Text style={styles.detailText}>
-                      <Text style={styles.label}>Lent on:</Text>{" "}
+                      <Text style={styles.label}>{t("lending.lentOn")}:</Text>{" "}
                       {new Date(item.exchangeDate).toLocaleDateString()}
                     </Text>
                   )}
                   {item.createdAt && (
                     <Text style={styles.detailText}>
-                      <Text style={styles.label}>Requested on:</Text>{" "}
+                      <Text style={styles.label}>{t("borrowed.requestedOn")}</Text>{" "}
                       {new Date(item.createdAt).toLocaleDateString()}
                     </Text>
                   )}
@@ -175,7 +177,7 @@ export default function LendingScreen() {
                         disabled={isProcessing}
                       >
                         <Text style={styles.buttonText}>
-                          {isProcessing ? "Processing..." : "Accept"}
+                          {isProcessing ? t("common.processing") : t("lending.accept")}
                         </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
@@ -184,7 +186,7 @@ export default function LendingScreen() {
                         disabled={isProcessing}
                       >
                         <Text style={styles.buttonText}>
-                          {isProcessing ? "Processing..." : "Reject"}
+                          {isProcessing ? t("common.processing") : t("lending.reject")}
                         </Text>
                       </TouchableOpacity>
                     </View>
@@ -196,7 +198,7 @@ export default function LendingScreen() {
                       disabled={isProcessing}
                     >
                       <Text style={styles.buttonText}>
-                        {isProcessing ? "Processing..." : "Mark as Returned"}
+                        {isProcessing ? t("common.processing") : t("books.markAsReturned")}
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -208,7 +210,7 @@ export default function LendingScreen() {
             !loading && !localLoading ? (
               <View style={styles.emptyContainer}>
                 <Text style={styles.emptyText}>
-                  No books being lent out yet.
+                  {t("lending.noLendingYet")}
                 </Text>
               </View>
             ) : null

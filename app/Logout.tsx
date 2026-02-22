@@ -5,10 +5,12 @@ import "../global.css";
 import { TouchableOpacity, View, Text, ImageBackground } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useContext } from "react";
+import { useTranslation } from "react-i18next";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
 import { AuthContext } from "@/utils/Context/AuthContext";
 
 export default function LogoutScreen() {
+  const { t } = useTranslation();
   const authContext = useContext(AuthContext);
   const { isLoggedIn, loading } = authContext || {
     isLoggedIn: false,
@@ -124,11 +126,11 @@ export default function LogoutScreen() {
                   textAlign: "center",
                 }}
               >
-                Forgot Passord?{" "}
+                {t("auth.forgotPassword")}{" "}
                 <Link href="/ForgotPassword" asChild>
                   <TouchableOpacity>
                     <Text style={{ color: "#FF6347", fontWeight: "600" }}>
-                      ResetPassword
+                      {t("auth.resetPassword")}
                     </Text>
                   </TouchableOpacity>
                 </Link>

@@ -16,8 +16,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useReviewContext } from "@/utils/Context/ReviewContext";
 import { router } from "expo-router";
 import type { Review } from "@/Interfaces/review";
+import { useTranslation } from "react-i18next";
 
 export default function MyReviewsScreen() {
+  const { t } = useTranslation();
   const { myReviews, fetchMyReviews, deleteReview, updateReview, loading } = useReviewContext();
   const [refreshing, setRefreshing] = useState(false);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
@@ -47,26 +49,26 @@ export default function MyReviewsScreen() {
         rating: parseInt(editRating) || 5,
         comment: editComment,
       });
-      Alert.alert("Success", "Review updated successfully!");
+      Alert.alert(t("common.success"), t("myReviews.reviewUpdated"));
       setEditingReview(null);
       await fetchMyReviews();
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to update review");
+      Alert.alert(t("common.error"), error.message || t("myReviews.failedToUpdate"));
     }
   };
 
   const handleDeleteReview = async (reviewId: number) => {
-    Alert.alert("Delete Review", "Are you sure you want to delete this review?", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("myReviews.deleteReview"), t("myReviews.deleteConfirm"), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: t("common.delete"),
         style: "destructive",
         onPress: async () => {
           try {
             await deleteReview(reviewId);
             await fetchMyReviews();
           } catch (error: any) {
-            Alert.alert("Error", error.message || "Failed to delete review");
+            Alert.alert(t("common.error"), error.message || t("myReviews.failedToDelete"));
           }
         },
       },
@@ -80,7 +82,7 @@ export default function MyReviewsScreen() {
         style={{ marginBottom: 8 }}
       >
         <Text style={{ color: "#bf471b", fontSize: 16, fontWeight: "600" }}>
-          View Book →
+          {t("myReviews.viewBook")}
         </Text>
       </TouchableOpacity>
       <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
@@ -97,13 +99,13 @@ export default function MyReviewsScreen() {
           onPress={() => handleEditReview(item)}
           style={[styles.actionButton, styles.editButton]}
         >
-          <Text style={styles.buttonText}>Edit</Text>
+          <Text style={styles.buttonText}>{t("common.edit")}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => handleDeleteReview(item.id)}
           style={[styles.actionButton, styles.deleteButton]}
         >
-          <Text style={styles.buttonText}>Delete</Text>
+          <Text style={styles.buttonText}>{t("common.delete")}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -151,7 +153,7 @@ export default function MyReviewsScreen() {
                 }}
               >
                 <Text style={{ color: "#f0dcc7", fontSize: 16 }}>
-                  You haven't written any reviews yet.
+                  {t("myReviews.empty")}
                 </Text>
               </View>
             ) : (
@@ -170,8 +172,8 @@ export default function MyReviewsScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Edit Review</Text>
-            <Text style={styles.modalLabel}>Rating (1-5):</Text>
+            <Text style={styles.modalTitle}>{t("myReviews.editReview")}</Text>
+            <Text style={styles.modalLabel}>{t("myReviews.ratingLabel")}</Text>
             <TextInput
               value={editRating}
               onChangeText={setEditRating}
@@ -180,7 +182,7 @@ export default function MyReviewsScreen() {
               style={styles.modalInput}
               placeholderTextColor="#d1d5db"
             />
-            <Text style={styles.modalLabel}>Comment:</Text>
+            <Text style={styles.modalLabel}>{t("myReviews.comment")}</Text>
             <TextInput
               value={editComment}
               onChangeText={setEditComment}
@@ -194,13 +196,13 @@ export default function MyReviewsScreen() {
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setEditingReview(null)}
               >
-                <Text style={styles.modalButtonText}>Cancel</Text>
+                <Text style={styles.modalButtonText}>{t("common.cancel")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.saveButton]}
                 onPress={handleSaveEdit}
               >
-                <Text style={styles.modalButtonText}>Save</Text>
+                <Text style={styles.modalButtonText}>{t("myReviews.save")}</Text>
               </TouchableOpacity>
             </View>
           </View>

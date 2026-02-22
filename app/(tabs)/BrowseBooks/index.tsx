@@ -14,8 +14,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
 import { useBookContext } from "@/utils/Context/BookContext";
 import Book from "@/Interfaces/book";
+import { useTranslation } from "react-i18next";
 
 export default function BrowseBooksScreen() {
+  const { t } = useTranslation();
   const { fetchAllBooks } = useBookContext();
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
@@ -132,7 +134,7 @@ export default function BrowseBooksScreen() {
                           textAlign: "center",
                         }}
                       >
-                        No Image Available
+                        {t("books.noCover")}
                       </Text>
                     </View>
                   )}

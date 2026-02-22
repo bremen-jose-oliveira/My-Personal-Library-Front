@@ -13,9 +13,18 @@ import {
   Linking,
 } from "react-native";
 import { getToken, removeToken } from "@/utils/Context/storageUtils";
+import { useTranslation } from "react-i18next";
+
+const LANGUAGES = [
+  { code: "en", labelKey: "account.english" as const },
+  { code: "pt-PT", labelKey: "account.portuguese" as const },
+  { code: "de", labelKey: "account.german" as const },
+] as const;
 
 const AccountSettings = () => {
+  const { t, i18n } = useTranslation();
   const { logout } = useContext(AuthContext);
+  const currentLang = i18n.language?.startsWith("pt") ? "pt-PT" : i18n.language?.startsWith("de") ? "de" : "en";
   const { currentUser, refreshCurrentUser, logoutUserLocally } =
     useUserContext();
 
@@ -30,7 +39,7 @@ const AccountSettings = () => {
   const handleUpdateUsername = async () => {
     try {
       if (!username.trim()) {
-        Alert.alert("Error", "Username cannot be empty");
+        Alert.alert(t("common.error"), t("account.usernameCannotBeEmpty"));
         return;
       }
 
@@ -57,18 +66,18 @@ const AccountSettings = () => {
         throw new Error(responseData.message || "Failed to update username");
       }
 
-      Alert.alert("Success", "Username updated successfully!");
+      Alert.alert(t("common.success"), t("account.usernameUpdated"));
       await refreshCurrentUser();
       setUsername(""); // Clear the input field
     } catch (error: any) {
       console.error("Error updating username:", error);
-      Alert.alert("Error", error.message || "Something went wrong.");
+      Alert.alert(t("common.error"), error.message || t("account.somethingWentWrong"));
     }
   };
 
   const handleUpdatePassword = async () => {
     if (password !== confirmPassword) {
-      setPasswordError("Passwords do not match");
+      setPasswordError(t("account.passwordsDoNotMatch"));
       return;
     }
 
@@ -99,10 +108,10 @@ const AccountSettings = () => {
         throw new Error(responseData.message || "Failed to update password");
       }
 
-      Alert.alert("Success", "Password updated successfully!");
+      Alert.alert(t("common.success"), t("account.passwordUpdated"));
     } catch (error: any) {
       console.error("Error updating password:", error);
-      Alert.alert("Error", error.message || "Something went wrong.");
+      Alert.alert(t("common.error"), error.message || t("account.somethingWentWrong"));
     }
   };
 
@@ -133,7 +142,7 @@ const AccountSettings = () => {
         }
       } else {
         Alert.alert(
-          "⚠️ Delete Account",
+          "⚠️ " + t("account.deleteAccountConfirmTitle"),
           "This action is PERMANENT and cannot be undone!\n\n" +
             "Deleting your account will permanently remove:\n" +
             "• All your books\n" +
@@ -148,7 +157,7 @@ const AccountSettings = () => {
               style: "cancel",
             },
             {
-              text: "Delete",
+              text: t("common.delete"),
               style: "destructive",
               onPress: () => {
                 Alert.alert(
@@ -161,7 +170,7 @@ const AccountSettings = () => {
                       style: "cancel",
                     },
                     {
-                      text: "Yes, Delete Forever",
+                      text: t("account.yesDeleteForever"),
                       style: "destructive",
                       onPress: performDelete,
                     },
@@ -211,17 +220,17 @@ const AccountSettings = () => {
             );
           } else {
             Alert.alert(
-              "Account Deleted",
+              t("account.accountDeleted"),
               "Your account has been permanently deleted. We're sorry to see you go!"
             );
           }
         }, 500);
       } catch (error: any) {
         console.error("Error deleting account:", error);
-        Alert.alert(
-          "Error",
-          error.message || "Failed to delete account. Please try again."
-        );
+Alert.alert(
+              t("common.error"),
+              error.message || t("account.failedToDeleteAccount")
+            );
       }
     };
 
@@ -232,7 +241,7 @@ const AccountSettings = () => {
     <>
       <Stack.Screen
         options={{
-          headerTitle: "AccountSettings",
+          headerTitle: t("tabs.accountSettings"),
         }}
       />
 
@@ -251,6 +260,57 @@ const AccountSettings = () => {
           contentContainerStyle={{ paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
+          {/* Language */}
+          <View
+            style={{
+              backgroundColor: "#fff",
+              borderRadius: 8,
+              padding: 16,
+              marginBottom: 24,
+              width: "100%",
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.1,
+              shadowRadius: 2,
+              elevation: 2,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 16,
+                fontWeight: "600",
+                color: "#6b7280",
+                marginBottom: 12,
+              }}
+            >
+              {t("account.language")}
+            </Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+              {LANGUAGES.map(({ code, labelKey }) => (
+                <TouchableOpacity
+                  key={code}
+                  onPress={() => i18n.changeLanguage(code)}
+                  style={{
+                    paddingVertical: 10,
+                    paddingHorizontal: 16,
+                    borderRadius: 8,
+                    backgroundColor: currentLang === code ? "#bf471b" : "#e5e7eb",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: currentLang === code ? "#fff" : "#374151",
+                      fontWeight: "600",
+                      fontSize: 14,
+                    }}
+                  >
+                    {t(labelKey)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
           {/* Current User Information */}
           <View
             style={{
@@ -274,7 +334,7 @@ const AccountSettings = () => {
                 marginBottom: 8,
               }}
             >
-              Current Account Information
+              {t("account.currentAccountInfo")}
             </Text>
             {currentUser ? (
               <>
@@ -287,7 +347,7 @@ const AccountSettings = () => {
                         marginBottom: 4,
                       }}
                     >
-                      Username
+                      {t("account.username")}
                     </Text>
                     <Text
                       style={{ fontSize: 18, fontWeight: "600", color: "#000" }}
@@ -305,7 +365,7 @@ const AccountSettings = () => {
                         marginBottom: 4,
                       }}
                     >
-                      Email
+                      {t("account.email")}
                     </Text>
                     <Text
                       style={{ fontSize: 18, fontWeight: "600", color: "#000" }}
@@ -317,7 +377,7 @@ const AccountSettings = () => {
               </>
             ) : (
               <Text style={{ fontSize: 14, color: "#9ca3af" }}>
-                Loading user information...
+                {t("account.loadingUserInfo")}
               </Text>
             )}
           </View>
@@ -333,13 +393,13 @@ const AccountSettings = () => {
               textAlign: "center",
             }}
           >
-            Change Username
+            {t("account.changeUsername")}
           </Text>
 
           <InputField
             value={username}
             onChangeText={setUsername}
-            placeholder="Enter a Username"
+            placeholder={t("account.enterUsername")}
             placeholderTextColor="gray"
             autoCapitalize="none"
           />
@@ -357,7 +417,7 @@ const AccountSettings = () => {
             onPress={handleUpdateUsername}
           >
             <Text style={{ color: "#fff", fontSize: 18, fontWeight: "600" }}>
-              Update Username
+              {t("account.updateUsername")}
             </Text>
           </TouchableOpacity>
 
@@ -372,20 +432,20 @@ const AccountSettings = () => {
               textAlign: "center",
             }}
           >
-            Change Password
+            {t("account.changePassword")}
           </Text>
           <InputField
             secureTextEntry={secureText}
             value={oldPassword}
             onChangeText={setOldPassword}
-            placeholder="Enter Old Password..."
+            placeholder={t("account.enterOldPassword")}
             placeholderTextColor="gray"
           />
           <InputField
             secureTextEntry={secureText}
             value={password}
             onChangeText={setPassword}
-            placeholder="Enter New Password..."
+            placeholder={t("account.enterNewPassword")}
             placeholderTextColor="gray"
           />
 
@@ -393,7 +453,7 @@ const AccountSettings = () => {
             secureTextEntry={secureText}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
-            placeholder="Confirm New Password..."
+            placeholder={t("account.confirmNewPassword")}
             placeholderTextColor="gray"
           />
           <TouchableOpacity onPress={() => setSecureText(!secureText)}>
@@ -405,7 +465,7 @@ const AccountSettings = () => {
                 fontSize: 14,
               }}
             >
-              {secureText ? "Show Password" : "Hide Password"}
+              {secureText ? t("auth.showPassword") : t("auth.hidePassword")}
             </Text>
           </TouchableOpacity>
 
@@ -436,7 +496,7 @@ const AccountSettings = () => {
             onPress={handleUpdatePassword}
           >
             <Text style={{ color: "#fff", fontSize: 18, fontWeight: "600" }}>
-              Update Password
+              {t("account.updatePassword")}
             </Text>
           </TouchableOpacity>
 
@@ -460,7 +520,7 @@ const AccountSettings = () => {
                 textAlign: "center",
               }}
             >
-              Legal & Support
+              {t("account.legalAndSupport")}
             </Text>
 
             {/* Privacy Policy Link */}
@@ -481,7 +541,7 @@ const AccountSettings = () => {
               }}
             >
               <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
-                📄 Privacy Policy
+                📄 {t("account.privacyPolicyLink")}
               </Text>
             </TouchableOpacity>
 
@@ -496,8 +556,7 @@ const AccountSettings = () => {
                 lineHeight: 20,
               }}
             >
-              If you enjoy using My Library, consider supporting its
-              development. Every contribution helps the server to stay online!
+              {t("account.supportMessage")}
             </Text>
             <TouchableOpacity
               style={{
@@ -521,18 +580,18 @@ const AccountSettings = () => {
                     await Linking.openURL(paypalUrl);
                   } else {
                     Alert.alert(
-                      "Error",
-                      "Unable to open PayPal. Please check your PayPal link."
+                      t("common.error"),
+                      t("account.unableToOpenPayPal")
                     );
                   }
                 } catch (error) {
                   console.error("Error opening PayPal:", error);
-                  Alert.alert("Error", "Unable to open PayPal link.");
+                  Alert.alert(t("common.error"), t("account.unableToOpenPayPal"));
                 }
               }}
             >
               <Text style={{ color: "#fff", fontSize: 18, fontWeight: "600" }}>
-                💙 Support with PayPal
+                💙 {t("account.supportPayPal")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -586,7 +645,7 @@ const AccountSettings = () => {
               onPress={handleDeleteAccount}
             >
               <Text style={{ color: "#fff", fontSize: 18, fontWeight: "600" }}>
-                Delete Account
+                {t("account.deleteAccount")}
               </Text>
             </TouchableOpacity>
           </View>

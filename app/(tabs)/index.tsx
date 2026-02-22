@@ -16,8 +16,10 @@ import {
   Pressable,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 const HomeScreen = () => {
+  const { t } = useTranslation();
   const authContext = useContext(AuthContext);
   const router = useRouter();
   const { isLoggedIn } = authContext || { isLoggedIn: false };
@@ -51,8 +53,8 @@ const HomeScreen = () => {
 
   // Generate welcome message with username if available
   const welcomeMessage = currentUser?.username
-    ? `Welcome back, ${currentUser.username}!`
-    : "Welcome back!";
+    ? t("auth.welcomeBackName", { username: currentUser.username })
+    : t("auth.welcomeBack");
 
   const onRefresh = async () => {
     if (!isLoggedIn) {
@@ -213,7 +215,7 @@ const HomeScreen = () => {
               {welcomeMessage}
             </Text>
             <Text style={{ fontSize: 16, color: "#8b4513" }}>
-              Here's your library overview
+              {t("home.libraryOverview")}
             </Text>
           </View>
 
@@ -228,28 +230,28 @@ const HomeScreen = () => {
           >
             <StatCard
               icon="bookshelf"
-              title="My Books"
+              title={t("home.myBooks")}
               value={numberOfBooks}
               color="#bf471b"
               onPress={() => router.push("/(tabs)/Library/DisplayBooks")}
             />
             <StatCard
               icon="account-group"
-              title="Friends"
+              title={t("home.friends")}
               value={numberOfFriends}
               color="#2196F3"
               onPress={() => router.push("/(tabs)/Friends/FriendList")}
             />
             <StatCard
               icon="book-arrow-down"
-              title="Borrowed"
+              title={t("home.borrowed")}
               value={numberOfBorrowed}
               color="#4CAF50"
               onPress={() => router.push("/(tabs)/Borrowed")}
             />
             <StatCard
               icon="book-arrow-up"
-              title="Lending"
+              title={t("home.lending")}
               value={numberOfLending}
               color="#FF9800"
               onPress={() => router.push("/(tabs)/Lending")}
@@ -266,7 +268,7 @@ const HomeScreen = () => {
                 marginBottom: 16,
               }}
             >
-              Quick Actions
+              {t("home.quickActions")}
             </Text>
             <View
               style={{
@@ -277,25 +279,25 @@ const HomeScreen = () => {
             >
               <QuickActionButton
                 icon="book-plus-multiple"
-                label="Add Book"
+                label={t("home.addBook")}
                 color="#bf471b"
                 onPress={() => router.push("/(tabs)/Library/AddBookForm")}
               />
               <QuickActionButton
                 icon="book-search"
-                label="Browse Books"
+                label={t("home.browseBooks")}
                 color="#2196F3"
                 onPress={() => router.push("/(tabs)/BrowseBooks")}
               />
               <QuickActionButton
                 icon="book-open-variant"
-                label="Reading List"
+                label={t("home.readingList")}
                 color="#4CAF50"
                 onPress={() => router.push("/(tabs)/ReadingList")}
               />
               <QuickActionButton
                 icon="star-outline"
-                label="My Reviews"
+                label={t("home.myReviews")}
                 color="#FF9800"
                 onPress={() => router.push("/(tabs)/MyReviews")}
               />

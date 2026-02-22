@@ -2,12 +2,10 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, Button, Alert, TouchableOpacity } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import InputField from "@/components/inputField";
-
-
-
-
+import { useTranslation } from "react-i18next";
 
 export default function ResetPassword() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { token } = useLocalSearchParams(); // Get token from deep link
   const [password, setPassword] = useState("");
@@ -22,14 +20,14 @@ export default function ResetPassword() {
 
   useEffect(() => {
     if (!token) {
-      Alert.alert("Error", "Invalid password reset link.");
+      Alert.alert(t("common.error"), t("resetPassword.invalidLink"));
       router.push("/");
     }
   }, [token]);
 
   const handleResetPassword = async () => {
     if (password !== confirmPassword) {
-      setPasswordError("Passwords do not match");
+      setPasswordError(t("account.passwordsDoNotMatch"));
       return;
   }
 
@@ -42,12 +40,12 @@ export default function ResetPassword() {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Reset failed");
+      if (!response.ok) throw new Error(data.error || t("resetPassword.resetFailed"));
 
-      Alert.alert("Success", "Password updated successfully!");
+      Alert.alert(t("common.success"), t("account.passwordUpdated"));
       router.push("/");
     } catch (error:any) {
-      Alert.alert("Error", error.message);
+      Alert.alert(t("common.error"), error.message);
     }
   };
 
@@ -55,21 +53,21 @@ export default function ResetPassword() {
     <>
     <Stack.Screen
       options={{
-       headerTitle: "Reset Password",
+       headerTitle: t("resetPassword.title"),
       }}
     />
 
     <View className="flex-1 justify-center items-center px-5 bg-gray-100">
 
 <Text className="text-2xl font-semibold tracking-wide text-black mb-12">
-       Update Password
+       {t("resetPassword.updatePasswordTitle")}
       </Text>
 
          <InputField
      secureTextEntry={secureText}
       value={password}
         onChangeText={setPassword}
-        placeholder="Enter New Password..."
+        placeholder={t("account.enterNewPassword")}
         placeholderTextColor="gray"
       />
 
@@ -78,7 +76,7 @@ export default function ResetPassword() {
        secureTextEntry={secureText}
        value={confirmPassword}
         onChangeText={setConfirmPassword}
-        placeholder="Confirm New Password..."
+        placeholder={t("account.confirmNewPassword")}
         placeholderTextColor="gray"
       />
       <TouchableOpacity onPress={() => setSecureText(!secureText)}>
@@ -89,7 +87,7 @@ export default function ResetPassword() {
             marginBottom: 20,
           }}
         >
-          {secureText ? "Show Password" : "Hide Password"}
+          {secureText ? t("auth.showPassword") : t("auth.hidePassword")}
         </Text>
         
       </TouchableOpacity>
@@ -102,7 +100,7 @@ export default function ResetPassword() {
 style={{ backgroundColor: "#bf471b", alignItems: "center", borderRadius: 5, alignSelf: "stretch", paddingVertical: 14, paddingHorizontal: 18, marginBottom: 30 }}
 onPress={handleResetPassword}
 >
-<Text className="text-white text-lg font-semibold">Update Password</Text>
+<Text className="text-white text-lg font-semibold">{t("resetPassword.updatePasswordTitle")}</Text>
 </TouchableOpacity>
 
  

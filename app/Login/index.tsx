@@ -6,8 +6,10 @@ import Ioicons from "react-native-vector-icons/Ionicons";
 import InputField from "@/components/inputField";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 export default function Login() {
+  const { t } = useTranslation();
   const { login } = useContext(AuthContext);
   const [secureText, setSecureText] = useState(true);
   const [email, setEmail] = useState("");
@@ -16,7 +18,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Please enter both email and password.");
+      Alert.alert(t("common.error"), t("auth.pleaseEnterEmailPassword"));
       return;
     }
 
@@ -37,7 +39,7 @@ export default function Login() {
     <>
       <Stack.Screen
         options={{
-          headerTitle: "Sign Up",
+          headerTitle: t("auth.register"),
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>
               <Ioicons name="close" size={24} color="black" />
@@ -48,13 +50,13 @@ export default function Login() {
 
       <View className="flex-1 justify-center items-center px-5 bg-gray-100">
         <Text className="text-2xl font-semibold tracking-wide text-black mb-12">
-          Sign in your Account
+          {t("auth.signInAccount")}
         </Text>
 
         <InputField
           value={email}
           onChangeText={setEmail}
-          placeholder="Enter Email..."
+          placeholder={t("auth.enterEmail")}
           placeholderTextColor="gray"
           autoCapitalize="none"
         />
@@ -63,7 +65,7 @@ export default function Login() {
           secureTextEntry={secureText}
           value={password}
           onChangeText={setPassword}
-          placeholder="Enter Password..."
+          placeholder={t("auth.enterPassword")}
           placeholderTextColor="gray"
         />
         <TouchableOpacity onPress={() => setSecureText(!secureText)}>
@@ -74,7 +76,7 @@ export default function Login() {
               marginBottom: 20,
             }}
           >
-            {secureText ? "Show Password" : "Hide Password"}
+            {secureText ? t("auth.showPassword") : t("auth.hidePassword")}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity

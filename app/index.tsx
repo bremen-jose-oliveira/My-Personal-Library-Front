@@ -14,6 +14,7 @@ import React, { useContext } from "react";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
 import { useEffect } from "react";
 import { AuthContext } from "@/utils/Context/AuthContext";
+import { useTranslation } from "react-i18next";
 
 // Only import dev-client in development builds (prevents TestFlight crashes)
 if (__DEV__) {
@@ -21,6 +22,7 @@ if (__DEV__) {
 }
 
 export default function WelcomeScreen() {
+  const { t } = useTranslation();
   const authContext = useContext(AuthContext);
   const router = useRouter();
   const segments = useSegments();
@@ -105,7 +107,7 @@ export default function WelcomeScreen() {
         }}
       >
         <ActivityIndicator size="large" color="#FF6347" />
-        <Text style={{ marginTop: 10, color: "#666" }}>Loading...</Text>
+        <Text style={{ marginTop: 10, color: "#666" }}>{t("common.loading")}</Text>
       </View>
     );
   }
@@ -185,7 +187,7 @@ export default function WelcomeScreen() {
                   marginBottom: 5,
                 }}
               >
-                My Library
+                {t("tabs.myLibrary")}
               </Text>
               <Text
                 style={{
@@ -198,7 +200,7 @@ export default function WelcomeScreen() {
                   textAlign: "center",
                 }}
               >
-                Your Own Private Book Collection
+                {t("auth.tagline")}
               </Text>
 
               <SocialLoginButtons emailHref="/Register" />
@@ -212,11 +214,11 @@ export default function WelcomeScreen() {
                   textAlign: "center",
                 }}
               >
-                Have an Account?{" "}
+                {t("auth.haveAccount")}{" "}
                 <Link href="/Login" asChild>
                   <TouchableOpacity>
                     <Text style={{ color: "#FF6347", fontWeight: "600" }}>
-                      SignIn
+                      {t("auth.signIn")}
                     </Text>
                   </TouchableOpacity>
                 </Link>
@@ -231,11 +233,11 @@ export default function WelcomeScreen() {
                   textAlign: "center",
                 }}
               >
-                Forgot Password?{" "}
+                {t("auth.forgotPassword")}{" "}
                 <Link href="/ForgotPassword" asChild>
                   <TouchableOpacity>
                     <Text style={{ color: "#FF6347", fontWeight: "600" }}>
-                      ResetPassword
+                      {t("auth.resetPassword")}
                     </Text>
                   </TouchableOpacity>
                 </Link>

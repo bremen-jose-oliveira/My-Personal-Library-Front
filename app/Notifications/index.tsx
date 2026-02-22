@@ -14,6 +14,7 @@ import { useNotificationContext } from "@/utils/Context/NotificationContext";
 import { NotificationType } from "@/Interfaces/notification";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 const typeLabels: Record<NotificationType, string> = {
   [NotificationType.FRIEND_REQUEST]: "Friend Request",
@@ -36,6 +37,7 @@ const typeIcons: Record<NotificationType, string> = {
 };
 
 export default function NotificationsScreen() {
+  const { t } = useTranslation();
   const {
     notifications,
     unreadCount,
@@ -83,12 +85,12 @@ export default function NotificationsScreen() {
 
   const handleClearAll = () => {
     Alert.alert(
-      "Clear All Notifications",
-      "Are you sure you want to clear all notifications?",
+      t("notifications.clearAll"),
+      t("notifications.clearAllConfirm"),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("common.cancel"), style: "cancel" },
         {
-          text: "Clear",
+          text: t("common.clear"),
           style: "destructive",
           onPress: async () => {
             await clearAllNotifications();
@@ -113,7 +115,7 @@ export default function NotificationsScreen() {
         style={styles.gradientOverlay}
       >
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Notifications</Text>
+          <Text style={styles.headerTitle}>{t("notifications.title")}</Text>
           {unreadCount > 0 && (
             <TouchableOpacity
               onPress={async () => {
@@ -121,7 +123,7 @@ export default function NotificationsScreen() {
               }}
               style={styles.markAllButton}
             >
-              <Text style={styles.markAllText}>Mark all as read</Text>
+              <Text style={styles.markAllText}>{t("notifications.markAllAsRead")}</Text>
             </TouchableOpacity>
           )}
           {notifications.length > 0 && (
@@ -129,7 +131,7 @@ export default function NotificationsScreen() {
               onPress={handleClearAll}
               style={styles.clearAllButton}
             >
-              <Text style={styles.clearAllText}>Clear all</Text>
+              <Text style={styles.clearAllText}>{t("notifications.clearAll")}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -183,7 +185,7 @@ export default function NotificationsScreen() {
                 size={48}
                 color="#9ca3af"
               />
-              <Text style={styles.emptyText}>No notifications</Text>
+              <Text style={styles.emptyText}>{t("notifications.noNotifications")}</Text>
             </View>
           }
           contentContainerStyle={styles.listContent}
