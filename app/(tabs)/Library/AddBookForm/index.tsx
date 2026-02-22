@@ -80,6 +80,7 @@ export default function AddBookForm() {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedBook, setSelectedBook] = useState<any>(null);
   const [selectedBookCoverUrl, setSelectedBookCoverUrl] = useState<string | null>(null);
+  const [resolvedListCovers, setResolvedListCovers] = useState<Record<string, string>>({});
   const [scannerVisible, setScannerVisible] = useState(false);
   const [startIndex, setStartIndex] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -127,6 +128,7 @@ export default function AddBookForm() {
     setSearchResults([]);
     setSelectedBook(null);
     setSelectedBookCoverUrl(null);
+    setResolvedListCovers({});
     setSearchQuery("");
     setStartIndex(0);
   };
@@ -171,6 +173,32 @@ export default function AddBookForm() {
       cancelled = true;
     };
   }, [selectedBook]);
+
+  // Resolve covers for search/list items that have no valid Google URL (e.g. scan results)
+  useEffect(() => {
+    if (!searchResults.length) return;
+    const fallback = "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
+    let cancelled = false;
+    searchResults.forEach((item: any) => {
+      const id = item.id;
+      if (!id) return;
+      const rawCoverUrl = getBestCoverUrl(item.volumeInfo?.imageLinks);
+      const syncUrl = processGoogleBooksImageUrl(rawCoverUrl);
+      if (syncUrl) return; // already have a URL to show
+      (async () => {
+        const title = item.volumeInfo?.title;
+        const author =
+          item.volumeInfo?.authors?.join(", ") || "Unknown Author";
+        const url = await fetchCoverImage(title, author);
+        if (!cancelled && url) {
+          setResolvedListCovers((prev) => ({ ...prev, [id]: url }));
+        }
+      })();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [searchResults]);
 
   const handleAddBook = async () => {
     if (!selectedBook || addingBook) return; // Prevent double submission
@@ -338,17 +366,14 @@ export default function AddBookForm() {
                   }`
                 }
                 renderItem={({ item }) => {
-                  // Try to get cover URL with multiple fallback strategies
+                  // Use resolved cache first (from fetchCoverImage when Google URL missing), then sync Google URL
+                  const cached = item.id ? resolvedListCovers[item.id] : null;
                   let processedCoverUrl: string | null = null;
-
-                  if (item.volumeInfo.imageLinks) {
-                    // Strategy 1: Get best URL from imageLinks
+                  if (!cached && item.volumeInfo?.imageLinks) {
                     const rawCoverUrl = getBestCoverUrl(
                       item.volumeInfo.imageLinks
                     );
                     processedCoverUrl = processGoogleBooksImageUrl(rawCoverUrl);
-
-                    // Strategy 2: If first attempt failed, try all imageLinks properties
                     if (!processedCoverUrl) {
                       const imageLinks = item.volumeInfo.imageLinks;
                       const urlsToTry = [
@@ -358,7 +383,6 @@ export default function AddBookForm() {
                         imageLinks.thumbnail,
                         imageLinks.smallThumbnail,
                       ].filter(Boolean);
-
                       for (const url of urlsToTry) {
                         const processed = processGoogleBooksImageUrl(url);
                         if (processed) {
@@ -370,13 +394,11 @@ export default function AddBookForm() {
                   }
 
                   const finalCoverUrl =
+                    cached ||
                     processedCoverUrl ||
                     "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
 
-                  // Create a unique key that includes the URL to force re-render if URL changes
-                  const imageKey = `${item.id}-${
-                    processedCoverUrl || "fallback"
-                  }`;
+                  const imageKey = `${item.id}-${finalCoverUrl.slice(-20)}`;
 
                   return (
                     <TouchableOpacity onPress={() => handleBookSelect(item)}>
