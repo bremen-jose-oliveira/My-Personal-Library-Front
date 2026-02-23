@@ -375,13 +375,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const login = async (email: string, password: string) => {
+    const trimmedEmail = email?.trim() ?? "";
+    const trimmedPassword = password?.trim() ?? "";
     try {
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/users/login`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email: trimmedEmail, password: trimmedPassword }),
         }
       );
 
@@ -389,8 +391,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Clear any existing invalid token
         await removeToken();
         setIsLoggedIn(false);
-        const errorText = await response.text();
-        throw new Error(errorText || "Invalid credentials");
+        const text = await response.text();
+        let message = "Invalid email or password";
+        if (text) {
+          try {
+            const body = JSON.parse(text);
+            message = body?.message ?? message;
+          } catch {
+            message = text || message;
+          }
+        }
+        throw new Error(message);
       }
 
       const data = await response.json();
@@ -611,19 +622,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     password: string
   ) => {
     try {
+      const payload = {
+        username: username?.trim() ?? "",
+        email: email?.trim() ?? "",
+        password: password?.trim() ?? "",
+      };
       const response = await fetch(
         `${process.env.EXPO_PUBLIC_API_URL}/api/users/create`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, email, password }),
+          body: JSON.stringify(payload),
         }
       );
 
       if (!response.ok) throw new Error("Registration failed");
 
       Alert.alert("Registration Successful", "Welcome!");
-      await login(email, password);
+      await login(payload.email, payload.password);
     } catch (error: any) {
       console.error("Registration error:", error);
       Alert.alert("Error", error.message || "An error occurred");
