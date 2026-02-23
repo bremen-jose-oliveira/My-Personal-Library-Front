@@ -57,6 +57,20 @@ const processGoogleBooksImageUrl = (
   }
 };
 
+/** Open Library Covers API - no quota, direct image URL by ISBN */
+const getOpenLibraryCoverUrl = (isbn: string): string => {
+  const clean = (isbn || "").replace(/\D/g, "").trim();
+  if (!clean) return "";
+  return `https://covers.openlibrary.org/b/isbn/${clean}-M.jpg`;
+};
+
+const getIsbnFromVolume = (volumeInfo: any): string | null => {
+  const ids = volumeInfo?.industryIdentifiers;
+  if (!Array.isArray(ids)) return null;
+  const row = ids.find((x: any) => x?.type === "ISBN_13" || x?.type === "ISBN_10");
+  return row?.identifier ?? null;
+};
+
 const getBestCoverUrl = (imageLinks: any): string | null => {
   if (!imageLinks) return null;
 
@@ -82,7 +96,6 @@ export default function AddBookForm() {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedBook, setSelectedBook] = useState<any>(null);
   const [selectedBookCoverUrl, setSelectedBookCoverUrl] = useState<string | null>(null);
-  const [resolvedListCovers, setResolvedListCovers] = useState<Record<string, string>>({});
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [scannerVisible, setScannerVisible] = useState(false);
   const [startIndex, setStartIndex] = useState(0);
@@ -165,7 +178,6 @@ export default function AddBookForm() {
     setSearchResults([]);
     setSelectedBook(null);
     setSelectedBookCoverUrl(null);
-    setResolvedListCovers({});
     setSearchQuery("");
     setStartIndex(0);
   };
@@ -326,9 +338,6 @@ export default function AddBookForm() {
               color: "#f0dcc7",
             }}
           />
-          <Text style={{ color: "#9ca3af", fontSize: 12, marginBottom: 8 }}>
-            {t("books.onlyBooksWithIsbn")}
-          </Text>
           <View style={{ flexDirection: "row", marginBottom: 10 }}>
             <View style={{ flex: 1, marginRight: 5 }}>
               <Button
@@ -394,10 +403,9 @@ export default function AddBookForm() {
                   }`
                 }
                 renderItem={({ item }) => {
-                  // Use resolved cache first (from fetchCoverImage when Google URL missing), then sync Google URL
-                  const cached = item.id ? resolvedListCovers[item.id] : null;
+                  // 1) Google imageLinks from search, 2) Open Library by ISBN (no API call), 3) placeholder
                   let processedCoverUrl: string | null = null;
-                  if (!cached && item.volumeInfo?.imageLinks) {
+                  if (item.volumeInfo?.imageLinks) {
                     const rawCoverUrl = getBestCoverUrl(
                       item.volumeInfo.imageLinks
                     );
@@ -420,11 +428,12 @@ export default function AddBookForm() {
                       }
                     }
                   }
-
+                  const isbn = getIsbnFromVolume(item.volumeInfo);
+                  const openLibraryUrl = isbn ? getOpenLibraryCoverUrl(isbn) : "";
+                  const placeholder = "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
                   const finalCoverUrl =
-                    cached ||
                     processedCoverUrl ||
-                    "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
+                    (openLibraryUrl || placeholder);
 
                   const imageKey = `${item.id}-${finalCoverUrl.slice(-20)}`;
 
