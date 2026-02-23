@@ -10,6 +10,9 @@ npm-debug.*
 *.orig.*
 web-build/
 
+# Android (machine-specific)
+android/local.properties
+
 # macOS
 .DS_Store
 

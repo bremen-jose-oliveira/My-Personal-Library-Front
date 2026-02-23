@@ -1,5 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router } from 'expo-router';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 
 /**
  * Centralized API client that handles authentication and error responses
@@ -13,10 +13,10 @@ export const apiClient = {
     url: string,
     options: RequestInit = {}
   ): Promise<Response> {
-    const token = await AsyncStorage.getItem('token');
-    
+    const token = await AsyncStorage.getItem("token");
+
     const headers = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     };
@@ -28,8 +28,7 @@ export const apiClient = {
 
     // Handle 401 Unauthorized - token expired or invalid
     if (response.status === 401) {
-      // Clear token and redirect to login
-      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem("token");
       // Only redirect if we're not already on the login page
       if (router.canGoBack()) {
         router.replace('/');

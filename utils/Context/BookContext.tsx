@@ -26,8 +26,7 @@ interface BookContextProps {
 const BookContext = createContext<BookContextProps | undefined>(undefined);
 
 const getAuthToken = async () => {
-  const token = await AsyncStorage.getItem("token");
-  return token;
+  return await AsyncStorage.getItem("token");
 };
 
 const enrichBookWithCover = async (book: Book) => {

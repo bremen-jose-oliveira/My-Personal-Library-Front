@@ -1,29 +1,27 @@
-
 // utils/Context/storageUtils.ts
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const storeToken = async (token: string) => {
   try {
-    await AsyncStorage.setItem('token', token);
-  
+    await AsyncStorage.setItem("token", token);
   } catch (error) {
-    console.error('Error storing token:', error);
+    console.error("Error storing token:", error);
   }
 };
 
-export const getToken = async () => {
+export const getToken = async (): Promise<string | null> => {
   try {
-    return await AsyncStorage.getItem('token');
+    return await AsyncStorage.getItem("token");
   } catch (error) {
-    console.error('Error retrieving token:', error);
+    console.error("Error retrieving token:", error);
     return null;
   }
 };
 
 export const removeToken = async () => {
   try {
-    await AsyncStorage.removeItem('token');
+    await AsyncStorage.removeItem("token");
   } catch (error) {
-    console.error('Error removing token:', error);
+    console.error("Error removing token:", error);
   }
 };
