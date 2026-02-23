@@ -93,38 +93,64 @@ export default function AddBookForm() {
     if (loading) return;
     setLoading(true);
 
+    const q = typeof query === "string" ? query : "";
     const googleBooksApiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
-      query
+      q
     )}&maxResults=40&startIndex=${reset ? 0 : startIndex}`;
 
+    let response: Response;
     try {
-      const response = await fetch(googleBooksApiUrl);
-      const data = await response.json();
-
-      setSearchResults((prevResults) => {
-        const newResults = data.items || [];
-        const uniqueResults = [...prevResults, ...newResults].reduce(
-          (acc, book) => {
-            if (
-              !acc.some(
-                (existingBook: { id: any }) => existingBook.id === book.id
-              )
-            ) {
-              acc.push(book);
-            }
-            return acc;
-          },
-          []
-        );
-        return reset ? newResults : uniqueResults;
-      });
-      setStartIndex((prevIndex) => (reset ? 40 : prevIndex + 40));
-    } catch (error) {
-      console.error("Error fetching books:", error);
-      Alert.alert(t("common.error"), t("books.failedToFetchBooks"));
-    } finally {
+      response = await fetch(googleBooksApiUrl);
+    } catch (networkError) {
+      console.error("Error fetching books:", networkError);
       setLoading(false);
+      try {
+        Alert.alert(t("common.error"), t("books.failedToFetchBooks"));
+      } catch (_) {
+        Alert.alert("Error", "Failed to fetch book data. Please try again.");
+      }
+      return;
     }
+
+    if (response.status === 429) {
+      setSearchResults([]);
+      setStartIndex(0);
+      setLoading(false);
+      try {
+        Alert.alert(t("common.error"), t("books.quotaExceeded"));
+      } catch (_) {
+        Alert.alert("Error", "Google Books daily limit reached. Please try again tomorrow.");
+      }
+      return;
+    }
+
+    let data: { items?: any[] };
+    try {
+      const text = await response.text();
+      data = text ? JSON.parse(text) : {};
+    } catch (_) {
+      data = {};
+    }
+
+    const newResults = Array.isArray(data.items) ? data.items : [];
+    setSearchResults((prevResults) => {
+      const uniqueResults = [...prevResults, ...newResults].reduce(
+        (acc, book) => {
+          if (
+            !acc.some(
+              (existingBook: { id: any }) => existingBook.id === book.id
+            )
+          ) {
+            acc.push(book);
+          }
+          return acc;
+        },
+        []
+      );
+      return reset ? newResults : uniqueResults;
+    });
+    setStartIndex((prevIndex) => (reset ? 40 : prevIndex + 40));
+    setLoading(false);
   };
 
   const clearSearchState = () => {
@@ -244,24 +270,15 @@ export default function AddBookForm() {
 
     const yearStr = vi.publishedDate ? String(vi.publishedDate).substring(0, 4) : "";
     const yearNum = yearStr ? parseInt(yearStr, 10) : 0;
-    const bookData: Book = {
+    const bookData: Omit<Book, "id"> = {
       title: vi.title || "Unknown",
       author: (vi.authors && vi.authors.length) ? vi.authors.join(", ") : "Unknown Author",
       year: Number.isNaN(yearNum) ? 0 : yearNum,
       publisher: vi.publisher || "",
       cover: coverUrl,
       description: vi.description || null,
-      id: 0,
       isbn:
         vi.industryIdentifiers?.[0]?.identifier || "N/A",
-      owner: undefined,
-      exchangeStatus: undefined,
-      exchanges: undefined,
-      reviews: undefined,
-      reviewCount: undefined,
-      createdAt: undefined,
-      updatedAt: undefined,
-      readingStatus: undefined,
     };
 
     try {
