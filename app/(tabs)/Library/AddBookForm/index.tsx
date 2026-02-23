@@ -96,6 +96,7 @@ export default function AddBookForm() {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedBook, setSelectedBook] = useState<any>(null);
   const [selectedBookCoverUrl, setSelectedBookCoverUrl] = useState<string | null>(null);
+  const [resolvedListCovers, setResolvedListCovers] = useState<Record<string, string>>({});
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [scannerVisible, setScannerVisible] = useState(false);
   const [startIndex, setStartIndex] = useState(0);
@@ -178,6 +179,7 @@ export default function AddBookForm() {
     setSearchResults([]);
     setSelectedBook(null);
     setSelectedBookCoverUrl(null);
+    setResolvedListCovers({});
     setSearchQuery("");
     setStartIndex(0);
   };
@@ -243,9 +245,36 @@ export default function AddBookForm() {
     };
   }, [selectedBook]);
 
-  // Do NOT fetch covers for every list item (each fetchCoverImage = 1 Google API call).
-  // Use Google imageLinks from search when present; otherwise show placeholder. Covers are
-  // resolved only for the selected book (see useEffect above) to avoid quota burn.
+  // Same cover logic as Book Preview: for list items without Google imageLinks, call fetchCoverImage.
+  // No limit for now; if 429 quota appears again, add a cap (e.g. first 15–20 items).
+  useEffect(() => {
+    if (!searchResults.length) return;
+    let cancelled = false;
+    const toFetch = searchResults.filter((item: any) => {
+        const id = item.id;
+        if (!id || resolvedListCovers[id]) return false;
+        const raw = getBestCoverUrl(item.volumeInfo?.imageLinks);
+        const url = processGoogleBooksImageUrl(raw);
+        return !url;
+      });
+    toFetch.forEach((item: any) => {
+      const id = item.id;
+      if (!id) return;
+      (async () => {
+        const title = item.volumeInfo?.title;
+        const author =
+          item.volumeInfo?.authors?.join(", ") || "Unknown Author";
+        const url = await fetchCoverImage(title, author);
+        if (!cancelled && url) {
+          setResolvedListCovers((prev) => ({ ...prev, [id]: url }));
+        }
+      })();
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only run when searchResults change; resolvedListCovers is read to skip already-fetched
+  }, [searchResults]);
 
   const handleAddBook = async () => {
     if (!selectedBook || addingBook) return; // Prevent double submission
@@ -403,9 +432,10 @@ export default function AddBookForm() {
                   }`
                 }
                 renderItem={({ item }) => {
-                  // 1) Google imageLinks from search, 2) Open Library by ISBN (no API call), 3) placeholder
+                  // Same order as Book Preview: 1) resolved (fetchCoverImage), 2) Google imageLinks, 3) Open Library, 4) placeholder
+                  const cached = item.id ? resolvedListCovers[item.id] : null;
                   let processedCoverUrl: string | null = null;
-                  if (item.volumeInfo?.imageLinks) {
+                  if (!cached && item.volumeInfo?.imageLinks) {
                     const rawCoverUrl = getBestCoverUrl(
                       item.volumeInfo.imageLinks
                     );
@@ -432,6 +462,7 @@ export default function AddBookForm() {
                   const openLibraryUrl = isbn ? getOpenLibraryCoverUrl(isbn) : "";
                   const placeholder = "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
                   const finalCoverUrl =
+                    cached ||
                     processedCoverUrl ||
                     (openLibraryUrl || placeholder);
 
