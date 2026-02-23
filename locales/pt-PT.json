@@ -73,6 +73,7 @@
     "openScanner": "Abrir scanner",
     "clearResults": "Limpar resultados",
     "foundResults": "Encontrado(s) {{count}} resultado(s)",
+    "onlyBooksWithIsbn": "Apenas livros com ISBN/código de barras são mostrados.",
     "bookAddedSuccess": "Livro adicionado com sucesso!",
     "failedToAddBook": "Falha ao adicionar livro. Tente novamente.",
     "failedToFetchBooks": "Falha ao obter dados do livro. Tente novamente.",

@@ -132,7 +132,15 @@ export default function AddBookForm() {
       data = {};
     }
 
-    const newResults = Array.isArray(data.items) ? data.items : [];
+    const hasIsbn = (item: any) => {
+      const ids = item?.volumeInfo?.industryIdentifiers;
+      if (!Array.isArray(ids)) return false;
+      return ids.some(
+        (x: any) => x?.type === "ISBN_10" || x?.type === "ISBN_13"
+      );
+    };
+    const rawItems = Array.isArray(data.items) ? data.items : [];
+    const newResults = rawItems.filter(hasIsbn);
     setSearchResults((prevResults) => {
       const uniqueResults = [...prevResults, ...newResults].reduce(
         (acc, book) => {
@@ -318,6 +326,9 @@ export default function AddBookForm() {
               color: "#f0dcc7",
             }}
           />
+          <Text style={{ color: "#9ca3af", fontSize: 12, marginBottom: 8 }}>
+            {t("books.onlyBooksWithIsbn")}
+          </Text>
           <View style={{ flexDirection: "row", marginBottom: 10 }}>
             <View style={{ flex: 1, marginRight: 5 }}>
               <Button

@@ -73,6 +73,7 @@
     "openScanner": "Open Scanner",
     "clearResults": "Clear Results",
     "foundResults": "Found {{count}} result(s)",
+    "onlyBooksWithIsbn": "Only books with ISBN/barcode are shown.",
     "bookAddedSuccess": "Book added successfully!",
     "failedToAddBook": "Failed to add book. Please try again.",
     "failedToFetchBooks": "Failed to fetch book data. Please try again.",

@@ -73,6 +73,7 @@
     "openScanner": "Scanner öffnen",
     "clearResults": "Ergebnisse löschen",
     "foundResults": "{{count}} Ergebnis(se) gefunden",
+    "onlyBooksWithIsbn": "Es werden nur Bücher mit ISBN/Barcode angezeigt.",
     "bookAddedSuccess": "Buch erfolgreich hinzugefügt!",
     "failedToAddBook": "Buch konnte nicht hinzugefügt werden. Bitte erneut versuchen.",
     "failedToFetchBooks": "Buchdaten konnten nicht geladen werden. Bitte erneut versuchen.",
