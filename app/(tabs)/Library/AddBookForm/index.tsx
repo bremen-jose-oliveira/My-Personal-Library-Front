@@ -223,31 +223,9 @@ export default function AddBookForm() {
     };
   }, [selectedBook]);
 
-  // Resolve covers for search/list items that have no valid Google URL (e.g. scan results)
-  useEffect(() => {
-    if (!searchResults.length) return;
-    const fallback = "https://cdn-icons-png.flaticon.com/512/7340/7340665.png";
-    let cancelled = false;
-    searchResults.forEach((item: any) => {
-      const id = item.id;
-      if (!id) return;
-      const rawCoverUrl = getBestCoverUrl(item.volumeInfo?.imageLinks);
-      const syncUrl = processGoogleBooksImageUrl(rawCoverUrl);
-      if (syncUrl) return; // already have a URL to show
-      (async () => {
-        const title = item.volumeInfo?.title;
-        const author =
-          item.volumeInfo?.authors?.join(", ") || "Unknown Author";
-        const url = await fetchCoverImage(title, author);
-        if (!cancelled && url) {
-          setResolvedListCovers((prev) => ({ ...prev, [id]: url }));
-        }
-      })();
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [searchResults]);
+  // Do NOT fetch covers for every list item (each fetchCoverImage = 1 Google API call).
+  // Use Google imageLinks from search when present; otherwise show placeholder. Covers are
+  // resolved only for the selected book (see useEffect above) to avoid quota burn.
 
   const handleAddBook = async () => {
     if (!selectedBook || addingBook) return; // Prevent double submission
