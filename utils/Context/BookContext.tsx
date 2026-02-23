@@ -17,7 +17,7 @@ interface BookContextProps {
   addBook: (book: Omit<Book, "id">) => Promise<void>;
   updateBook: (
     id: number,
-    book: Partial<Omit<Book, "id" | "owner" | "ownerUsername">>
+    book: Partial<Omit<Book, "id" | "owner" | "ownerUsername">>,
   ) => Promise<void>;
   deleteBook: (id: number) => Promise<void>;
   updateReadingStatus: (bookId: number, status: BookStatus) => Promise<void>;
@@ -72,7 +72,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
         return; // Silently return if no token
       }
       const response = await apiClient.get(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/books/details/${id}`
+        `${process.env.EXPO_PUBLIC_API_URL}/api/books/details/${id}`,
       );
 
       if (!response.ok) {
@@ -95,7 +95,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
       const token = await getAuthToken();
       if (!token) return; // Silently return if no token
       const response = await apiClient.get(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/books/my/with-status`
+        `${process.env.EXPO_PUBLIC_API_URL}/api/books/my/with-status`,
       );
 
       if (!response.ok) {
@@ -150,7 +150,8 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
               const allBooks = await fetchAllBooks();
               const existingBook = allBooks.find(
                 (b) =>
-                  b.isbn === book.isbn || b.isbn === book.isbn.replace(/-/g, "")
+                  b.isbn === book.isbn ||
+                  b.isbn === book.isbn.replace(/-/g, ""),
               );
 
               if (existingBook) {
@@ -224,7 +225,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
           }
 
           throw new Error(
-            errorMessage || "This book already exists in the library."
+            errorMessage || "This book already exists in the library.",
           );
         }
 
@@ -247,7 +248,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
         error.message?.includes("NetworkError")
       ) {
         throw new Error(
-          "Network error. Please check your connection and ensure the backend is running."
+          "Network error. Please check your connection and ensure the backend is running.",
         );
       } else if (error.message) {
         throw error;
@@ -259,7 +260,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const updateBook = async (
     id: number,
-    book: Partial<Omit<Book, "id" | "owner" | "ownerUsername">>
+    book: Partial<Omit<Book, "id" | "owner" | "ownerUsername">>,
   ) => {
     try {
       const token = await getAuthToken();
@@ -268,7 +269,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
       }
       const response = await apiClient.put(
         `${process.env.EXPO_PUBLIC_API_URL}/api/books/${id}`,
-        book
+        book,
       );
 
       if (!response.ok) {
@@ -291,7 +292,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error("You must be logged in to delete books");
       }
       const response = await apiClient.delete(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/books/${id}`
+        `${process.env.EXPO_PUBLIC_API_URL}/api/books/${id}`,
       );
 
       if (!response.ok) {
@@ -314,7 +315,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
       const token = await getAuthToken();
       if (!token) return []; // Return empty array if no token
       const response = await apiClient.get(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/books`
+        `${process.env.EXPO_PUBLIC_API_URL}/api/books`,
       );
 
       if (!response.ok) {
@@ -343,7 +344,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
       const token = await getAuthToken();
       if (!token) return null; // Return null if no token
       const response = await apiClient.get(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/user-book-status/${user.id}/${bookId}`
+        `${process.env.EXPO_PUBLIC_API_URL}/api/user-book-status/${user.id}/${bookId}`,
       );
 
       if (!response.ok) {
@@ -377,7 +378,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error("You must be logged in to update reading status");
       }
       const response = await apiClient.put(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/user-book-status/${user.id}/${bookId}?status=${status}`
+        `${process.env.EXPO_PUBLIC_API_URL}/api/user-book-status/${user.id}/${bookId}?status=${status}`,
       );
 
       if (!response.ok) {

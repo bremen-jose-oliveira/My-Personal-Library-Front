@@ -110,7 +110,7 @@ export default function AddBookForm() {
     const q = typeof query === "string" ? query : "";
     const googleBooksApiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
       q
-    )}&maxResults=40&startIndex=${reset ? 0 : startIndex}`;
+    )}&maxResults=20&startIndex=${reset ? 0 : startIndex}`;
 
     let response: Response;
     try {
@@ -171,7 +171,7 @@ export default function AddBookForm() {
       );
       return reset ? newResults : uniqueResults;
     });
-    setStartIndex((prevIndex) => (reset ? 40 : prevIndex + 40));
+    setStartIndex((prevIndex) => (reset ? 20 : prevIndex + 20));
     setLoading(false);
   };
 
@@ -245,25 +245,36 @@ export default function AddBookForm() {
     };
   }, [selectedBook]);
 
-  // Same cover logic as Book Preview: for list items without Google imageLinks, call fetchCoverImage.
-  // No limit for now; if 429 quota appears again, add a cap (e.g. first 15–20 items).
+  // Resolve covers for list items: prefer Open Library (no API call) when ISBN exists; only call Google for fallback and cap to avoid 429.
+  const MAX_GOOGLE_COVER_FETCHES = 10;
   useEffect(() => {
     if (!searchResults.length) return;
     let cancelled = false;
-    const toFetch = searchResults.filter((item: any) => {
-        const id = item.id;
-        if (!id || resolvedListCovers[id]) return false;
-        const raw = getBestCoverUrl(item.volumeInfo?.imageLinks);
-        const url = processGoogleBooksImageUrl(raw);
-        return !url;
-      });
-    toFetch.forEach((item: any) => {
+    const toResolve = searchResults.filter((item: any) => {
+      const id = item.id;
+      if (!id || resolvedListCovers[id]) return false;
+      const raw = getBestCoverUrl(item.volumeInfo?.imageLinks);
+      const url = processGoogleBooksImageUrl(raw);
+      return !url;
+    });
+
+    let googleFetchCount = 0;
+    toResolve.forEach((item: any) => {
       const id = item.id;
       if (!id) return;
+      const isbn = getIsbnFromVolume(item.volumeInfo);
+      if (isbn) {
+        const openLibraryUrl = getOpenLibraryCoverUrl(isbn);
+        if (openLibraryUrl) {
+          setResolvedListCovers((prev) => ({ ...prev, [id]: openLibraryUrl }));
+          return;
+        }
+      }
+      if (googleFetchCount >= MAX_GOOGLE_COVER_FETCHES) return;
+      googleFetchCount += 1;
       (async () => {
         const title = item.volumeInfo?.title;
-        const author =
-          item.volumeInfo?.authors?.join(", ") || "Unknown Author";
+        const author = item.volumeInfo?.authors?.join(", ") || "Unknown Author";
         const url = await fetchCoverImage(title, author);
         if (!cancelled && url) {
           setResolvedListCovers((prev) => ({ ...prev, [id]: url }));
@@ -288,7 +299,8 @@ export default function AddBookForm() {
     if (!coverUrl) {
       const title = vi.title;
       const author = vi.authors?.join(", ") || "Unknown Author";
-      coverUrl = await fetchCoverImage(title, author);
+      const isbn = getIsbnFromVolume(vi);
+      coverUrl = await fetchCoverImage(title, author, isbn ?? undefined);
     }
 
     if (!coverUrl || coverUrl.trim() === "") {

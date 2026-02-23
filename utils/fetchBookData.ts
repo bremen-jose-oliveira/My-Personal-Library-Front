@@ -30,27 +30,36 @@ export async function addBookToServer(bookData: any) {
   }
 }
 
+/** Open Library cover by ISBN - no Google quota. */
+export function getOpenLibraryCoverUrl(isbn: string): string {
+  const clean = (isbn || "").replace(/\D/g, "").trim();
+  if (!clean) return "";
+  return `https://covers.openlibrary.org/b/isbn/${clean}-M.jpg`;
+}
+
 export const fetchCoverImage = async (
   title: string,
-  author: string
+  author: string,
+  isbn?: string | null
 ): Promise<string | null> => {
-  const query = `${title} ${author}`.replace(/\s+/g, "+");
-  const url = `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=40`;
-  // Fallback cover - using Flaticon book icon (restored from earlier version)
-  // If you want to use a local image, add it to assets/images/ and reference it in components
   const fallbackCover = `https://cdn-icons-png.flaticon.com/512/7340/7340665.png`;
+
+  if (isbn && isbn !== "N/A") {
+    const openLibraryUrl = getOpenLibraryCoverUrl(isbn);
+    if (openLibraryUrl) return openLibraryUrl;
+  }
+
+  const query = `${title} ${author}`.replace(/\s+/g, "+");
+  const url = `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=10`;
 
   try {
     const response = await fetch(url, {
       method: "GET",
-      headers: {
-        Accept: "application/json",
-      },
+      headers: { Accept: "application/json" },
     });
 
-    if (!response.ok) {
-      return fallbackCover;
-    }
+    if (response.status === 429) return fallbackCover;
+    if (!response.ok) return fallbackCover;
 
     const data = await response.json();
 

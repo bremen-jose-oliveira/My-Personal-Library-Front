@@ -81,7 +81,7 @@
     "bookAddedSuccess": "Book added successfully!",
     "failedToAddBook": "Failed to add book. Please try again.",
     "failedToFetchBooks": "Failed to fetch book data. Please try again.",
-    "quotaExceeded": "Google Books daily limit reached. Please try again tomorrow.",
+    "quotaExceeded": "Too many requests to Google Books. Please wait a few minutes and try again.",
     "title": "Title",
     "author": "Author",
     "publisher": "Publisher",
