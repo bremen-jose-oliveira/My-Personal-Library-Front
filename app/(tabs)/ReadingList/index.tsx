@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiClient } from "@/utils/apiClient";
 import { BookStatus } from "@/Interfaces/userBookStatus";
 import type { UserBookStatus } from "@/Interfaces/userBookStatus";
 import { fetchCoverImage } from "@/utils/fetchBookData";
@@ -34,20 +34,8 @@ export default function ReadingListScreen() {
 
   const fetchReadingList = async () => {
     try {
-      const token = await AsyncStorage.getItem("token");
-      if (!token) {
-        throw new Error("Token is missing or expired");
-      }
-
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/user-book-status/my`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiClient.get(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/user-book-status/my`
       );
 
       if (!response.ok) {

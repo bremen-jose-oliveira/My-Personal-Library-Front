@@ -6,6 +6,7 @@ import React, {
   useCallback,
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiClient } from "@/utils/apiClient";
 import type { Notification, NotificationType } from "@/Interfaces/notification";
 
 interface NotificationContextValue {
@@ -47,14 +48,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       // Fetch notifications
-      const notificationsResponse = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/notifications`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const notificationsResponse = await apiClient.get(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/notifications`
       );
 
       if (notificationsResponse.ok) {
@@ -76,14 +71,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       // Fetch unread count
-      const countResponse = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/notifications/unread/count`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const countResponse = await apiClient.get(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/notifications/unread/count`
       );
 
       if (countResponse.ok) {
@@ -117,15 +106,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const token = await getToken();
         if (!token) return; // Silently return if no token
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_API_URL}/api/notifications/${notificationId}/read`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
+        const response = await apiClient.put(
+          `${process.env.EXPO_PUBLIC_API_URL}/api/notifications/${notificationId}/read`
         );
 
         if (response.ok) {
@@ -142,15 +124,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const token = await getToken();
       if (!token) return; // Silently return if no token
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/notifications/read-all`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiClient.put(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/notifications/read-all`
       );
 
       if (response.ok) {
@@ -166,15 +141,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const token = await getToken();
         if (!token) return; // Silently return if no token
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_API_URL}/api/notifications/${notificationId}`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
+        const response = await apiClient.delete(
+          `${process.env.EXPO_PUBLIC_API_URL}/api/notifications/${notificationId}`
         );
 
         if (response.ok) {
@@ -191,15 +159,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const token = await getToken();
       if (!token) return; // Silently return if no token
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/notifications`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiClient.delete(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/notifications`
       );
 
       if (response.ok) {

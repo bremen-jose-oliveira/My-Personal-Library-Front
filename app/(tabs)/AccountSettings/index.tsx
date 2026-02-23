@@ -12,6 +12,7 @@ import {
   ScrollView,
   Linking,
 } from "react-native";
+import { apiClient } from "@/utils/apiClient";
 import { getToken, removeToken } from "@/utils/Context/storageUtils";
 import { useTranslation } from "react-i18next";
 
@@ -48,16 +49,9 @@ const AccountSettings = () => {
         throw new Error("Token is missing or expired");
       }
 
-      const response = await fetch(
+      const response = await apiClient.put(
         `${process.env.EXPO_PUBLIC_API_URL}/api/users/current/update`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ username }),
-        }
+        { username }
       );
 
       const responseData = await response.json();
@@ -87,18 +81,11 @@ const AccountSettings = () => {
         throw new Error("Token is missing or expired");
       }
 
-      const response = await fetch(
+      const response = await apiClient.put(
         `${process.env.EXPO_PUBLIC_API_URL}/api/users/current/update/password`,
         {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            oldPassword: oldPassword,
-            newPassword: confirmPassword,
-          }),
+          oldPassword: oldPassword,
+          newPassword: confirmPassword,
         }
       );
 
@@ -190,15 +177,8 @@ const AccountSettings = () => {
           throw new Error("You must be logged in to delete your account");
         }
 
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_API_URL}/api/users/current`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
+        const response = await apiClient.delete(
+          `${process.env.EXPO_PUBLIC_API_URL}/api/users/current`
         );
 
         if (!response.ok) {

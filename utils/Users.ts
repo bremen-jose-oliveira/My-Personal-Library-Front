@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiClient } from "@/utils/apiClient";
 import type { UserSummary } from "@/Interfaces/user";
 
 export const FetchAllUsers = async () => {
@@ -8,15 +9,8 @@ export const FetchAllUsers = async () => {
       throw new Error("Token is missing or expired");
     }
 
-    const response = await fetch(
-      `${process.env.EXPO_PUBLIC_API_URL}/api/users`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
+    const response = await apiClient.get(
+      `${process.env.EXPO_PUBLIC_API_URL}/api/users`
     );
 
     if (!response.ok) {
@@ -40,13 +34,7 @@ export const FetchAllUsersBySearchParam = async (searchQuery = "") => {
       process.env.EXPO_PUBLIC_API_URL
     }/api/users/search?search=${encodeURIComponent(searchQuery)}`;
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await apiClient.get(url);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch users: ${response.statusText}`);
@@ -78,13 +66,7 @@ export const FetchUserByEmail = async (
     }/api/users/search?search=${encodeURIComponent(email)}`;
     console.log("📤 Fetching user from:", url);
 
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await apiClient.get(url);
 
     console.log(
       "📥 User search response:",
@@ -135,15 +117,8 @@ export const FetchUserById = async (
       throw new Error("Token is missing or expired");
     }
 
-    const response = await fetch(
-      `${process.env.EXPO_PUBLIC_API_URL}/api/users/${id}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
+    const response = await apiClient.get(
+      `${process.env.EXPO_PUBLIC_API_URL}/api/users/${id}`
     );
 
     if (!response.ok) {

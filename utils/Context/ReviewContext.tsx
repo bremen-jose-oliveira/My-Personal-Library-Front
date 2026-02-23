@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiClient } from "@/utils/apiClient";
 import type { Review, ReviewRequest } from "@/Interfaces/review";
 
 interface ReviewContextValue {
@@ -63,14 +64,8 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({
         setFetchingBookId(null);
         return;
       }
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/reviews/book/${bookId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiClient.get(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/reviews/book/${bookId}`
       );
 
       if (!response.ok) {
@@ -112,16 +107,9 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({
   const createReview = async (payload: ReviewRequest) => {
     try {
       const token = await getToken();
-      const response = await fetch(
+      const response = await apiClient.post(
         `${process.env.EXPO_PUBLIC_API_URL}/api/reviews`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        }
+        payload
       );
       if (!response.ok) {
         const errorText = await response.text();
@@ -140,16 +128,9 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({
   ) => {
     try {
       const token = await getToken();
-      const response = await fetch(
+      const response = await apiClient.put(
         `${process.env.EXPO_PUBLIC_API_URL}/api/reviews/${reviewId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        }
+        payload
       );
       if (!response.ok) {
         const errorText = await response.text();
@@ -165,15 +146,8 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({
   const deleteReview = async (reviewId: number) => {
     try {
       const token = await getToken();
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/reviews/${reviewId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiClient.delete(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/reviews/${reviewId}`
       );
       if (!response.ok) {
         const errorText = await response.text();
@@ -190,14 +164,8 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({
     setLoading(true);
     try {
       const token = await getToken();
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/reviews/my`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiClient.get(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/reviews/my`
       );
 
       if (!response.ok) {
@@ -216,14 +184,8 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({
   const getReviewById = async (reviewId: number): Promise<Review | null> => {
     try {
       const token = await getToken();
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/reviews/${reviewId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiClient.get(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/reviews/${reviewId}`
       );
 
       if (!response.ok) {

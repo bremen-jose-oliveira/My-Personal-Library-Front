@@ -71,15 +71,8 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
         setLoadingDetails(false);
         return; // Silently return if no token
       }
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/books/details/${id}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiClient.get(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/books/details/${id}`
       );
 
       if (!response.ok) {
@@ -101,15 +94,8 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const token = await getAuthToken();
       if (!token) return; // Silently return if no token
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/books/my/with-status`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiClient.get(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/books/my/with-status`
       );
 
       if (!response.ok) {
@@ -280,16 +266,9 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!token) {
         throw new Error("You must be logged in to update books");
       }
-      const response = await fetch(
+      const response = await apiClient.put(
         `${process.env.EXPO_PUBLIC_API_URL}/api/books/${id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(book),
-        }
+        book
       );
 
       if (!response.ok) {
@@ -311,15 +290,8 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!token) {
         throw new Error("You must be logged in to delete books");
       }
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/books/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiClient.delete(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/books/${id}`
       );
 
       if (!response.ok) {
@@ -341,15 +313,8 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const token = await getAuthToken();
       if (!token) return []; // Return empty array if no token
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/books`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiClient.get(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/books`
       );
 
       if (!response.ok) {
@@ -377,15 +342,8 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const token = await getAuthToken();
       if (!token) return null; // Return null if no token
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/user-book-status/${user.id}/${bookId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiClient.get(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/user-book-status/${user.id}/${bookId}`
       );
 
       if (!response.ok) {
@@ -418,15 +376,8 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!token) {
         throw new Error("You must be logged in to update reading status");
       }
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/user-book-status/${user.id}/${bookId}?status=${status}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiClient.put(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/user-book-status/${user.id}/${bookId}?status=${status}`
       );
 
       if (!response.ok) {

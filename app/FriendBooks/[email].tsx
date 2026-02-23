@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiClient } from "@/utils/apiClient";
 import Book from "@/Interfaces/book";
 import { fetchCoverImage } from "@/utils/fetchBookData";
 import { useTranslation } from "react-i18next";
@@ -28,22 +28,10 @@ export default function FriendBooksScreen() {
 
   const fetchFriendBooks = async () => {
     try {
-      const token = await AsyncStorage.getItem("token");
-      if (!token) {
-        throw new Error("Token is missing or expired");
-      }
-
-      const response = await fetch(
+      const response = await apiClient.get(
         `${process.env.EXPO_PUBLIC_API_URL}/api/books/user/${encodeURIComponent(
           email || ""
-        )}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        )}`
       );
 
       if (!response.ok) {

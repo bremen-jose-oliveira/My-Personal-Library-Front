@@ -3,6 +3,7 @@
 
 import Friend from '@/Interfaces/friends';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { apiClient } from '@/utils/apiClient';
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { Alert } from 'react-native';
 import { Platform } from 'react-native';
@@ -31,13 +32,7 @@ export const FriendProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         throw new Error('Token is missing or expired');
       }
 
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/friendships`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await apiClient.get(`${process.env.EXPO_PUBLIC_API_URL}/api/friendships`);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch friends: ${response.statusText}`);
@@ -71,14 +66,7 @@ export const FriendProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       throw new Error('Token is missing or expired');
     }
   
-    const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/friendships/request`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ friendEmail }) 
-    });
+    const response = await apiClient.post(`${process.env.EXPO_PUBLIC_API_URL}/api/friendships/request`, { friendEmail });
 
     if (!response.ok) {
       const errorMessage = await response.text();
@@ -96,13 +84,7 @@ export const FriendProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         throw new Error('Token is missing or expired');
       }
   
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/friendships/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const response = await apiClient.delete(`${process.env.EXPO_PUBLIC_API_URL}/api/friendships/${id}`);
   
       if (response.ok) {
         setFriends((prevFriends) => prevFriends.filter((friend) => friend.id !== id));
@@ -126,12 +108,7 @@ export const FriendProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
 
     try {
-        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/friendships/requests`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
+        const response = await apiClient.get(`${process.env.EXPO_PUBLIC_API_URL}/api/friendships/requests`);
 
         if (!response.ok) {
             const errorText = await response.text();
@@ -150,14 +127,7 @@ export const FriendProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 // Approve a friend request
 const approveFriendRequest = async (friendEmail:any) => {
   const token = await AsyncStorage.getItem('token');
-  const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/friendships/approve`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ friendEmail })
-  });
+  const response = await apiClient.post(`${process.env.EXPO_PUBLIC_API_URL}/api/friendships/approve`, { friendEmail });
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || "Failed to approve friend request");
@@ -168,14 +138,7 @@ const approveFriendRequest = async (friendEmail:any) => {
 // Reject a friend request
 const rejectFriendRequest = async (friendEmail:any) => {
   const token = await AsyncStorage.getItem('token');
-  const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/friendships/reject`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ friendEmail })
-  });
+  const response = await apiClient.post(`${process.env.EXPO_PUBLIC_API_URL}/api/friendships/reject`, { friendEmail });
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || "Failed to reject friend request");

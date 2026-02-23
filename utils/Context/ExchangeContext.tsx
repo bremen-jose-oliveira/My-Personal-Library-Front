@@ -6,6 +6,7 @@ import React, {
   useCallback,
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiClient } from "@/utils/apiClient";
 import type { Exchange } from "@/Interfaces/exchange";
 import { ExchangeStatus } from "@/Interfaces/exchange";
 import { useUserContext } from "@/utils/Context/UserContext";
@@ -59,12 +60,7 @@ export const ExchangeProvider: React.FC<{ children: React.ReactNode }> = ({
       const url = `${process.env.EXPO_PUBLIC_API_URL}/api/exchanges/borrowed`;
       console.log("ExchangeContext: Fetching from:", url);
 
-      const response = await fetch(url, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await apiClient.get(url);
 
       console.log(
         "ExchangeContext: Response status:",
@@ -104,14 +100,8 @@ export const ExchangeProvider: React.FC<{ children: React.ReactNode }> = ({
     setLoading(true);
     try {
       const token = await getTokenOrThrow();
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/exchanges/lending`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiClient.get(
+        `${process.env.EXPO_PUBLIC_API_URL}/api/exchanges/lending`
       );
 
       if (!response.ok) {
@@ -140,18 +130,8 @@ export const ExchangeProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const token = await getTokenOrThrow();
       const [borrowedResponse, lendingResponse] = await Promise.all([
-        fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/exchanges/borrowed`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }),
-        fetch(`${process.env.EXPO_PUBLIC_API_URL}/api/exchanges/lending`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }),
+        apiClient.get(`${process.env.EXPO_PUBLIC_API_URL}/api/exchanges/borrowed`),
+        apiClient.get(`${process.env.EXPO_PUBLIC_API_URL}/api/exchanges/lending`),
       ]);
 
       if (borrowedResponse.ok) {
@@ -190,19 +170,9 @@ export const ExchangeProvider: React.FC<{ children: React.ReactNode }> = ({
 
     try {
       const token = await getTokenOrThrow();
-      const response = await fetch(
+      const response = await apiClient.post(
         `${process.env.EXPO_PUBLIC_API_URL}/api/exchanges/request`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            borrowerId: currentUser.id,
-            bookId,
-          }),
-        }
+        { borrowerId: currentUser.id, bookId }
       );
 
       if (!response.ok) {
@@ -223,16 +193,9 @@ export const ExchangeProvider: React.FC<{ children: React.ReactNode }> = ({
   ) => {
     try {
       const token = await getTokenOrThrow();
-      const response = await fetch(
+      const response = await apiClient.put(
         `${process.env.EXPO_PUBLIC_API_URL}/api/exchanges/${exchangeId}/status`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ status }),
-        }
+        { status }
       );
 
       if (!response.ok) {
