@@ -1,5 +1,6 @@
 import Book from "@/Interfaces/book";
 import { fetchCoverImage } from "@/utils/fetchBookData";
+import { apiClient } from "@/utils/apiClient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { useUserContext } from "@/utils/Context/UserContext";
@@ -131,14 +132,7 @@ export const BookProvider: React.FC<{ children: React.ReactNode }> = ({
       }
       const apiUrl = `${process.env.EXPO_PUBLIC_API_URL}/api/books`;
 
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(book),
-      });
+      const response = await apiClient.post(apiUrl, book);
 
       if (!response.ok) {
         let errorMessage = "Failed to add book";
