@@ -2,6 +2,11 @@ import BarcodeScanner from "@/components/BarcodeScanner";
 import Book from "@/Interfaces/book";
 import { useBookContext } from "@/utils/Context/BookContext";
 import { fetchCoverImage } from "@/utils/fetchBookData";
+import {
+  searchOpenLibrary,
+  fetchOpenLibraryByIsbn,
+  type UnifiedBookItem,
+} from "@/utils/openLibraryApi";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState, useEffect } from "react";
@@ -93,7 +98,7 @@ export default function AddBookForm() {
   const { t } = useTranslation();
   const { addBook } = useBookContext();
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<UnifiedBookItem[]>([]);
   const [selectedBook, setSelectedBook] = useState<any>(null);
   const [selectedBookCoverUrl, setSelectedBookCoverUrl] = useState<string | null>(null);
   const [resolvedListCovers, setResolvedListCovers] = useState<Record<string, string>>({});
@@ -106,12 +111,38 @@ export default function AddBookForm() {
   const fetchBooks = async (query: string, reset: boolean = false) => {
     if (loading) return;
     setLoading(true);
+    const q = (typeof query === "string" ? query : "").trim();
 
-    const q = typeof query === "string" ? query : "";
+    // 1) Try Open Library first (no daily quota, 3 req/s with User-Agent)
+    const isIsbnQuery = /^isbn:\s*\d[\d\s-]*$/i.test(q);
+    if (isIsbnQuery) {
+      const isbn = q.replace(/^isbn:\s*/i, "").replace(/\D/g, "");
+      const olBook = await fetchOpenLibraryByIsbn(isbn);
+      if (olBook) {
+        setSearchResults([olBook]);
+        setStartIndex(20);
+        setLoading(false);
+        return;
+      }
+    } else if (q) {
+      const { items: olItems, numFound } = await searchOpenLibrary(q, {
+        page: reset ? 1 : Math.floor(startIndex / 20) + 1,
+        limit: 20,
+      });
+      if (olItems.length > 0) {
+        setSearchResults((prev) =>
+          reset ? olItems : [...prev, ...olItems].filter((b, i, arr) => arr.findIndex((x) => x.id === b.id) === i)
+        );
+        setStartIndex((prev) => (reset ? 20 : prev + 20));
+        setLoading(false);
+        return;
+      }
+    }
+
+    // 2) Fall back to Google Books
     const googleBooksApiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
-      q
+      q || " "
     )}&maxResults=20&startIndex=${reset ? 0 : startIndex}`;
-
     let response: Response;
     try {
       response = await fetch(googleBooksApiUrl);
@@ -133,7 +164,7 @@ export default function AddBookForm() {
       try {
         Alert.alert(t("common.error"), t("books.quotaExceeded"));
       } catch (_) {
-        Alert.alert("Error", "Google Books daily limit reached. Please try again tomorrow.");
+        Alert.alert("Error", "Too many requests. Please try again in a few minutes.");
       }
       return;
     }
@@ -149,27 +180,16 @@ export default function AddBookForm() {
     const hasIsbn = (item: any) => {
       const ids = item?.volumeInfo?.industryIdentifiers;
       if (!Array.isArray(ids)) return false;
-      return ids.some(
-        (x: any) => x?.type === "ISBN_10" || x?.type === "ISBN_13"
-      );
+      return ids.some((x: any) => x?.type === "ISBN_10" || x?.type === "ISBN_13");
     };
     const rawItems = Array.isArray(data.items) ? data.items : [];
-    const newResults = rawItems.filter(hasIsbn);
+    const newResults: UnifiedBookItem[] = rawItems.filter(hasIsbn).map((book: any) => ({
+      ...book,
+      source: "google" as const,
+    }));
     setSearchResults((prevResults) => {
-      const uniqueResults = [...prevResults, ...newResults].reduce(
-        (acc, book) => {
-          if (
-            !acc.some(
-              (existingBook: { id: any }) => existingBook.id === book.id
-            )
-          ) {
-            acc.push(book);
-          }
-          return acc;
-        },
-        []
-      );
-      return reset ? newResults : uniqueResults;
+      const merged = reset ? newResults : [...prevResults, ...newResults];
+      return merged.filter((book, i, arr) => arr.findIndex((b) => b.id === book.id) === i);
     });
     setStartIndex((prevIndex) => (reset ? 20 : prevIndex + 20));
     setLoading(false);
@@ -198,11 +218,14 @@ export default function AddBookForm() {
     return res.json();
   };
 
-  const handleBookSelect = async (bookData: any) => {
+  const handleBookSelect = async (bookData: UnifiedBookItem | any) => {
     setSearchQuery("");
     setSearchResults([]);
     setSelectedBookCoverUrl(null);
     setSelectedBook(bookData);
+    if (bookData.source === "openlibrary") {
+      return;
+    }
     const volumeId = bookData.id;
     if (volumeId) {
       setLoadingDetails(true);
