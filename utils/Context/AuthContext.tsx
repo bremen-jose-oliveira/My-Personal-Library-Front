@@ -435,7 +435,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const message = isInvalidCredentials
         ? i18n.t("auth.invalidEmailOrPassword")
         : i18n.t("auth.errorOccurred");
-      setLoginError(message);
+      if (Platform.OS === "web") {
+        setLoginError(message);
+      } else {
+        Alert.alert(i18n.t("auth.loginFailed"), message);
+      }
       throw error;
     }
   };
