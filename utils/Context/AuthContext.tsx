@@ -6,9 +6,12 @@ import React, {
   useEffect,
   ReactNode,
   useCallback,
+  useContext,
 } from "react";
-import { Alert, ActivityIndicator, Platform } from "react-native";
+import { Alert, ActivityIndicator, Platform, Modal, Pressable, Text } from "react-native";
 import { storeToken, getToken, removeToken } from "./storageUtils";
+import i18n from "@/utils/i18n";
+import { useTranslation } from "react-i18next";
 import * as Google from "expo-auth-session/providers/google";
 import * as WebBrowser from "expo-web-browser";
 import { makeRedirectUri } from "expo-auth-session";
@@ -29,6 +32,8 @@ interface AuthContextProps {
   ) => Promise<void>;
   handleGoogleLogin: () => void;
   appleLogin: () => void;
+  loginError: string | null;
+  clearLoginError: () => void;
 }
 
 export const AuthContext = createContext<AuthContextProps>({
@@ -39,11 +44,15 @@ export const AuthContext = createContext<AuthContextProps>({
   createUser: async () => {},
   handleGoogleLogin: async () => {},
   appleLogin: async () => {},
+  loginError: null,
+  clearLoginError: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const clearLoginError = useCallback(() => setLoginError(null), []);
 
   const validateToken = async (token: string): Promise<boolean> => {
     try {
@@ -388,20 +397,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       );
 
       if (!response.ok) {
-        // Clear any existing invalid token
         await removeToken();
         setIsLoggedIn(false);
         const text = await response.text();
-        let message = "Invalid email or password";
+        let message = text;
         if (text) {
           try {
             const body = JSON.parse(text);
-            message = body?.message ?? message;
+            message = body?.message ?? text;
           } catch {
-            message = text || message;
+            message = text;
           }
         }
-        throw new Error(message);
+        const err: Error & { status?: number } = new Error(message || "Login failed");
+        err.status = response.status;
+        throw err;
       }
 
       const data = await response.json();
@@ -421,8 +431,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Login error:", error);
       await removeToken();
       setIsLoggedIn(false);
-      Alert.alert("Login Failed", error.message || "An error occurred");
-      // Re-throw so calling code knows login failed
+      const isInvalidCredentials = error?.status === 401;
+      const message = isInvalidCredentials
+        ? i18n.t("auth.invalidEmailOrPassword")
+        : i18n.t("auth.errorOccurred");
+      setLoginError(message);
       throw error;
     }
   };
@@ -660,9 +673,67 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         logout,
         createUser,
+        loginError,
+        clearLoginError,
       }}
     >
+      <LoginErrorModal />
       {children}
     </AuthContext.Provider>
   );
 };
+
+function LoginErrorModal() {
+  const { loginError, clearLoginError } = useContext(AuthContext);
+  const { t } = useTranslation();
+  if (!loginError) return null;
+  return (
+    <Modal
+      visible={!!loginError}
+      transparent
+      animationType="fade"
+      onRequestClose={clearLoginError}
+    >
+      <Pressable
+        style={{
+          flex: 1,
+          backgroundColor: "rgba(0,0,0,0.5)",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: 24,
+        }}
+        onPress={clearLoginError}
+      >
+        <Pressable
+          style={{
+            backgroundColor: "#fff",
+            borderRadius: 12,
+            padding: 24,
+            maxWidth: 400,
+            width: "100%",
+          }}
+          onPress={(e) => e.stopPropagation()}
+        >
+          <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 12 }}>
+            {t("auth.loginFailed")}
+          </Text>
+          <Text style={{ fontSize: 15, color: "#374151", marginBottom: 20 }}>
+            {loginError}
+          </Text>
+          <Pressable
+            onPress={clearLoginError}
+            style={{
+              backgroundColor: "#bf471b",
+              paddingVertical: 12,
+              paddingHorizontal: 24,
+              borderRadius: 8,
+              alignSelf: "flex-end",
+            }}
+          >
+            <Text style={{ color: "#fff", fontWeight: "600" }}>{t("common.ok")}</Text>
+          </Pressable>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
