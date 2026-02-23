@@ -92,7 +92,9 @@ export async function searchOpenLibrary(
     const data = await res.json();
     const docs: OpenLibraryDoc[] = Array.isArray(data.docs) ? data.docs : [];
     const numFound = typeof data.num_found === "number" ? data.num_found : 0;
-    const items = docs.map((doc, i) => mapOpenLibraryDocToUnified(doc, i));
+    const items = docs
+      .map((doc, i) => mapOpenLibraryDocToUnified(doc, i))
+      .filter((item) => (item.volumeInfo.industryIdentifiers?.length ?? 0) > 0);
     return { items, numFound };
   } catch (e) {
     console.warn("Open Library search failed:", e);
