@@ -3,7 +3,7 @@ import { apiClient } from "@/utils/apiClient";
 
 export async function fetchBooksFromGoogle(query: string) {
   const googleBooksApiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
-    query
+    query,
   )}`;
   try {
     const response = await fetch(googleBooksApiUrl);
@@ -20,7 +20,7 @@ export async function addBookToServer(bookData: any) {
   try {
     const response = await apiClient.post(
       `${process.env.EXPO_PUBLIC_API_URL}/api/books`,
-      bookData
+      bookData,
     );
     if (!response.ok) throw new Error(`Error: ${response.statusText}`);
     return { success: true };
@@ -40,7 +40,7 @@ export function getOpenLibraryCoverUrl(isbn: string): string {
 export const fetchCoverImage = async (
   title: string,
   author: string,
-  isbn?: string | null
+  isbn?: string | null,
 ): Promise<string | null> => {
   const fallbackCover = `https://cdn-icons-png.flaticon.com/512/7340/7340665.png`;
 
@@ -77,7 +77,7 @@ export const fetchCoverImage = async (
   } catch (error: any) {
     console.error(
       `❌ Failed to fetch cover image for "${title}":`,
-      error.message || error
+      error.message || error,
     );
     // Always return fallback - ensures all books have a cover
     return fallbackCover;
