@@ -144,7 +144,10 @@
     "active": "Ativo",
     "rejected": "Rejeitado",
     "returned": "Devolvido",
-    "unknownBook": "Livro desconhecido"
+    "unknownBook": "Livro desconhecido",
+    "removeFromList": "Remover da lista",
+    "removeFromListConfirm": "Remover este item devolvido da sua lista?",
+    "removedFromList": "Removido da lista."
   },
   "lending": {
     "title": "Em empréstimo",

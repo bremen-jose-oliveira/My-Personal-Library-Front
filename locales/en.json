@@ -144,7 +144,10 @@
     "active": "Active",
     "rejected": "Rejected",
     "returned": "Returned",
-    "unknownBook": "Unknown book"
+    "unknownBook": "Unknown book",
+    "removeFromList": "Remove from list",
+    "removeFromListConfirm": "Remove this returned item from your list?",
+    "removedFromList": "Removed from list."
   },
   "lending": {
     "title": "Lending",

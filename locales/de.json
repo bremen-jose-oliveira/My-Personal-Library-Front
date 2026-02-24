@@ -144,7 +144,10 @@
     "active": "Aktiv",
     "rejected": "Abgelehnt",
     "returned": "Zurückgegeben",
-    "unknownBook": "Unbekanntes Buch"
+    "unknownBook": "Unbekanntes Buch",
+    "removeFromList": "Aus Liste entfernen",
+    "removeFromListConfirm": "Dieses zurückgegebene Exemplar aus der Liste entfernen?",
+    "removedFromList": "Aus der Liste entfernt."
   },
   "lending": {
     "title": "Verliehen",

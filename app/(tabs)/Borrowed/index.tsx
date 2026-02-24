@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 
 export default function BorrowedScreen() {
   const { t } = useTranslation();
-  const { borrowedBooks, loading, refreshBorrowed, updateExchangeStatus } =
+  const { borrowedBooks, loading, refreshBorrowed, updateExchangeStatus, deleteExchange } =
     useExchangeContext();
 
   const statusLabels: Record<ExchangeStatus, string> = {
@@ -204,6 +204,7 @@ export default function BorrowedScreen() {
 
               const canReturn =
                 itemStatus === ExchangeStatus.ACCEPTED && !isProcessing;
+              const isReturned = itemStatus === ExchangeStatus.RETURNED;
 
               // API returns ExchangeDTO: book (BookDTO) has title, author, cover, ownerUsername at top level
               const book = item.book || (item as any).Book;
@@ -282,6 +283,40 @@ export default function BorrowedScreen() {
                       >
                         <Text style={styles.buttonText}>
                           {isProcessing ? t("common.processing") : t("books.markAsReturned")}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                    {isReturned && (
+                      <TouchableOpacity
+                        style={styles.clearButton}
+                        onPress={() => {
+                          Alert.alert(
+                            t("borrowed.removeFromList"),
+                            t("borrowed.removeFromListConfirm"),
+                            [
+                              { text: t("common.cancel"), style: "cancel" },
+                              {
+                                text: t("common.ok"),
+                                onPress: async () => {
+                                  setProcessing(item.id);
+                                  try {
+                                    await deleteExchange(item.id);
+                                    await refreshBorrowed();
+                                    Alert.alert(t("common.success"), t("borrowed.removedFromList"));
+                                  } catch (err: any) {
+                                    Alert.alert(t("common.error"), err?.message || t("common.error"));
+                                  } finally {
+                                    setProcessing(null);
+                                  }
+                                },
+                              },
+                            ]
+                          );
+                        }}
+                        disabled={isProcessing}
+                      >
+                        <Text style={styles.buttonText}>
+                          {isProcessing ? t("common.processing") : t("borrowed.removeFromList")}
                         </Text>
                       </TouchableOpacity>
                     )}
@@ -370,6 +405,15 @@ const styles = StyleSheet.create({
   },
   returnButton: {
     backgroundColor: "#22c55e",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 12,
+  },
+  clearButton: {
+    backgroundColor: "#6b7280",
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,

@@ -20,6 +20,7 @@ interface ExchangeContextValue {
     exchangeId: number,
     status: ExchangeStatus
   ) => Promise<void>;
+  deleteExchange: (exchangeId: number) => Promise<void>;
   refreshBorrowed: () => Promise<void>;
   refreshLending: () => Promise<void>;
   refreshAll: () => Promise<void>;
@@ -210,6 +211,17 @@ export const ExchangeProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const deleteExchange = async (exchangeId: number) => {
+    const response = await apiClient.delete(
+      `${process.env.EXPO_PUBLIC_API_URL}/api/exchanges/${exchangeId}`
+    );
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || "Failed to remove exchange from list");
+    }
+    await refreshAll();
+  };
+
   useEffect(() => {
     if (userLoading) {
       // Still loading user, don't do anything yet
@@ -239,6 +251,7 @@ export const ExchangeProvider: React.FC<{ children: React.ReactNode }> = ({
         loading,
         requestExchange,
         updateExchangeStatus,
+        deleteExchange,
         refreshBorrowed,
         refreshLending,
         refreshAll,

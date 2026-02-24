@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 
 export default function LendingScreen() {
   const { t } = useTranslation();
-  const { lendingBooks, loading, refreshLending, updateExchangeStatus } =
+  const { lendingBooks, loading, refreshLending, updateExchangeStatus, deleteExchange } =
     useExchangeContext();
 
   const statusLabels: Record<ExchangeStatus, string> = {
@@ -127,8 +127,13 @@ export default function LendingScreen() {
           }
           renderItem={({ item }) => {
             const isProcessing = processing === item.id;
-            const canManage = item.status === ExchangeStatus.REQUESTED;
-            const canMarkReturned = item.status === ExchangeStatus.ACCEPTED;
+            const rawStatus = item.status;
+            const itemStatus = typeof rawStatus === "string"
+              ? ExchangeStatus[rawStatus as keyof typeof ExchangeStatus] ?? rawStatus
+              : rawStatus;
+            const canManage = itemStatus === ExchangeStatus.REQUESTED;
+            const canMarkReturned = itemStatus === ExchangeStatus.ACCEPTED;
+            const isReturned = itemStatus === ExchangeStatus.RETURNED;
 
             return (
               <View style={styles.exchangeCard}>
@@ -153,8 +158,8 @@ export default function LendingScreen() {
                   </Text>
                   <Text style={styles.detailText}>
                     <Text style={styles.label}>{t("borrowed.status")}:</Text>{" "}
-                    <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
-                      {statusLabels[item.status]}
+                    <Text style={[styles.statusText, { color: getStatusColor(itemStatus as ExchangeStatus) }]}>
+                      {statusLabels[itemStatus as ExchangeStatus]}
                     </Text>
                   </Text>
                   {item.exchangeDate && (
@@ -199,6 +204,40 @@ export default function LendingScreen() {
                     >
                       <Text style={styles.buttonText}>
                         {isProcessing ? t("common.processing") : t("books.markAsReturned")}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                  {isReturned && (
+                    <TouchableOpacity
+                      style={styles.clearButton}
+                      onPress={() => {
+                        Alert.alert(
+                          t("borrowed.removeFromList"),
+                          t("borrowed.removeFromListConfirm"),
+                          [
+                            { text: t("common.cancel"), style: "cancel" },
+                            {
+                              text: t("common.ok"),
+                              onPress: async () => {
+                                setProcessing(item.id);
+                                try {
+                                  await deleteExchange(item.id);
+                                  await refreshLending();
+                                  Alert.alert(t("common.success"), t("borrowed.removedFromList"));
+                                } catch (err: any) {
+                                  Alert.alert(t("common.error"), err?.message ?? t("common.error"));
+                                } finally {
+                                  setProcessing(null);
+                                }
+                              },
+                            },
+                          ]
+                        );
+                      }}
+                      disabled={isProcessing}
+                    >
+                      <Text style={styles.buttonText}>
+                        {isProcessing ? t("common.processing") : t("borrowed.removeFromList")}
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -308,6 +347,15 @@ const styles = StyleSheet.create({
   },
   returnButton: {
     backgroundColor: "#3b82f6",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 12,
+  },
+  clearButton: {
+    backgroundColor: "#6b7280",
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,
