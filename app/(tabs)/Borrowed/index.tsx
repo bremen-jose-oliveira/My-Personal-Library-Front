@@ -205,23 +205,20 @@ export default function BorrowedScreen() {
               const canReturn =
                 itemStatus === ExchangeStatus.ACCEPTED && !isProcessing;
 
-              // Get book data from the correct nested structure (API may vary)
+              // API returns ExchangeDTO: book (BookDTO) has title, author, cover, ownerUsername at top level
               const book = item.book || (item as any).Book;
-              const bookDetails = book?.bookDetails || book;
               const bookTitle =
-                typeof bookDetails?.title === "string"
-                  ? bookDetails.title
-                  : t("borrowed.unknownBook");
+                typeof book?.title === "string" ? book.title : t("borrowed.unknownBook");
               const bookAuthor =
-                typeof bookDetails?.author === "string"
-                  ? bookDetails.author
-                  : t("common.unknown");
+                typeof book?.author === "string" ? book.author : t("common.unknown");
               const bookCover =
-                typeof bookDetails?.cover === "string" ? bookDetails.cover : undefined;
+                typeof book?.cover === "string" ? book.cover : undefined;
               const ownerUsername =
-                typeof book?.owner?.username === "string"
-                  ? book.owner.username
-                  : t("common.unknown");
+                typeof book?.ownerUsername === "string"
+                  ? book.ownerUsername
+                  : typeof book?.owner === "string"
+                    ? book.owner
+                    : t("common.unknown");
 
               const formatDate = (value: unknown): string => {
                 if (value == null) return "";

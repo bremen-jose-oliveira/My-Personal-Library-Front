@@ -3,6 +3,7 @@ import { useBookContext } from "@/utils/Context/BookContext";
 import { useFriendContext } from "@/utils/Context/FriendContext";
 import { useUserContext } from "@/utils/Context/UserContext";
 import { useExchangeContext } from "@/utils/Context/ExchangeContext";
+import { ExchangeStatus } from "@/Interfaces/exchange";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useState, useContext, useEffect } from "react";
@@ -48,8 +49,12 @@ const HomeScreen = () => {
 
   const numberOfBooks = books.length;
   const numberOfFriends = friends.length;
-  const numberOfBorrowed = borrowedBooks.length;
-  const numberOfLending = lendingBooks.length;
+  const numberOfBorrowed = borrowedBooks.filter(
+    (e) => e.status === "ACCEPTED" || e.status === ExchangeStatus.ACCEPTED
+  ).length;
+  const numberOfLending = lendingBooks.filter(
+    (e) => e.status === "ACCEPTED" || e.status === ExchangeStatus.ACCEPTED
+  ).length;
 
   // Generate welcome message with username if available
   const welcomeMessage = currentUser?.username
