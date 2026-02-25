@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { apiClient } from "@/utils/apiClient";
 import { getToken, removeToken } from "@/utils/Context/storageUtils";
+import { getSupportUrl } from "@/utils/supportUrl";
 import { useTranslation } from "react-i18next";
 
 const LANGUAGES = [
@@ -522,6 +523,41 @@ Alert.alert(
             >
               <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
                 📄 {t("account.privacyPolicyLink")}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Support Link */}
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#6b7280",
+                alignItems: "center",
+                borderRadius: 5,
+                alignSelf: "stretch",
+                paddingVertical: 14,
+                paddingHorizontal: 18,
+                marginBottom: 12,
+                minHeight: 48,
+              }}
+              onPress={async () => {
+                try {
+                  const url = getSupportUrl();
+                  const canOpen = await Linking.canOpenURL(url);
+                  if (canOpen) {
+                    await Linking.openURL(url);
+                  } else {
+                    Alert.alert(
+                      t("common.error"),
+                      t("account.unableToOpenLink")
+                    );
+                  }
+                } catch (error) {
+                  console.error("Error opening support:", error);
+                  Alert.alert(t("common.error"), t("account.unableToOpenLink"));
+                }
+              }}
+            >
+              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+                🆘 {t("account.supportLink")}
               </Text>
             </TouchableOpacity>
 

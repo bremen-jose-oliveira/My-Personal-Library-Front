@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
-import { Alert, TouchableOpacity, View, Text } from "react-native";
+import { Alert, TouchableOpacity, View, Text, Linking } from "react-native";
 import { Link, Stack, useRouter } from "expo-router";
+import { getSupportUrl } from "@/utils/supportUrl";
 import { AuthContext } from "@/utils/Context/AuthContext";
 import Ioicons from "react-native-vector-icons/Ionicons";
 import InputField from "@/components/inputField";
@@ -105,6 +106,32 @@ export default function Login() {
 
         <View className="border-t border-gray-300 w-1/3 mb-8"></View>
         <SocialLoginButtons emailHref="/Register" />
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 20, gap: 16, flexWrap: "wrap" }}>
+          <TouchableOpacity
+            onPress={async () => {
+              try {
+                const url = getSupportUrl();
+                const canOpen = await Linking.canOpenURL(url);
+                if (canOpen) await Linking.openURL(url);
+                else Alert.alert(t("common.error"), t("account.unableToOpenLink"));
+              } catch (e) {
+                Alert.alert(t("common.error"), t("common.error"));
+              }
+            }}
+          >
+            <Text style={{ color: "#bf471b", fontSize: 14 }}>
+              {t("account.supportLink")}
+            </Text>
+          </TouchableOpacity>
+          <Text style={{ color: "#9ca3af", fontSize: 14 }}>·</Text>
+          <TouchableOpacity
+            onPress={() => router.push("/PrivacyPolicy")}
+          >
+            <Text style={{ color: "#bf471b", fontSize: 14 }}>
+              {t("account.privacyPolicyLink")}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </>
   );

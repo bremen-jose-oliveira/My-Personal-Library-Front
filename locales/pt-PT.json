@@ -197,6 +197,7 @@
     "updatePassword": "Atualizar palavra-passe",
     "legalAndSupport": "Legal e suporte",
     "privacyPolicyLink": "Política de Privacidade",
+    "supportLink": "Suporte",
     "supportPayPal": "Apoiar com PayPal",
     "supportMessage": "Se gosta de usar A Minha Biblioteca, considere apoiar o desenvolvimento. Cada contribuição ajuda o servidor a manter-se online!",
     "deleteAccountConfirmTitle": "Eliminar conta",
@@ -204,7 +205,8 @@
     "yesDeleteForever": "Sim, eliminar para sempre",
     "accountDeleted": "Conta eliminada",
     "failedToDeleteAccount": "Falha ao eliminar conta. Tente novamente.",
-    "unableToOpenPayPal": "Não foi possível abrir o link do PayPal."
+    "unableToOpenPayPal": "Não foi possível abrir o link do PayPal.",
+    "unableToOpenLink": "Não foi possível abrir o link."
   },
   "notFound": {
     "title": "Página não encontrada",
@@ -275,7 +277,9 @@
     "fillAllFields": "Preencha todos os campos.",
     "failedToRegister": "Falha no registo",
     "createAccountTitle": "Criar uma conta",
-    "enterUsername": "Introduza um nome de utilizador"
+    "enterUsername": "Introduza um nome de utilizador",
+    "agreeToPrivacyPolicy": "Concordo com a",
+    "mustAgreeToRegister": "Tem de concordar com a Política de Privacidade para se registar."
   },
   "forgotPassword": {
     "title": "Esqueceu a palavra-passe",

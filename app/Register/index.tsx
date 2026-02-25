@@ -11,6 +11,7 @@ export default function Register() {
   const { t } = useTranslation();
   const { createUser } = useContext(AuthContext);
   const [secureText, setSecureText] = useState(true);
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -19,6 +20,10 @@ export default function Register() {
   const [passwordError, setPasswordError] = useState(""); // for confirming passwords
 
   const handleRegister = async () => {
+    if (!agreedToPrivacy) {
+      Alert.alert(t("common.error"), t("register.mustAgreeToRegister"));
+      return;
+    }
     if (!email || !password || !confirmPassword) {
       Alert.alert(t("common.error"), t("register.fillAllFields"));
       return;
@@ -104,10 +109,42 @@ export default function Register() {
           <Text className="text-red-500 mt-1 mb-2">{passwordError}</Text>
         )}
 
+        <View style={{ flexDirection: "row", alignItems: "center", alignSelf: "stretch", marginBottom: 16 }}>
+          <TouchableOpacity
+            onPress={() => setAgreedToPrivacy(!agreedToPrivacy)}
+            style={{ marginRight: 10 }}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Ioicons
+              name={agreedToPrivacy ? "checkmark-circle" : "ellipse-outline"}
+              size={24}
+              color={agreedToPrivacy ? "#bf471b" : "#6b7280"}
+            />
+          </TouchableOpacity>
+          <Text className="text-sm text-black flex-1">
+            {t("register.agreeToPrivacyPolicy")}{" "}
+            <Link href="/PrivacyPolicy" asChild>
+              <TouchableOpacity>
+                <Text style={{ color: "#bf471b", fontWeight: "600", textDecorationLine: "underline" }}>
+                  {t("account.privacyPolicyLink")}
+                </Text>
+              </TouchableOpacity>
+            </Link>
+          </Text>
+        </View>
+
         <TouchableOpacity
-         style={{  backgroundColor: "#bf471b", alignItems:"center", borderRadius: 5, alignSelf: "stretch",   paddingVertical: 14,paddingHorizontal: 18,  marginBottom: 30,}}
-       
+          style={{
+            backgroundColor: agreedToPrivacy ? "#bf471b" : "#9ca3af",
+            alignItems: "center",
+            borderRadius: 5,
+            alignSelf: "stretch",
+            paddingVertical: 14,
+            paddingHorizontal: 18,
+            marginBottom: 30,
+          }}
           onPress={handleRegister}
+          disabled={!agreedToPrivacy}
         >
           <Text className="text-white text-lg font-semibold">{t("register.createAccount")}</Text>
         </TouchableOpacity>

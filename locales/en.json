@@ -197,6 +197,7 @@
     "updatePassword": "Update Password",
     "legalAndSupport": "Legal & Support",
     "privacyPolicyLink": "Privacy Policy",
+    "supportLink": "Support",
     "supportPayPal": "Support with PayPal",
     "supportMessage": "If you enjoy using My Library, consider supporting its development. Every contribution helps the server to stay online!",
     "deleteAccountConfirmTitle": "Delete Account",
@@ -204,7 +205,8 @@
     "yesDeleteForever": "Yes, Delete Forever",
     "accountDeleted": "Account Deleted",
     "failedToDeleteAccount": "Failed to delete account. Please try again.",
-    "unableToOpenPayPal": "Unable to open PayPal link."
+    "unableToOpenPayPal": "Unable to open PayPal link.",
+    "unableToOpenLink": "Unable to open link."
   },
   "notFound": {
     "title": "Page not found",
@@ -275,7 +277,9 @@
     "fillAllFields": "Please fill out all fields.",
     "failedToRegister": "Failed to register",
     "createAccountTitle": "Create an Account",
-    "enterUsername": "Enter a Username"
+    "enterUsername": "Enter a Username",
+    "agreeToPrivacyPolicy": "I agree to the",
+    "mustAgreeToRegister": "You must agree to the Privacy Policy to register."
   },
   "forgotPassword": {
     "title": "Forgot Password",

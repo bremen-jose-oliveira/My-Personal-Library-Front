@@ -197,6 +197,7 @@
     "updatePassword": "Passwort aktualisieren",
     "legalAndSupport": "Rechtliches & Support",
     "privacyPolicyLink": "Datenschutzrichtlinie",
+    "supportLink": "Support",
     "supportPayPal": "Mit PayPal unterstützen",
     "supportMessage": "Wenn Sie Meine Bibliothek nutzen, unterstützen Sie gerne die Entwicklung. Jeder Beitrag hilft dem Server, online zu bleiben!",
     "deleteAccountConfirmTitle": "Konto löschen",
@@ -204,7 +205,8 @@
     "yesDeleteForever": "Ja, endgültig löschen",
     "accountDeleted": "Konto gelöscht",
     "failedToDeleteAccount": "Konto konnte nicht gelöscht werden. Bitte erneut versuchen.",
-    "unableToOpenPayPal": "PayPal-Link konnte nicht geöffnet werden."
+    "unableToOpenPayPal": "PayPal-Link konnte nicht geöffnet werden.",
+    "unableToOpenLink": "Link konnte nicht geöffnet werden."
   },
   "notFound": {
     "title": "Seite nicht gefunden",
@@ -275,7 +277,9 @@
     "fillAllFields": "Bitte füllen Sie alle Felder aus.",
     "failedToRegister": "Registrierung fehlgeschlagen",
     "createAccountTitle": "Konto erstellen",
-    "enterUsername": "Benutzername eingeben"
+    "enterUsername": "Benutzername eingeben",
+    "agreeToPrivacyPolicy": "Ich stimme der",
+    "mustAgreeToRegister": "Sie müssen der Datenschutzrichtlinie zustimmen, um sich zu registrieren."
   },
   "forgotPassword": {
     "title": "Passwort vergessen",
