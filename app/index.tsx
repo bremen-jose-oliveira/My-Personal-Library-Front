@@ -8,10 +8,13 @@ import {
   Text,
   ImageBackground,
   ActivityIndicator,
+  Linking,
+  Alert,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useContext } from "react";
 import SocialLoginButtons from "@/components/SocialLoginButtons";
+import { getSupportUrl } from "@/utils/supportUrl";
 import { useEffect } from "react";
 import { AuthContext } from "@/utils/Context/AuthContext";
 import { useTranslation } from "react-i18next";
@@ -227,7 +230,7 @@ export default function WelcomeScreen() {
               <Text
                 style={{
                   marginTop: 5,
-                  marginBottom: 35,
+                  marginBottom: 12,
                   fontSize: 14,
                   color: "black",
                   textAlign: "center",
@@ -242,6 +245,41 @@ export default function WelcomeScreen() {
                   </TouchableOpacity>
                 </Link>
               </Text>
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginTop: 8,
+                  marginBottom: 24,
+                  gap: 16,
+                  flexWrap: "wrap",
+                }}
+              >
+                <TouchableOpacity
+                  onPress={async () => {
+                    try {
+                      const url = getSupportUrl();
+                      const canOpen = await Linking.canOpenURL(url);
+                      if (canOpen) await Linking.openURL(url);
+                      else Alert.alert(t("common.error"), t("account.unableToOpenLink"));
+                    } catch (e) {
+                      Alert.alert(t("common.error"), t("common.error"));
+                    }
+                  }}
+                >
+                  <Text style={{ color: "#FF6347", fontSize: 14 }}>
+                    {t("account.supportLink")}
+                  </Text>
+                </TouchableOpacity>
+                <Text style={{ color: "rgba(0,0,0,0.5)", fontSize: 14 }}>·</Text>
+                <TouchableOpacity onPress={() => router.push("/PrivacyPolicy")}>
+                  <Text style={{ color: "#FF6347", fontSize: 14 }}>
+                    {t("account.privacyPolicyLink")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </LinearGradient>
         </ImageBackground>
