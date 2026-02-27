@@ -9,7 +9,7 @@ import React, {
   useContext,
 } from "react";
 import { Alert, ActivityIndicator, Platform, Modal, Pressable, Text } from "react-native";
-import { storeToken, getToken, removeToken } from "./storageUtils";
+import { storeToken, getToken, removeToken, onTokenRemoved } from "./storageUtils";
 import i18n from "@/utils/i18n";
 import { useTranslation } from "react-i18next";
 import * as Google from "expo-auth-session/providers/google";
@@ -88,6 +88,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // On web, the OAuth handler below will handle everything
+  // When token is cleared elsewhere (e.g. apiClient on 401), keep isLoggedIn in sync
+  useEffect(() => {
+    const unsubscribe = onTokenRemoved(() => {
+      setIsLoggedIn(false);
+    });
+    return unsubscribe;
+  }, []);
+
   // On mobile, check stored token and validate it
   useEffect(() => {
     if (Platform.OS !== "web") {

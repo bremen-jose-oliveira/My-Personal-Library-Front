@@ -113,7 +113,7 @@ export default function AddBookForm() {
     setLoading(true);
     const q = (typeof query === "string" ? query : "").trim();
 
-    // 1) Try Open Library first (no daily quota, 3 req/s with User-Agent)
+    // 1) ISBN lookup: use Open Library by ISBN (good for barcode scan)
     const isIsbnQuery = /^isbn:\s*\d[\d\s-]*$/i.test(q);
     if (isIsbnQuery) {
       const isbn = q.replace(/^isbn:\s*/i, "").replace(/\D/g, "");
@@ -124,8 +124,74 @@ export default function AddBookForm() {
         setLoading(false);
         return;
       }
-    } else if (q) {
-      const { items: olItems, numFound } = await searchOpenLibrary(q, {
+      // Fall through to Google for ISBN if OL has no result
+    }
+
+    const hasIsbn = (item: any) => {
+      const ids = item?.volumeInfo?.industryIdentifiers;
+      if (!Array.isArray(ids)) return false;
+      return ids.some((x: any) => x?.type === "ISBN_10" || x?.type === "ISBN_13");
+    };
+
+    // 2) For general search: try Google first (better descriptions, richer metadata)
+    if (q) {
+      const googleBooksApiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
+        q
+      )}&maxResults=20&startIndex=${reset ? 0 : startIndex}`;
+      let response: Response;
+      try {
+        response = await fetch(googleBooksApiUrl);
+      } catch (networkError) {
+        console.error("Error fetching books:", networkError);
+        setLoading(false);
+        try {
+          Alert.alert(t("common.error"), t("books.failedToFetchBooks"));
+        } catch (_) {
+          Alert.alert("Error", "Failed to fetch book data. Please try again.");
+        }
+        return;
+      }
+
+      if (response.status === 429) {
+        setSearchResults([]);
+        setStartIndex(0);
+        setLoading(false);
+        try {
+          Alert.alert(t("common.error"), t("books.quotaExceeded"));
+        } catch (_) {
+          Alert.alert("Error", "Too many requests. Please try again in a few minutes.");
+        }
+        return;
+      }
+
+      let data: { items?: any[] };
+      try {
+        const text = await response.text();
+        data = text ? JSON.parse(text) : {};
+      } catch (_) {
+        data = {};
+      }
+
+      const rawItems = Array.isArray(data.items) ? data.items : [];
+      const googleResults: UnifiedBookItem[] = rawItems.filter(hasIsbn).map((book: any) => ({
+        ...book,
+        source: "google" as const,
+      }));
+
+      if (googleResults.length > 0) {
+        setSearchResults((prevResults) => {
+          const merged = reset ? googleResults : [...prevResults, ...googleResults];
+          return merged.filter((book, i, arr) => arr.findIndex((b) => b.id === book.id) === i);
+        });
+        setStartIndex((prevIndex) => (reset ? 20 : prevIndex + 20));
+        setLoading(false);
+        return;
+      }
+    }
+
+    // 3) Fallback to Open Library when Google returns no results or on error (e.g. quota)
+    if (q) {
+      const { items: olItems } = await searchOpenLibrary(q, {
         page: reset ? 1 : Math.floor(startIndex / 20) + 1,
         limit: 20,
       });
@@ -139,59 +205,8 @@ export default function AddBookForm() {
       }
     }
 
-    // 2) Fall back to Google Books
-    const googleBooksApiUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
-      q || " "
-    )}&maxResults=20&startIndex=${reset ? 0 : startIndex}`;
-    let response: Response;
-    try {
-      response = await fetch(googleBooksApiUrl);
-    } catch (networkError) {
-      console.error("Error fetching books:", networkError);
-      setLoading(false);
-      try {
-        Alert.alert(t("common.error"), t("books.failedToFetchBooks"));
-      } catch (_) {
-        Alert.alert("Error", "Failed to fetch book data. Please try again.");
-      }
-      return;
-    }
-
-    if (response.status === 429) {
-      setSearchResults([]);
-      setStartIndex(0);
-      setLoading(false);
-      try {
-        Alert.alert(t("common.error"), t("books.quotaExceeded"));
-      } catch (_) {
-        Alert.alert("Error", "Too many requests. Please try again in a few minutes.");
-      }
-      return;
-    }
-
-    let data: { items?: any[] };
-    try {
-      const text = await response.text();
-      data = text ? JSON.parse(text) : {};
-    } catch (_) {
-      data = {};
-    }
-
-    const hasIsbn = (item: any) => {
-      const ids = item?.volumeInfo?.industryIdentifiers;
-      if (!Array.isArray(ids)) return false;
-      return ids.some((x: any) => x?.type === "ISBN_10" || x?.type === "ISBN_13");
-    };
-    const rawItems = Array.isArray(data.items) ? data.items : [];
-    const newResults: UnifiedBookItem[] = rawItems.filter(hasIsbn).map((book: any) => ({
-      ...book,
-      source: "google" as const,
-    }));
-    setSearchResults((prevResults) => {
-      const merged = reset ? newResults : [...prevResults, ...newResults];
-      return merged.filter((book, i, arr) => arr.findIndex((b) => b.id === book.id) === i);
-    });
-    setStartIndex((prevIndex) => (reset ? 20 : prevIndex + 20));
+    setSearchResults((prev) => (reset ? [] : prev));
+    if (reset) setStartIndex(0);
     setLoading(false);
   };
 

@@ -1,10 +1,10 @@
 import Book from "@/Interfaces/book";
 import { fetchCoverImage } from "@/utils/fetchBookData";
 import { apiClient } from "@/utils/apiClient";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { useUserContext } from "@/utils/Context/UserContext";
 import { AuthContext } from "@/utils/Context/AuthContext";
+import { getToken } from "@/utils/Context/storageUtils";
 import { BookStatus } from "@/Interfaces/userBookStatus";
 
 interface BookContextProps {
@@ -26,9 +26,7 @@ interface BookContextProps {
 
 const BookContext = createContext<BookContextProps | undefined>(undefined);
 
-const getAuthToken = async () => {
-  return await AsyncStorage.getItem("token");
-};
+const getAuthToken = getToken;
 
 const enrichBookWithCover = async (book: Book) => {
   if (book.cover && book.cover.trim() !== "" && book.cover !== "null") {
