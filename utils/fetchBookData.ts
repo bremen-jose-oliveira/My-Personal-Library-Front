@@ -50,7 +50,7 @@ export const fetchCoverImage = async (
   }
 
   const query = `${title} ${author}`.replace(/\s+/g, "+");
-  const url = `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=10`;
+  const url = `https://www.googleapis.com/books/v1/volumes?q=${query}&maxResults=39`;
 
   try {
     const response = await fetch(url, {
